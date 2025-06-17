@@ -8,7 +8,8 @@
       "@hooks/*": ["src/hooks/*"],
       "@configs/*": ["src/configs/*"],
       "@redux/*": ["src/redux/*"],
-      "@services/*": ["src/services/*"]
+      "@apis/*": ["src/apis/*"],
+      "@utils/*": ["src/utils/*"]
     }
   }
 }

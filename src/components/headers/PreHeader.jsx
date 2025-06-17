@@ -1,17 +1,25 @@
+import { Link } from 'react-router-dom';
+
 const PreHeader = () => {
   return (
     <div className="bg-black">
       <div className="container flex items-end justify-end text-center text-white">
         <ul className="flex gap-5 pr-2">
           <li>
-            <a href="#" className="text-[13px] hover:underline">
+            <Link
+              to={'/login?auth=login'}
+              className="text-[13px] text-white hover:underline"
+            >
               Đăng nhập
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="#" className="text-[13px] hover:underline">
+            <Link
+              to={'/login?auth=register'}
+              className="text-[13px] text-white hover:underline"
+            >
               Đăng kí
-            </a>
+            </Link>
           </li>
         </ul>
         <div className="h-6 w-6">

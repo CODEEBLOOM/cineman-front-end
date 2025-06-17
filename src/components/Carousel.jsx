@@ -30,7 +30,7 @@ const Carousel = ({ slides, autoSlide = false, autoSlideInterval = 3000 }) => {
     };
   }, [autoSlide, autoSlideInterval, slides.length]);
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative w-full overflow-hidden">
       <div
         className="flex transition-transform duration-500 ease-out"
         style={{ transform: `translateX(-${curr * 100}%)` }}
@@ -41,13 +41,13 @@ const Carousel = ({ slides, autoSlide = false, autoSlideInterval = 3000 }) => {
       </div>
       <div className="absolute inset-0 flex items-center justify-between px-5">
         <button
-          className="rounded-full bg-slate-200 p-3 text-gray-800 shadow hover:bg-white"
+          className="flex items-center justify-center rounded-full bg-black/50 p-3 text-gray-800 shadow hover:bg-black/30 hover:text-white sm:h-[45px] sm:w-[45px] sm:p-4 lg:h-[55px] lg:w-[55px]"
           onClick={prev}
         >
           <FaChevronLeft size={35} />
         </button>
         <button
-          className="rounded-full bg-slate-200 p-3 text-gray-800 shadow hover:bg-white"
+          className="flex items-center justify-center rounded-full bg-black/50 p-3 text-gray-800 shadow hover:bg-black/30 hover:text-white sm:h-[45px] sm:w-[45px] sm:p-4 lg:h-[55px] lg:w-[55px]"
           onClick={next}
         >
           <FaChevronRight size={35} />

@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Public Sans Variable', sans-serif;
-  font-size: 14px;
+  font-family: 'Roboto Condensed Variable', sans-serif;
+  font-size: 16px;
 }
 
 * {
@@ -12,9 +12,23 @@ body {
   padding: 0;
   box-sizing: border-box;
 }
+a {
+  color: black;
+  text-decoration: none;
+}
+html {
+  scroll-behavior: smooth !important;
+}
 
 @layer components {
   .container {
-    @apply mx-auto my-auto w-[1150px] px-4;
+    @apply mx-auto my-auto w-full px-3 md:w-[1150px] md:px-4;
+  }
+
+  .custom-border {
+    border-image: linear-gradient(to right, #39adf0 0%, #075fa3 100%);
+    border-image-slice: 1;
+    border-bottom: 4px solid transparent;
+    border-image-slice: 1;
   }
 }

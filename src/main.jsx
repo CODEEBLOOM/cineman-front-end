@@ -5,6 +5,14 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import HomePage from '@pages/HomePage';
 import RootLayout from './RootLayout';
 import AuthLayout from '@pages/auth/AuthLayout';
+import LoginPage from '@pages/auth/LoginPage';
+import { ThemeProvider } from '@emotion/react';
+import theme from '@configs/MUIConfig';
+import { Provider } from 'react-redux';
+import { persistor, store } from '@redux/store';
+import { PersistGate } from 'redux-persist/integration/react';
+import DetailMoviePage from '@pages/DetailMoviePage';
+import MoviePage from '@pages/MoviePage';
 const router = createBrowserRouter([
   {
     element: <RootLayout />,
@@ -14,19 +22,23 @@ const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
+        path: '/detail-movie/:id',
+        element: <DetailMoviePage />,
+      },
+      {
+        path: '/movie',
+        element: <MoviePage />,
+      },
+      {
         element: <AuthLayout />,
         children: [
           {
-            path: '/register',
-            element: <p>Register Page</p>,
+            path: '/login',
+            element: <LoginPage />,
           },
           {
             path: '/login',
-            element: <p>Login Page</p>,
-          },
-          {
-            path: '/verify-otp',
-            element: <p>Verify OTP</p>,
+            element: <LoginPage />,
           },
         ],
       },
@@ -35,6 +47,12 @@ const router = createBrowserRouter([
 ]);
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <Provider store={store}>
+      <PersistGate loading={<p>Loading ...</p>} persistor={persistor}>
+        <ThemeProvider theme={theme}>
+          <RouterProvider router={router} />
+        </ThemeProvider>
+      </PersistGate>
+    </Provider>
   </StrictMode>,
 );

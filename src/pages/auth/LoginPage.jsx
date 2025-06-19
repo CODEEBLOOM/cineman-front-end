@@ -10,14 +10,15 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { format } from 'date-fns';
 import { register } from '@apis/authService';
-import { fetchLogin } from '@redux/slices/AuthSlice';
+import { fetchLogin } from '@redux/slices/authSlice.js';
+
 import { useDispatch, useSelector } from 'react-redux';
 import { openSnackbar } from '@redux/slices/snackbarSlice';
 
 const LoginPage = () => {
   const [searchParams] = useSearchParams();
   const authPage = searchParams.get('auth');
-  const [value, setValue] = useState(authPage == 'login' ? 0 : 1);
+  const [value, setValue] = useState(authPage === 'login' ? 0 : 1);
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ const LoginPage = () => {
       .string()
       .matches(
         /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        'Email chưa đúng định dạng !',
+        'Email chưa đúng định dạng !'
       )
       .required(),
     password: yup.string().required(),
@@ -68,16 +69,12 @@ const LoginPage = () => {
 
   const handleLogin = async (data) => {
     try {
-      const result = await dispatch(fetchLogin(data)).unwrap();
-      if (result.status === 404) {
-        dispatch(openSnackbar({ message: result.message, type: 'error' }));
-      } else {
-        dispatch(openSnackbar({ message: 'Đăng nhập thành công ' }));
-        loginReset();
-        navigate('/');
-      }
+      await dispatch(fetchLogin(data))?.unwrap();
+      dispatch(openSnackbar({ message: 'Đăng nhập thành công ' }));
+      loginReset();
+      navigate('/');
     } catch (error) {
-      console.log(error);
+      dispatch(openSnackbar({ message: error, type: 'error' }));
     }
   };
 
@@ -88,7 +85,7 @@ const LoginPage = () => {
       .string()
       .matches(
         /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        'Email chưa đúng định dạng !',
+        'Email chưa đúng định dạng !'
       )
       .required(),
     password: yup.string().required('Mật khẩu không được để trống !'),
@@ -124,14 +121,15 @@ const LoginPage = () => {
       .then((res) => {
         setIsLoading(false);
         if (res.status === 201) {
-          dispatch(openSnackbar({ message: res.message }));
+          dispatch(openSnackbar({ message: res?.message }));
           reset();
           navigate('/login?auth=login');
           setValue(0);
         }
       })
       .catch((err) => {
-        alert('Error: ', err);
+        console.log(err);
+        setIsLoading(false);
       });
   };
 

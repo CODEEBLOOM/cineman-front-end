@@ -13,3 +13,8 @@ export const login = async (data) => {
   const url = '/auth/login';
   return await axios.post(url, data);
 };
+
+export const refreshToken = async () => {
+  const url = '/auth/refreshToken';
+  return await axios.post(url);
+};

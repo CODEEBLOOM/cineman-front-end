@@ -1,8 +1,25 @@
+import { findMovieById } from '@apis/movieService';
 import Footer from '@component/Footer';
 import Header from '@component/headers/Header';
+import { useEffect, useState } from 'react';
 import { IoIosArrowForward } from 'react-icons/io';
+import { useLocation, useParams } from 'react-router-dom';
 
 const DetailMoviePage = () => {
+  const [movie, setMovie] = useState();
+  const { id } = useParams();
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [pathname]);
+
+  useEffect(() => {
+    findMovieById(id).then((res) => {
+      setMovie(res.data);
+    });
+  }, []);
+
   return (
     <>
       <Header />
@@ -12,7 +29,7 @@ const DetailMoviePage = () => {
           <span>
             <IoIosArrowForward />
           </span>
-          <p className="font-bold text-primary">Elio Cậu Bé Đến Từ Trái Đất</p>
+          <p className="font-bold text-primary">{movie?.title}</p>
         </div>
         <div className="gap-8 md:flex">
           <div className="w-[260px] flex-none rounded-2xl">
@@ -24,60 +41,49 @@ const DetailMoviePage = () => {
           </div>
           <div className="flex-1">
             <h1 className="mb-2 text-[25px] font-bold md:text-4xl">
-              Elio Cậu Bé Đến Từ Trái Đất
+              {movie?.title}
             </h1>
-            <p className="py-3 leading-relaxed">
-              Điều gì sẽ xảy ra nếu chính thứ bạn đang tìm kiếm lại tìm đến bạn
-              trước? Trong cuộc phiêu lưu dở khóc dở cười trên màn ảnh rộng của
-              Pixar, Elio – cậu bé mê mẩn người ngoài hành tinh – bất ngờ bị
-              cuốn vào Liên Hiệp Thiên Hà, một vũ trụ liên hành tinh đầy kỳ
-              diệu, nơi quy tụ các loài sinh vật thông minh khắp thiên hà. Trớ
-              trêu thay, Elio lại bị hiểu nhầm là người đứng đầu Trái Đất. Giờ
-              đây, cậu phải vượt qua những rắc rối mang quy mô vũ trụ, kết nối
-              với những người bạn không ngờ tới, và tìm cách biến giấc mơ lớn
-              nhất đời mình thành hiện thực.
-            </p>
+            <p className="py-3 leading-relaxed">{movie?.detailDescription}</p>
             <div>
               <div className="flex">
                 <p className="w-[200px] flex-none font-bold uppercase">
                   đạo diễn
                 </p>
-                <p>Madeline Sharafian, Domee Shi, Adrian</p>
+                {(movie?.directors || [])
+                  .map((director) => director.nickname)
+                  .join(',')}
               </div>
               <div className="flex">
                 <p className="w-[200px] flex-none font-bold uppercase">
                   Diễn viên:
                 </p>
-                <p>
-                  Yonas Kibreab, Zoe Saldaña, Remy Edgerly, Brad Garrett, ameela
-                  Jamil, Shirley Henderson
-                </p>
+                {(movie?.casts || []).map((cast) => cast.nickname).join(',')}
               </div>
               <div className="flex">
                 <p className="w-[200px] flex-none font-bold uppercase">
                   Thể loại:
                 </p>
-                <p>Hoạt hình, Phiêu lưu</p>
+                {(movie?.genres || []).map((genre) => genre.name).join(',')}
               </div>
               <div className="flex">
                 <p className="w-[200px] flex-none font-bold uppercase">
                   Thời lượng:
                 </p>
                 <p>
-                  <span>90</span> Phút
+                  <span>{movie?.duration}</span> Phút
                 </p>
               </div>
               <div className="flex">
                 <p className="w-[200px] flex-none font-bold uppercase">
                   Ngôn ngữ:
                 </p>
-                <p>Tiếng Việt</p>
+                <p>{movie?.language}</p>
               </div>{' '}
               <div className="flex">
                 <p className="w-[200px] flex-none font-bold uppercase">
                   Ngày khởi chiếu:
                 </p>
-                <p>27/06/2025</p>
+                <p>{}</p>
               </div>
             </div>
           </div>
@@ -92,7 +98,6 @@ const DetailMoviePage = () => {
             <iframe
               className="h-[60vh] w-full"
               src="https://www.youtube.com/embed/Sp_IBr3cH8g?rel=0&showinfo=0&autoplay=1"
-              frameborder="0"
             ></iframe>
           </div>
         </div>

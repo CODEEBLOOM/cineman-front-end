@@ -1,6 +1,7 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import authReducer from '@redux/slices/AuthSlice';
+import authReducer from '@redux/slices/authSlice.js';
 import snackbarReducer from '@redux/slices/snackbarSlice';
+import userReducer from '@redux/slices/userSlice.js';
 import {
   FLUSH,
   PAUSE,
@@ -23,8 +24,9 @@ const persistedReducer = persistReducer(
   persistConfig,
   combineReducers({
     auth: authReducer,
+    user: userReducer,
     snackbar: snackbarReducer,
-  }),
+  })
 );
 
 export const store = configureStore({

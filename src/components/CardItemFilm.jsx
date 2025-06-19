@@ -1,9 +1,12 @@
 import { FaCirclePlay } from 'react-icons/fa6';
-import { IoTicket } from 'react-icons/io5';
+import { IoClose, IoTicket } from 'react-icons/io5';
 import './CardItemFilm.css';
 import ImageComponent from './ImageComponent';
+import { Link } from 'react-router-dom';
+import { useModelContext } from '@context/ModalContext.jsx';
 
 const CardItemFilm = ({
+  id,
   title,
   genres,
   duration,
@@ -13,6 +16,8 @@ const CardItemFilm = ({
   img,
   trailerLink,
 }) => {
+  const { openPopup, setIsShowing } = useModelContext();
+
   return (
     <>
       <div className="mb-14 flex w-full gap-5 px-4 pb-4 sm:block">
@@ -33,7 +38,31 @@ const CardItemFilm = ({
             />
           </span>
           <div className="img-film-hover absolute left-0 top-0 h-full w-full transform rounded-2xl hover:bg-custom-transparent">
-            <a href="#1" className="hidden">
+            <a
+              className="hidden cursor-pointer"
+              onClick={() =>
+                openPopup(
+                  <div className={'relative bg-white p-5'}>
+                    <span
+                      className={'absolute right-3 top-3 hover:cursor-pointer'}
+                      onClick={() => setIsShowing(false)}
+                    >
+                      <IoClose size={25} />
+                    </span>
+                    <p className={'mb-3 border-b-2 px-2 text-[20px]'}>
+                      Đất Rừng Phương Nam
+                    </p>
+                    <iframe
+                      title={'Trailer'}
+                      src={
+                        'https://www.youtube.com/embed/hktzirCnJmQ?si=hoZIqYe5AegaBzIO'
+                      }
+                      className={'aspect-video w-[80vw] md:w-[50vw]'}
+                    />
+                  </div>
+                )
+              }
+            >
               <FaCirclePlay
                 size={50}
                 style={{
@@ -47,10 +76,13 @@ const CardItemFilm = ({
           </div>
         </div>
         <div className="flex-1">
-          <div className="text-left">
-            <p className="mb-2 mt-2 max-h-[30px] min-h-[30px] cursor-pointer truncate text-[16px] font-bold text-primary hover:underline">
+          <div className="truncate text-left">
+            <Link
+              to={`/detail-movie/${id}`}
+              className="mb-2 mt-2 max-h-[30px] min-h-[30px] cursor-pointer truncate text-[18px] font-bold text-primary hover:underline lg:text-[20px]"
+            >
               {title}
-            </p>
+            </Link>
             <ul>
               <li className="truncate">
                 <span className="font-bold">Thể loại:</span>&nbsp;{' '}
@@ -77,7 +109,7 @@ const CardItemFilm = ({
               className="group relative block overflow-hidden rounded-sm bg-gradient-custom-blue p-1 text-[16px] font-bold uppercase text-white transition-all duration-500"
             >
               <span className="absolute inset-0 z-0 bg-gradient-custom-blue-hover opacity-0 transition-opacity duration-300 group-hover:opacity-100"></span>
-              <span className="relative z-10 flex items-center justify-center">
+              <span className="z-2 relative flex items-center justify-center">
                 <span className="absolute left-1 top-1/2 -translate-y-1/2 transform">
                   <IoTicket size={50} color="rgba(255, 255, 255, .5)" />
                 </span>

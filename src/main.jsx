@@ -13,6 +13,7 @@ import { persistor, store } from '@redux/store';
 import { PersistGate } from 'redux-persist/integration/react';
 import DetailMoviePage from '@pages/DetailMoviePage';
 import MoviePage from '@pages/MoviePage';
+import ModalProvider from '@context/ModalContext.jsx';
 const router = createBrowserRouter([
   {
     element: <RootLayout />,
@@ -49,10 +50,12 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
       <PersistGate loading={<p>Loading ...</p>} persistor={persistor}>
-        <ThemeProvider theme={theme}>
-          <RouterProvider router={router} />
-        </ThemeProvider>
+        <ModalProvider>
+          <ThemeProvider theme={theme}>
+            <RouterProvider router={router} />
+          </ThemeProvider>
+        </ModalProvider>
       </PersistGate>
     </Provider>
-  </StrictMode>,
+  </StrictMode>
 );

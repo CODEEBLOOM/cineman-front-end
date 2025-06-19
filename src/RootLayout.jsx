@@ -3,12 +3,20 @@ import '@fontsource-variable/roboto-condensed';
 import { Alert, Snackbar } from '@mui/material';
 import { closeSnackbar } from '@redux/slices/snackbarSlice';
 import { Suspense } from 'react';
+import { IoIosArrowUp } from 'react-icons/io';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet } from 'react-router-dom';
 
 function RootLayout() {
   const { open, type, message } = useSelector((state) => state.snackbar);
   const dispatch = useDispatch();
+
+  const handleScroll = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
 
   return (
     <div>
@@ -24,6 +32,12 @@ function RootLayout() {
           {message}
         </Alert>
       </Snackbar>
+      <div
+        className="fixed bottom-5 right-5 flex h-14 w-14 items-center justify-center rounded-full bg-black/20 transition-all duration-200 hover:cursor-pointer hover:bg-black/50"
+        onClick={() => handleScroll()}
+      >
+        <IoIosArrowUp size={30} color="white" />
+      </div>
     </div>
   );
 }

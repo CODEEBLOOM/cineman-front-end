@@ -6,7 +6,7 @@ import cookies from 'js-cookie';
  */
 const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_HOST,
-  // timeout: 10000,
+  timeout: 10000,
   withCredentials: true,
 });
 
@@ -14,7 +14,7 @@ axiosClient.interceptors.request.use(
   function (config) {
     //TODO: cần phải gắn access token vào đây
     const localData = JSON.parse(localStorage.getItem('persist:root'));
-    if (localData.auth !== null) {
+    if (localData?.auth !== null) {
       const auth = JSON.parse(localData.auth);
       if (auth?.accessToken) {
         config.headers.Authorization = `Bearer ${auth.accessToken}`;
@@ -36,14 +36,11 @@ axiosClient.interceptors.response.use(
   },
   async (error) => {
     // TODO: Cần phải refresh token nếu access token hết hạn và trả vể mã lỗi 401
-    console.log(error);
     const originalRequest = error.config;
-    if (error.response.status === 401 || !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        debugger;
-        // const res = await axiosClient.post('/auth/refresh-token', {});
         const res = await axios.post(
           `${import.meta.env.VITE_HOST}/auth/refresh-token`,
           {},
@@ -51,7 +48,7 @@ axiosClient.interceptors.response.use(
         );
         console.log(res);
 
-        // Cập nhật lại accessToken trong localStorage
+        /* Cập nhật lại accessToken trong localStorage */
         const localData = localStorage.getItem('persist:root');
         if (localData) {
           const parsedData = JSON.parse(localData);
@@ -63,6 +60,7 @@ axiosClient.interceptors.response.use(
           }
         }
 
+        /* Thực hiện gọi lại request vừa bị chặn */
         originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
         return axiosClient(originalRequest);
       } catch (error) {
@@ -71,6 +69,7 @@ axiosClient.interceptors.response.use(
         return Promise.reject(error);
       }
     }
+    return Promise.reject(error);
   }
 );
 

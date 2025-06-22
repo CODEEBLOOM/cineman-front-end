@@ -5,7 +5,7 @@ import TabPanel from '@component/Tabpanel';
 import { Box, Button, CircularProgress, Tab, Tabs } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { format } from 'date-fns';
@@ -67,12 +67,16 @@ const LoginPage = () => {
     },
   });
 
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname || '/';
+
   const handleLogin = async (data) => {
     try {
       await dispatch(fetchLogin(data))?.unwrap();
       dispatch(openSnackbar({ message: 'Đăng nhập thành công ' }));
       loginReset();
-      navigate('/');
+      navigate(from, { replace: true });
     } catch (error) {
       dispatch(openSnackbar({ message: error, type: 'error' }));
     }

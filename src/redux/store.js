@@ -2,6 +2,7 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import authReducer from '@redux/slices/authSlice.js';
 import snackbarReducer from '@redux/slices/snackbarSlice';
 import userReducer from '@redux/slices/userSlice.js';
+import movieReducer from '@redux/slices/movieSlice.js';
 import {
   FLUSH,
   PAUSE,
@@ -20,12 +21,17 @@ const persistConfig = {
   storage: storage,
 };
 
+/**
+ * Mục đích để tự động map dữ liệu vào localStorage tự động
+ * @type
+ */
 const persistedReducer = persistReducer(
   persistConfig,
   combineReducers({
     auth: authReducer,
     user: userReducer,
     snackbar: snackbarReducer,
+    movie: movieReducer,
   })
 );
 

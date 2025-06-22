@@ -25,6 +25,9 @@ export const userSlice = createSlice({
   },
 });
 
+/**
+ * Fetch thông tin người dùng qua access token
+ */
 export const fetchInfoUser = createAsyncThunk(
   'auth/user',
   async (_, { rejectWithValue }) => {

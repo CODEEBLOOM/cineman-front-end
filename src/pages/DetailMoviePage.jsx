@@ -1,107 +1,62 @@
 import { findMovieById } from '@apis/movieService';
 import Footer from '@component/Footer';
 import Header from '@component/headers/Header';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IoIosArrowForward } from 'react-icons/io';
 import { useLocation, useParams } from 'react-router-dom';
+import ShowTimeComponent from '@component/movie_detail/ShowTimeComponent.jsx';
+import MovieInfoDetailComponent from '@component/movie_detail/MovieInfoDetailComponent.jsx';
+import MovieTrailerComponent from '@component/movie_detail/MovieTrailerComponent.jsx';
+import MovieTheaterComponent from '@component/movie_detail/CinemanTheaterComponent.jsx';
+import CinemanTheaterComponent from '@component/movie_detail/CinemanTheaterComponent.jsx';
 
 const DetailMoviePage = () => {
   const [movie, setMovie] = useState();
+  const [activeShowTime, setActiveShowTime] = useState(1);
   const { id } = useParams();
   const { pathname } = useLocation();
 
+  const listShowTimeConstant = [
+    { id: 1, date: '2025-06-20' },
+    { id: 2, date: '2025-06-21' },
+    { id: 3, date: '2025-06-22' },
+    { id: 4, date: '2025-06-23' },
+    { id: 5, date: '2025-06-24' },
+    { id: 6, date: '2025-06-25' },
+    { id: 7, date: '2025-06-26' },
+  ];
+
+  /* Luôn ở đầu trang khi chuyển router */
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [pathname]);
 
+  /* Fetch movie detail by id get at param */
   useEffect(() => {
-    findMovieById(id).then((res) => {
-      setMovie(res.data);
-    });
-  }, []);
+    findMovieById(id)
+      .then((res) => {
+        setMovie(res.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [id]);
 
   return (
     <>
       <Header />
-      <div className="container pb-10">
-        <div className="my-4 flex items-center gap-2 md:text-[25px]">
-          <p className="font-bold">Trang chủ</p>
-          <span>
-            <IoIosArrowForward />
-          </span>
-          <p className="font-bold text-primary">{movie?.title}</p>
-        </div>
-        <div className="gap-8 md:flex">
-          <div className="w-[260px] flex-none rounded-2xl">
-            <img
-              src="/film-05.jpg"
-              alt=""
-              className="h-full w-full rounded-3xl object-cover"
-            />
-          </div>
-          <div className="flex-1">
-            <h1 className="mb-2 text-[25px] font-bold md:text-4xl">
-              {movie?.title}
-            </h1>
-            <p className="py-3 leading-relaxed">{movie?.detailDescription}</p>
-            <div>
-              <div className="flex">
-                <p className="w-[200px] flex-none font-bold uppercase">
-                  đạo diễn
-                </p>
-                {(movie?.directors || [])
-                  .map((director) => director.nickname)
-                  .join(',')}
-              </div>
-              <div className="flex">
-                <p className="w-[200px] flex-none font-bold uppercase">
-                  Diễn viên:
-                </p>
-                {(movie?.casts || []).map((cast) => cast.nickname).join(',')}
-              </div>
-              <div className="flex">
-                <p className="w-[200px] flex-none font-bold uppercase">
-                  Thể loại:
-                </p>
-                {(movie?.genres || []).map((genre) => genre.name).join(',')}
-              </div>
-              <div className="flex">
-                <p className="w-[200px] flex-none font-bold uppercase">
-                  Thời lượng:
-                </p>
-                <p>
-                  <span>{movie?.duration}</span> Phút
-                </p>
-              </div>
-              <div className="flex">
-                <p className="w-[200px] flex-none font-bold uppercase">
-                  Ngôn ngữ:
-                </p>
-                <p>{movie?.language}</p>
-              </div>{' '}
-              <div className="flex">
-                <p className="w-[200px] flex-none font-bold uppercase">
-                  Ngày khởi chiếu:
-                </p>
-                <p>{}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="bg-[#3c3e4d] pb-10">
-        <div className="container text-center">
-          <ul className="custom-border mb-10 inline-block pt-5">
-            <li className="text-[30px] font-bold text-white">Trailer</li>
-          </ul>
-          <div className="rounded-sm border-2 border-slate-100 shadow-2xl">
-            <iframe
-              className="h-[60vh] w-full"
-              src="https://www.youtube.com/embed/Sp_IBr3cH8g?rel=0&showinfo=0&autoplay=1"
-            ></iframe>
-          </div>
-        </div>
-      </div>
+      <MovieInfoDetailComponent movie={movie} />
+      <ShowTimeComponent
+        active={activeShowTime}
+        setActive={setActiveShowTime}
+        showTimes={listShowTimeConstant}
+      />
+      <CinemanTheaterComponent />
+      <MovieTrailerComponent
+        iframeUrl={
+          'https://www.youtube.com/embed/Sp_IBr3cH8g?rel=0&showinfo=0&autoplay=1'
+        }
+      />
       <Footer />
     </>
   );

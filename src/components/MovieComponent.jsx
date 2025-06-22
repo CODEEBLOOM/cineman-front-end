@@ -3,11 +3,17 @@ import { Box, Tab, Tabs } from '@mui/material';
 import { useEffect, useState } from 'react';
 import CardItemFilm from './CardItemFilm';
 import TabPanel from './Tabpanel';
+import { useDispatch, useSelector } from 'react-redux';
+import { setMovieStatus } from '@redux/slices/movieSlice.js';
 
 const MovieComponent = () => {
-  const [value, setValue] = useState(1);
-  const [movieStatus, setMovieStatus] = useState('DC');
+  const { movieStatus } = useSelector((state) => state.movie);
+  const [value, setValue] = useState(
+    movieStatus === 'SC' ? 0 : movieStatus === 'DB' ? 2 : 1
+  );
+
   const [listMovies, setListMovies] = useState([]);
+  const dispatch = useDispatch();
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -20,8 +26,8 @@ const MovieComponent = () => {
     };
   }
 
-  const handleChangeMovieStatus = (movieStatus) => {
-    setMovieStatus(movieStatus);
+  const handleChangeMovieStatus = (status) => {
+    dispatch(setMovieStatus(status));
   };
   /**
    * lấy tất cả bộ phim

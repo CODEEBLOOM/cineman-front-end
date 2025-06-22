@@ -28,12 +28,17 @@ const ModelProvider = ({ children }) => {
     <ModelContext.Provider value={{ openPopup, setIsShowing }}>
       {children}
       {isShowing && (
-        <div className="fixed inset-0">
+        <div className="fixed inset-0 z-50 transition-opacity duration-200 ease-in-out">
           <div
-            className="absolute inset-0 flex items-center justify-center bg-slate-600/60"
+            className="absolute inset-0 flex items-center justify-center bg-slate-600/60 backdrop-blur-sm"
             onClick={() => setIsShowing(false)}
           >
-            <div onClick={(e) => e.stopPropagation()}>{content}</div>
+            <div
+              className="scale-95 transform animate-fade-in opacity-0 transition-all duration-200 ease-out"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {content}
+            </div>
           </div>
         </div>
       )}

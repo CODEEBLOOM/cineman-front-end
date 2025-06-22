@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { fetchInfoUser } from '@redux/slices/userSlice.js';
 import { openSnackbar } from '@redux/slices/snackbarSlice.js';
 import { useDispatch, useSelector } from 'react-redux';
+import { fetchLogout, setIsAuthentication } from '@redux/slices/authSlice.js';
 const PreHeader = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const dispatch = useDispatch();
@@ -14,10 +15,10 @@ const PreHeader = () => {
   useEffect(() => {
     const getInfoUser = async () => {
       try {
-        // await dispatch(fetchInfoUser()).unwrap();
-      } catch (error) {
-        // dispatch(openSnackbar({ message: error, type: 'error' }));
-        console.log(error);
+        await dispatch(fetchInfoUser()).unwrap();
+      } catch (err) {
+        console.log(err);
+        dispatch(setIsAuthentication(false));
       }
     };
     if (isAuthentication) {
@@ -33,6 +34,15 @@ const PreHeader = () => {
     setAnchorEl(null);
   };
 
+  const handleLogout = async () => {
+    try {
+      await dispatch(fetchLogout()).unwrap();
+      dispatch(openSnackbar({ message: 'Đăng xuất thành công.' }));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const renderMenu = (
     <Menu
       open={!!anchorEl}
@@ -45,7 +55,7 @@ const PreHeader = () => {
       <MenuItem>Thẻ thành viên</MenuItem>
       <MenuItem>Hành trình điện ảnh</MenuItem>
       <MenuItem>Voucher của tôi</MenuItem>
-      <MenuItem>Đăng xuất</MenuItem>
+      <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
     </Menu>
   );
 

@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '@apis/axiosClient';
+import { snackbarSlice } from '@redux/slices/snackbarSlice.js';
 
 const initialState = {
   accessToken: null,
@@ -11,9 +12,14 @@ const initialState = {
 export const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {},
+  reducers: {
+    setIsAuthentication: (state, action) => {
+      state.isAuthentication = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
+      /* Fetch login */
       .addCase(fetchLogin.pending, (state) => {
         state.status = 'loading';
       })
@@ -25,10 +31,21 @@ export const authSlice = createSlice({
       })
       .addCase(fetchLogin.rejected, (state) => {
         state.status = 'rejected';
+      })
+
+      /* fetch logout */
+      .addCase(fetchLogout.fulfilled, (state) => {
+        state.status = 'idle';
+        state.isAuthentication = false;
+        state.accessToken = null;
+        state.refreshToken = null;
       });
   },
 });
 
+/**
+ * AsyncThunk login
+ */
 export const fetchLogin = createAsyncThunk(
   'auth/fetchLogin',
   async (data, { rejectWithValue }) => {
@@ -43,4 +60,22 @@ export const fetchLogin = createAsyncThunk(
   }
 );
 
+/**
+ * AsyncThunk logout
+ */
+export const fetchLogout = createAsyncThunk(
+  'auth/fetchLogout',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await axios.post('/auth/logout');
+    } catch (err) {
+      console.log(err);
+      if (err.response.status >= 400) {
+        return rejectWithValue(err.response.data.message);
+      }
+    }
+  }
+);
+
+export const { setIsAuthentication } = authSlice.actions;
 export default authSlice.reducer;

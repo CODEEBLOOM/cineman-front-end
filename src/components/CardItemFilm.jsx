@@ -1,9 +1,9 @@
 import { FaCirclePlay } from 'react-icons/fa6';
 import { IoClose, IoTicket } from 'react-icons/io5';
-import './CardItemFilm.css';
 import ImageComponent from './ImageComponent';
 import { Link } from 'react-router-dom';
 import { useModelContext } from '@context/ModalContext.jsx';
+import CustomButton from '@component/CustomButton.jsx';
 
 const CardItemFilm = ({
   id,
@@ -29,7 +29,6 @@ const CardItemFilm = ({
               height={372}
               src={img}
             />
-            {/* <img src={img} alt="" className="w-full object-cover" /> */}
           </div>
           <span className="absolute left-2 top-2">
             <img
@@ -37,9 +36,9 @@ const CardItemFilm = ({
               alt="Độ tuổi trên 15"
             />
           </span>
-          <div className="img-film-hover absolute left-0 top-0 h-full w-full transform rounded-2xl hover:bg-custom-transparent">
+          <div className="group absolute left-0 top-0 h-full w-full transform rounded-2xl hover:bg-custom-transparent">
             <a
-              className="hidden cursor-pointer"
+              className="hidden cursor-pointer group-hover:block"
               onClick={() =>
                 openPopup(
                   <div className={'relative bg-white p-5'}>
@@ -103,20 +102,7 @@ const CardItemFilm = ({
               )}
             </ul>
           </div>
-          <div className="relative mt-4 text-center">
-            <a
-              href={trailerLink}
-              className="group relative block overflow-hidden rounded-sm bg-gradient-custom-blue p-1 text-[16px] font-bold uppercase text-white transition-all duration-500"
-            >
-              <span className="absolute inset-0 z-0 bg-gradient-custom-blue-hover opacity-0 transition-opacity duration-300 group-hover:opacity-100"></span>
-              <span className="z-2 relative flex items-center justify-center">
-                <span className="absolute left-1 top-1/2 -translate-y-1/2 transform">
-                  <IoTicket size={50} color="rgba(255, 255, 255, .5)" />
-                </span>
-                Mua vé
-              </span>
-            </a>
-          </div>
+          <CustomButton title={'Mua vé'} />
         </div>
       </div>
     </>

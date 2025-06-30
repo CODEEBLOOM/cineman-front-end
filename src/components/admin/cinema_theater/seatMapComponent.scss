@@ -1,0 +1,41 @@
+html {
+  // scrollbar-width: none;
+}
+table {
+  @apply w-full table-auto;
+}
+thead,
+tr {
+  @apply bg-gray-100;
+}
+
+tbody,
+tr {
+  @apply border-b border-b-gray-200;
+}
+
+td,
+th {
+  @apply whitespace-nowrap p-3 text-left align-middle text-sm;
+}
+
+th {
+  @apply bg-gray-200 font-medium;
+}
+tr {
+  @apply bg-white;
+}
+
+@media screen and (min-width: 1024px) {
+  .table-seats {
+    tr {
+      display: grid;
+      grid-template-columns: 10% 20% 30% 15% 15% 10%;
+    }
+    th,
+    td {
+      display: grid;
+      align-items: center;
+    }
+  }
+}

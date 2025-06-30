@@ -1,13 +1,13 @@
 import { TextField } from '@mui/material';
 
-const TextInput = ({
+const TextAreaInput = ({
   onChange,
   value = '',
   name,
-  type = 'text',
   placeHolder = '',
   error = false,
   required = false,
+  ...rest
 }) => {
   return (
     <div>
@@ -17,15 +17,13 @@ const TextInput = ({
         name={name}
         value={value}
         onChange={onChange}
-        type={type}
         required={required}
-        slotProps={{
-          input: { className: 'h-10 px-3 py-2 ' },
-          htmlInput: { className: '!px-0' },
-        }}
+        multiline={true}
+        rows={rest.rows}
+        rowsmax={rest.rowsmax}
         error={!!error}
       />
     </div>
   );
 };
-export default TextInput;
+export default TextAreaInput;

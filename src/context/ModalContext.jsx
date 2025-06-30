@@ -25,7 +25,7 @@ const ModelProvider = ({ children }) => {
   };
 
   return (
-    <ModelContext.Provider value={{ openPopup, setIsShowing }}>
+    <ModelContext.Provider value={{ openPopup, setIsShowing, isShowing }}>
       {children}
       {isShowing && (
         <div className="fixed inset-0 z-50 transition-opacity duration-200 ease-in-out">

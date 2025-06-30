@@ -2,12 +2,10 @@ import { findMovieById } from '@apis/movieService';
 import Footer from '@component/Footer';
 import Header from '@component/headers/Header';
 import React, { useEffect, useState } from 'react';
-import { IoIosArrowForward } from 'react-icons/io';
 import { useLocation, useParams } from 'react-router-dom';
 import ShowTimeComponent from '@component/movie_detail/ShowTimeComponent.jsx';
 import MovieInfoDetailComponent from '@component/movie_detail/MovieInfoDetailComponent.jsx';
 import MovieTrailerComponent from '@component/movie_detail/MovieTrailerComponent.jsx';
-import MovieTheaterComponent from '@component/movie_detail/CinemanTheaterComponent.jsx';
 import CinemanTheaterComponent from '@component/movie_detail/CinemanTheaterComponent.jsx';
 
 const DetailMoviePage = () => {

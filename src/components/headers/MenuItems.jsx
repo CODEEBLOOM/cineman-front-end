@@ -3,9 +3,9 @@ import Dropdown from './Dropdown';
 import { FaCaretDown } from 'react-icons/fa';
 import { IoIosArrowForward } from 'react-icons/io';
 
-const MenuItems = ({ items, depthLevel, isFirst = false }) => {
+const MenuItems = ({ items, depthLevel }) => {
   const [dropdown, setDropdown] = useState(false);
-  let ref = useRef();
+  const ref = useRef();
 
   useEffect(() => {
     const handler = (event) => {
@@ -30,7 +30,7 @@ const MenuItems = ({ items, depthLevel, isFirst = false }) => {
 
   return (
     <li
-      className={`menu-items ${isFirst ? 'hover:bg-white' : ''}`}
+      className={`menu-items ${depthLevel === 0 ? 'hover:!bg-transparent' : ''}`}
       ref={ref}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -42,7 +42,7 @@ const MenuItems = ({ items, depthLevel, isFirst = false }) => {
             aria-haspopup="menu"
             aria-expanded={dropdown ? 'true' : 'false'}
             onClick={() => setDropdown((prev) => !prev)}
-            className={`flex items-center justify-between ${isFirst === false ? 'bg-white px-[.7rem] py-[.7rem]' : ''} `}
+            className={`flex items-center justify-between ${depthLevel === 1 ? 'bg-white px-[.7rem] py-[.7rem]' : ''} `}
           >
             {items.title}{' '}
             {depthLevel > 0 ? <IoIosArrowForward /> : <FaCaretDown />}

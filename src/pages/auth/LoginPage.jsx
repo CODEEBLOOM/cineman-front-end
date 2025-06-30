@@ -51,8 +51,8 @@ const LoginPage = () => {
         /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
         'Email chưa đúng định dạng !'
       )
-      .required(),
-    password: yup.string().required(),
+      .required('Email không được để trống !'),
+    password: yup.string().required('Password không được để trống !'),
   });
   const {
     control: loginControl,
@@ -125,14 +125,17 @@ const LoginPage = () => {
       .then((res) => {
         setIsLoading(false);
         if (res.status === 201) {
-          dispatch(openSnackbar({ message: res?.message }));
+          alert('Vui lòng kiểm tra mail để kích hoạt tài khoản');
+          dispatch(openSnackbar({ message: 'Đăng kí thành công.' }));
           reset();
           navigate('/login?auth=login');
           setValue(0);
         }
       })
       .catch((err) => {
-        console.log(err);
+        dispatch(
+          openSnackbar({ message: err?.response?.data?.message, type: 'error' })
+        );
         setIsLoading(false);
       });
   };
@@ -178,6 +181,7 @@ const LoginPage = () => {
                   control={loginControl}
                   Component={TextInput}
                   type="email"
+                  require={true}
                   placeHolder="Email"
                   error={loginErrors['email']}
                 />
@@ -185,6 +189,7 @@ const LoginPage = () => {
                   name="password"
                   label="Password"
                   type="password"
+                  require={true}
                   control={loginControl}
                   Component={TextInput}
                   placeHolder="Password"
@@ -230,6 +235,7 @@ const LoginPage = () => {
                   name="fullName"
                   label="Họ tên"
                   control={registerControl}
+                  require={true}
                   Component={TextInput}
                   placeHolder="Họ tên"
                   error={registerErrors['fullName']}
@@ -239,6 +245,7 @@ const LoginPage = () => {
                   label="Email"
                   control={registerControl}
                   Component={TextInput}
+                  require={true}
                   type="email"
                   placeHolder="Email"
                   error={registerErrors['email']}
@@ -248,6 +255,7 @@ const LoginPage = () => {
                   label="Mật khẩu"
                   control={registerControl}
                   Component={TextInput}
+                  require={true}
                   type="password"
                   placeHolder="Mật khẩu"
                   error={registerErrors['password']}
@@ -257,6 +265,7 @@ const LoginPage = () => {
                   label="Xác nhận lại mật khẩu"
                   control={registerControl}
                   Component={TextInput}
+                  require={true}
                   type="password"
                   placeHolder="Xác nhận mật khẩu"
                   error={registerErrors['confirmPassword']}
@@ -266,6 +275,7 @@ const LoginPage = () => {
                   label="Số điện thoại"
                   control={registerControl}
                   Component={TextInput}
+                  require={true}
                   placeHolder="Số điện thoại"
                   error={registerErrors['phoneNumber']}
                 />
@@ -282,6 +292,7 @@ const LoginPage = () => {
                   label="Ngày sinh"
                   control={registerControl}
                   Component={TextInput}
+                  require={true}
                   type="date"
                   placeHolder="Ngày sinh"
                   error={registerErrors['dateOfBirth']}
@@ -290,6 +301,7 @@ const LoginPage = () => {
                   name="gender"
                   label="Giới tính"
                   control={registerControl}
+                  require={true}
                   placeHolder={'Giới tính'}
                   Component={CustomSelect}
                   options={[

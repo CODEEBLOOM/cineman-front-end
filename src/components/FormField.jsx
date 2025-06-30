@@ -9,11 +9,15 @@ const FormField = ({
   placeHolder,
   error,
   Component,
+  require = false,
   ...rest
 }) => {
   return (
     <div className="mb-3">
-      <p className="text-small text-dark-100 mb-1 font-bold">{label}</p>
+      <p className="text-small text-dark-100 mb-1 font-bold">
+        {require && <span className={'text-red-600'}>*&nbsp;</span>}
+        {label}
+      </p>
       <Controller
         name={name}
         control={control}
@@ -27,12 +31,17 @@ const FormField = ({
               placeHolder={placeHolder}
               control={control}
               error={error}
+              require={require}
               {...rest}
             />
           );
         }}
       />
-      {error && <FormHelperText error={true}>{error.message}</FormHelperText>}
+      {error && (
+        <FormHelperText error={true} className="!text-[14px] capitalize">
+          {error.message}
+        </FormHelperText>
+      )}
     </div>
   );
 };

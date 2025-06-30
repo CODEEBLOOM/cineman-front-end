@@ -6,6 +6,7 @@ body {
   font-family: 'Roboto Condensed Variable', sans-serif;
   font-size: 16px;
   overflow-x: hidden !important;
+  /* overflow-y: hidden !important; */
 }
 
 * {
@@ -18,7 +19,7 @@ a {
   text-decoration: none;
 }
 html {
-  scroll-behavior: smooth ;
+  scroll-behavior: smooth;
 }
 
 @layer components {
@@ -31,5 +32,12 @@ html {
     border-image-slice: 1;
     border-bottom: 4px solid transparent;
     border-image-slice: 1;
+  }
+
+  .link {
+    @apply flex cursor-default items-center gap-6 rounded-md p-2.5 font-medium text-white duration-300 md:cursor-pointer;
+  }
+  .active {
+    @apply bg-blue-100/80 !text-black;
   }
 }

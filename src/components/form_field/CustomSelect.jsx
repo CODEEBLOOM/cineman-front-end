@@ -1,4 +1,4 @@
-import { Box, MenuItem, Select, TextField } from '@mui/material';
+import { Box, MenuItem, TextField } from '@mui/material';
 
 const CustomSelect = ({
   onChange,
@@ -10,7 +10,7 @@ const CustomSelect = ({
   options,
 }) => {
   return (
-    <Box width="250px">
+    <Box>
       <TextField
         name={name}
         label=""

@@ -149,13 +149,13 @@ const router = createBrowserRouter([
   },
 ]);
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <Provider store={store}>
-      <PersistGate loading={<p>Loading ...</p>} persistor={persistor}>
-        <ThemeProvider theme={theme}>
-          <RouterProvider router={router} />
-        </ThemeProvider>
-      </PersistGate>
-    </Provider>
-  </StrictMode>
+  // <StrictMode>
+  <Provider store={store}>
+    <PersistGate loading={<p>Loading ...</p>} persistor={persistor}>
+      <ThemeProvider theme={theme}>
+        <RouterProvider router={router} />
+      </ThemeProvider>
+    </PersistGate>
+  </Provider>
+  // </StrictMode>
 );

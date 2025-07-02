@@ -1,6 +1,9 @@
-import SeatComponent from './SeatComponent';
+import SeatRow from './SeatRow';
 
-const SeatGrid = ({ seats = [], cinemaTheater = {} }) => {
+const SeatGrid = ({ seats = [], cinemaTheater = {}, fetchSeatMap }) => {
+  /**
+   * Tạo map chứa những ghế đã tồn tại của rạp chiếu
+   */
   const seatMap = new Map();
   seats.forEach((seat) => {
     const key = `${seat.rowIndex}-${seat.columnIndex}`;
@@ -8,9 +11,9 @@ const SeatGrid = ({ seats = [], cinemaTheater = {} }) => {
   });
 
   /**
-   * Gets the seat type based on the row index.
-   * @param {number} rowIndex
-   * @returns {string} The seat type (REGULAR, VIP, DOUBLE)
+   * Hàm dùng để lấy ra loại ghế theo rowIndex
+   * @param {number} rowIndex chỉ số hàng
+   * @returns {string} The seat type (REGULAR (0 - (vip-1)), VIP(double - 1), DOUBLE)
    */
   const getSeatTypeByRow = (rowIndex) => {
     if (rowIndex < cinemaTheater.regularSeatRow) {
@@ -24,74 +27,65 @@ const SeatGrid = ({ seats = [], cinemaTheater = {} }) => {
       return 'DOUBLE';
     }
   };
+
+  // Hàm render giao diện ghế theo hàng //
+  const renderSeatRows = () => {
+    const rows = [];
+    for (let row = 0; row < cinemaTheater.numberOfRows; row++) {
+      const cols = [];
+      const isSeatDouble =
+        row >= cinemaTheater.regularSeatRow + cinemaTheater.vipSeatRow;
+      for (let col = 0; col < cinemaTheater.numberOfColumn; col++) {
+        if (isSeatDouble && col === cinemaTheater.numberOfColumn - 1) {
+          cols.push({
+            seatType: null,
+            rowIndex: row,
+            columnIndex: col,
+            id: null,
+          });
+          continue;
+        }
+        const seatKey = `${row}-${col}`;
+        const seat = seatMap.get(seatKey);
+        const seatData = seat ?? {
+          seatType: getSeatTypeByRow(row),
+          rowIndex: row,
+          columnIndex: col,
+          id: null,
+        };
+        cols.push(seatData);
+        if (isSeatDouble) col++;
+      }
+      rows.push(
+        <SeatRow
+          key={row}
+          seatData={cols}
+          cinemaTheaterId={cinemaTheater.cinemaTheaterId}
+          status={cinemaTheater.status}
+          fetchSeatMap={fetchSeatMap}
+        />
+      );
+    }
+    return rows;
+  };
+
+  // return render seat rows //
   return (
-    <div
-      className="mx-auto grid gap-1"
-      style={{
-        gridTemplateColumns: `repeat(${cinemaTheater.numberOfColumn + 1}, 60px)`,
-        width: 'fit-content',
-      }}
-    >
-      {Array.from({ length: cinemaTheater.numberOfRows }).flatMap((_, row) =>
-        Array.from({ length: cinemaTheater.numberOfColumn + 1 }).map(
-          (_, col) => {
-            // Nếu là cột đầu tiên (col === 0) → render label hàng
-            if (col === 0) {
-              return (
-                <div
-                  key={`label-${row}`}
-                  className="flex items-center justify-center text-sm font-bold"
-                >
-                  {String.fromCharCode(65 + row)}
-                </div>
-              );
-            }
-
-            // Còn lại: render ghế như bình thường
-            const actualCol = col - 1;
-            const seatKey = `${row}-${actualCol}`;
-            const seat = seatMap.get(seatKey);
-
-            const seatData = seat ?? {
-              seatType: getSeatTypeByRow(row),
-              rowIndex: row,
-              columnIndex: actualCol,
-              id: null,
-            };
-
-            // Nếu là ghế đôi (ở hàng dưới cùng)
-            if (
-              row >=
-              cinemaTheater.regularSeatRow + cinemaTheater.vipSeatRow
-            ) {
-              if (actualCol % 2 !== 0) {
-                return (
-                  <SeatComponent
-                    key={seatKey}
-                    seat={seatData}
-                    cinemaTheaterId={cinemaTheater.cinemaTheaterId}
-                  />
-                );
-              } else {
-                // giữ chỗ , không render ghế
-                if (actualCol === cinemaTheater.numberOfColumn - 1) {
-                  return (
-                    <div className="h-[60px] w-[60px]" key={seatKey}></div>
-                  );
-                } else return;
-              }
-            }
-
-            return (
-              <SeatComponent
-                key={seatKey}
-                seat={seatData}
-                cinemaTheaterId={cinemaTheater.cinemaTheaterId}
-              />
-            );
-          }
-        )
-      )}
+    <div className="overflow-x-scroll">
+      <div className="mx-auto w-fit">
+        <div className="mx-auto mb-20 ml-[30px] w-full rounded-md bg-gray-400 py-3 text-center shadow-lg">
+          <p className="font-medium uppercase">màn hình rạp chiếu</p>
+        </div>
+        <div
+          className="mx-auto grid gap-1"
+          style={{
+            gridTemplateColumns: `repeat(${cinemaTheater.numberOfColumn + (cinemaTheater.status === 'PUBLISHED' ? 1 : 3)}, 60px)`,
+            width: 'fit-content',
+          }}
+        >
+          {renderSeatRows()}
+        </div>
+      </div>
     </div>
   );
 };

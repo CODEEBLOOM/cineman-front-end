@@ -39,3 +39,8 @@ export const getSeatMap = async (id) => {
   const url = `/admin/cinema-theater/${id}/seat-map`;
   return await axios.get(url);
 };
+
+export const published = async (id) => {
+  const url = `/admin/cinema-theater/${id}/published`;
+  return await axios.put(url);
+};

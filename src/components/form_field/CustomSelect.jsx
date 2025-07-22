@@ -8,6 +8,7 @@ const CustomSelect = ({
   placeHolder = '',
   error = false,
   options,
+  disabled,
 }) => {
   return (
     <Box>
@@ -22,6 +23,7 @@ const CustomSelect = ({
         size="small"
         error={!!error}
         SelectProps={{ displayEmpty: true }}
+        disabled={disabled}
       >
         <MenuItem disabled value="">
           <p>{placeHolder}</p>

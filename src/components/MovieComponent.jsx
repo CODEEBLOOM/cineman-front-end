@@ -1,16 +1,19 @@
-import { findAllMovies } from '@apis/movieService';
+import { findAllByFilter } from '@apis/movieService';
 import { Box, Tab, Tabs } from '@mui/material';
 import { useEffect, useState } from 'react';
 import CardItemFilm from './CardItemFilm';
 import TabPanel from './Tabpanel';
 import { useDispatch, useSelector } from 'react-redux';
 import { setMovieStatus } from '@redux/slices/movieSlice.js';
+import Loading from '@component/Loading';
 
 const MovieComponent = () => {
   const { movieStatus } = useSelector((state) => state.movie);
+  const { movieTheater } = useSelector((state) => state.movieTheater);
   const [value, setValue] = useState(
     movieStatus === 'SC' ? 0 : movieStatus === 'DB' ? 2 : 1
   );
+  const [isLoading, setIsLoading] = useState(false);
 
   const [listMovies, setListMovies] = useState([]);
   const dispatch = useDispatch();
@@ -29,14 +32,25 @@ const MovieComponent = () => {
   const handleChangeMovieStatus = (status) => {
     dispatch(setMovieStatus(status));
   };
-  /**
-   * lấy tất cả bộ phim
-   */
+
+  /* Lấy tất cả thông tin phim theo status và movie theater id */
   useEffect(() => {
-    findAllMovies({ page: 0, size: 10, status: movieStatus }).then((res) => {
-      setListMovies(res.data.movies);
-    });
-  }, [movieStatus]);
+    if (movieTheater?.id) {
+      setIsLoading(true);
+      findAllByFilter({
+        page: 0,
+        size: 10,
+        status: movieStatus,
+        movieTheaterId: movieTheater.id,
+      })
+        .then((res) => {
+          setListMovies(res.data.movies);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [movieStatus, movieTheater]);
 
   return (
     <div className="container">
@@ -50,6 +64,7 @@ const MovieComponent = () => {
               sx={{
                 '.MuiTabs-flexContainer': {
                   justifyContent: 'center',
+                  overflowX: 'auto',
                 },
               }}
             >
@@ -75,59 +90,73 @@ const MovieComponent = () => {
           </Box>
           <TabPanel value={value} index={0}>
             <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-4">
-              {(listMovies || []).map((movie) => (
-                <CardItemFilm
-                  key={movie.movieId}
-                  id={movie.movieId}
-                  title={movie.title}
-                  genres={movie.genres}
-                  duration={movie.duration}
-                  isUpcoming={true}
-                  releaseDate={movie.releaseDate}
-                  age={movie.age}
-                  img={'film-01.jpg'}
-                  trailerLink={'#1'}
-                />
-              ))}
-              {/* Phần card items */}
+              {isLoading ? (
+                <div className="col-span-full w-full">
+                  <Loading />
+                </div>
+              ) : (
+                (listMovies || []).map((movie) => (
+                  <CardItemFilm
+                    key={movie.movieId}
+                    id={movie.movieId}
+                    title={movie.title}
+                    genres={movie.genres}
+                    duration={movie.duration}
+                    isUpcoming={true}
+                    releaseDate={movie.releaseDate}
+                    age={movie.age}
+                    img={movie.posterImage}
+                    trailerLink={movie.trailerLink}
+                  />
+                ))
+              )}
             </div>
           </TabPanel>
           <TabPanel value={value} index={1}>
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {(listMovies || []).map((movie) => (
-                <CardItemFilm
-                  key={movie.movieId}
-                  id={movie.movieId}
-                  title={movie.title}
-                  genres={movie.genres}
-                  duration={movie.duration}
-                  isUpcoming={true}
-                  releaseDate={movie.releaseDate}
-                  age={movie.age}
-                  img={'film-01.jpg'}
-                  trailerLink={'#1'}
-                />
-              ))}
-              {/* Phần card items */}
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-4">
+              {isLoading ? (
+                <div className="col-span-full w-full">
+                  <Loading />
+                </div>
+              ) : (
+                (listMovies || []).map((movie) => (
+                  <CardItemFilm
+                    key={movie.movieId}
+                    id={movie.movieId}
+                    title={movie.title}
+                    genres={movie.genres}
+                    duration={movie.duration}
+                    isUpcoming={false}
+                    age={movie.age}
+                    img={movie.posterImage}
+                    trailerLink={movie.trailerLink}
+                  />
+                ))
+              )}
             </div>
           </TabPanel>
           <TabPanel value={value} index={2}>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {(listMovies || []).map((movie) => (
-                <CardItemFilm
-                  key={movie.movieId}
-                  id={movie.movieId}
-                  title={movie.title}
-                  genres={movie.genres}
-                  duration={movie.duration}
-                  isUpcoming={true}
-                  releaseDate={movie.releaseDate}
-                  age={movie.age}
-                  img={'film-01.jpg'}
-                  trailerLink={'#1'}
-                />
-              ))}
-              {/* Phần card items */}
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-4">
+              {isLoading ? (
+                <div className="col-span-full w-full">
+                  <Loading />
+                </div>
+              ) : (
+                (listMovies || []).map((movie) => (
+                  <CardItemFilm
+                    key={movie.movieId}
+                    id={movie.movieId}
+                    title={movie.title}
+                    genres={movie.genres}
+                    duration={movie.duration}
+                    isUpcoming={true}
+                    releaseDate={movie.releaseDate}
+                    age={movie.age}
+                    img={movie.posterImage}
+                    trailerLink={movie.trailerLink}
+                  />
+                ))
+              )}
             </div>
           </TabPanel>
         </Box>

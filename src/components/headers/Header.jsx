@@ -67,7 +67,7 @@ const Header = () => {
   );
 
   return (
-    <div className="border-b-2 shadow-lg">
+    <div className="border-b-2 shadow-2xl">
       <PreHeader />
       <div
         className={`z-50 transition-all duration-500 ${isSticky ? 'fixed left-0 right-0 top-0 bg-white/50 backdrop-blur-xl' : ''}`}

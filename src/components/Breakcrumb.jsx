@@ -7,7 +7,7 @@ const Breadcrumb = ({ listLink = [], current }) => {
     <div>
       {listLink.map((link) => (
         <>
-          <Link key={link.href} to={link.url}>
+          <Link key={link.url} to={link.url}>
             {link.name}
           </Link>
           <MdKeyboardArrowRight />

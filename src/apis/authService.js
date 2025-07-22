@@ -20,6 +20,34 @@ export const login = async (data) => {
 };
 
 /**
+ * get url Đăng nhập bằng google
+ * @returns {Promise<axios.AxiosResponse<any>>}
+ */
+export const loginWithGoogle = async () => {
+  const url = '/auth/social-login';
+  return await axios.get(url, {
+    params: {
+      login_type: 'google',
+    },
+  });
+};
+
+/**
+ * Xác thực callback của google sau khi user cho phép app
+ * @param {string} code mã code được gửi lại sau khi user cho phép
+ * @returns {Promise<axios.AxiosResponse<any>>}
+ */
+export const socialCallback = async (code) => {
+  const url = '/auth/social/callback';
+  return await axios.get(url, {
+    params: {
+      code,
+      login_type: 'google',
+    },
+  });
+};
+
+/**
  * Đăng xuất tài khoản
  * @returns {Promise<axios.AxiosResponse<any>>}
  */

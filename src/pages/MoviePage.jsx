@@ -1,13 +1,13 @@
-import Footer from '@component/Footer';
-import Header from '@component/headers/Header';
 import MovieComponent from '@component/MovieComponent';
+import { useEffect } from 'react';
 
 const MoviePage = () => {
+  useEffect(() => {
+    document.title = 'Phim - Cineman Cinemas';
+  }, []);
   return (
     <>
-      <Header />
       <MovieComponent />
-      <Footer />
     </>
   );
 };

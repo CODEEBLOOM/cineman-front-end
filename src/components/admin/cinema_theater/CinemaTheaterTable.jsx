@@ -1,4 +1,4 @@
-import { Box, Tabs, Tab, Badge } from '@mui/material';
+import { Box, Tabs, Tab, Badge, Button } from '@mui/material';
 import TabPanel from '@component/Tabpanel.jsx';
 import { DataGrid } from '@mui/x-data-grid';
 import { useModelContext } from '@context/ModalContext';
@@ -108,7 +108,12 @@ const CinemaTheaterTable = ({
       headerName: 'Sức chứa',
       field: 'matrix',
       renderCell: (params) => (
-        <p>{`${params.row.numberOfRows} x ${params.row.numberOfColumns}`}</p>
+        <div className="flex flex-col gap-2">
+          <p>{`${params.row.numberOfRows} x ${params.row.numberOfColumns}`}</p>
+          <p className="text-primary">
+            {`${params.row.numberOfRows * params.row.numberOfColumns} chỗ ngồi`}
+          </p>
+        </div>
       ),
     },
     {
@@ -128,19 +133,24 @@ const CinemaTheaterTable = ({
       flex: 1,
       renderCell: (params) => (
         <div className="flex items-center gap-2">
-          <p
-            className="flex items-center rounded-sm bg-red-500 px-2 py-1 text-white hover:cursor-pointer"
+          <Button
             onClick={() => handleDelete(params.row.cinemaTheaterId)}
+            color="error"
+            variant="contained"
+            size="medium"
           >
-            <MdDeleteForever size={25} />
+            <MdDeleteForever size={20} />
             Xóa
-          </p>
-          <Link
-            to={`/admin/so-do-ghe/${params.row.cinemaTheaterId}`}
-            className="flex items-center rounded-sm bg-primary px-2 py-1 text-white hover:cursor-pointer"
-          >
-            <FaSitemap size={25} />
-            Tạo sơ đồ ghế
+          </Button>
+          <Link to={`/admin/so-do-ghe/${params.row.cinemaTheaterId}`}>
+            <Button
+              variant="contained"
+              color="primary"
+              className="!capitalize"
+              size="medium"
+            >
+              sơ đồ ghế
+            </Button>
           </Link>
         </div>
       ),

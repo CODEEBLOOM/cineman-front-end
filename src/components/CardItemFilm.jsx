@@ -1,10 +1,11 @@
 import { FaCirclePlay } from 'react-icons/fa6';
-import { IoClose, IoTicket } from 'react-icons/io5';
+import { IoClose } from 'react-icons/io5';
 import ImageComponent from './ImageComponent';
 import { Link } from 'react-router-dom';
 import { useModelContext } from '@context/ModalContext.jsx';
 import CustomButton from '@component/CustomButton.jsx';
-
+import ShowTimeComponent from './movie_detail/ShowTimeComponent';
+import { useSelector } from 'react-redux';
 const CardItemFilm = ({
   id,
   title,
@@ -16,15 +17,44 @@ const CardItemFilm = ({
   img,
   trailerLink,
 }) => {
-  const { openPopup, setIsShowing } = useModelContext();
+  const { openPopup, closeTopModal } = useModelContext();
+  const { movieTheater } = useSelector((state) => state.movieTheater);
+
+  const renderPopup = () => {
+    return (
+      <div
+        className={
+          'relative flex aspect-video w-full flex-col justify-start rounded-md bg-white p-5 sm:w-[80vw] md:w-[60vw]'
+        }
+      >
+        <span
+          className={'absolute right-3 top-3 hover:cursor-pointer'}
+          onClick={() => closeTopModal(false)}
+        >
+          <IoClose size={25} />
+        </span>
+        <div className={'border-b-2 px-4'}>
+          <p className={'font-bold uppercase lg:text-[25px]'}>
+            Lịch chiếu phim - <span className="capitalize">{title}</span>
+          </p>
+        </div>
+        <div className="pb-3 pt-10 text-center">
+          <p className="text-[30px] font-medium uppercase text-primary">
+            {movieTheater.title}
+          </p>
+        </div>
+        <ShowTimeComponent movieId={id} />
+      </div>
+    );
+  };
 
   return (
     <>
       <div className="mb-14 flex w-full gap-5 px-4 pb-4 sm:block">
-        <div className="relative flex-1">
-          <div className="w-full max-w-[250px] overflow-hidden rounded-2xl">
+        <div className="relative">
+          <div className="h-auto w-full min-w-[100px] max-w-[150px] overflow-hidden rounded-2xl sm:max-w-[300px] md:min-h-[300px] xl:min-h-[370px]">
             <ImageComponent
-              className="w-full animate-fade-in rounded-lg object-cover opacity-0"
+              className="h-full w-full min-w-[150px] animate-fade-in rounded-lg object-cover opacity-0"
               width={235}
               height={372}
               src={img}
@@ -44,18 +74,16 @@ const CardItemFilm = ({
                   <div className={'relative bg-white p-5'}>
                     <span
                       className={'absolute right-3 top-3 hover:cursor-pointer'}
-                      onClick={() => setIsShowing(false)}
+                      onClick={() => closeTopModal()}
                     >
                       <IoClose size={25} />
                     </span>
                     <p className={'mb-3 border-b-2 px-2 text-[20px]'}>
-                      Đất Rừng Phương Nam
+                      {title}
                     </p>
                     <iframe
                       title={'Trailer'}
-                      src={
-                        'https://www.youtube.com/embed/hktzirCnJmQ?si=hoZIqYe5AegaBzIO'
-                      }
+                      src={trailerLink}
                       className={'aspect-video w-[80vw] md:w-[50vw]'}
                     />
                   </div>
@@ -78,31 +106,35 @@ const CardItemFilm = ({
           <div className="truncate text-left">
             <Link
               to={`/detail-movie/${id}`}
-              className="mb-2 mt-2 max-h-[30px] min-h-[30px] cursor-pointer truncate text-[18px] font-bold text-primary hover:underline lg:text-[20px]"
+              className="mb-2 mt-2 max-h-[30px] min-h-[30px] cursor-pointer flex-wrap text-[18px] font-bold text-primary hover:underline lg:truncate lg:text-[20px]"
             >
               {title}
             </Link>
             <ul>
-              <li className="truncate">
+              <li className="w-full">
                 <span className="font-bold">Thể loại:</span>&nbsp;{' '}
-                <span className="lowercase">
-                  {genres.map((genre) => genre.name).join(', ')}
+                <span className="whitespace-normal lowercase md:truncate">
+                  {genres.map((genre) => genre.name).join(',\u200B ')}
                 </span>
               </li>
 
-              <li>
+              <li className="flex flex-wrap">
                 <span className="font-bold">Thời lượng:</span>&nbsp; {duration}{' '}
                 <span>Phút</span>
               </li>
               {isUpcoming && (
-                <li>
+                <li className="flex flex-wrap">
                   <span className="font-bold">Ngày khởi chiếu:</span>&nbsp;
                   <span className="font-bold text-primary">{releaseDate}</span>
                 </li>
               )}
             </ul>
           </div>
-          <CustomButton title={'Mua vé'} />
+          {!isUpcoming && (
+            <div onClick={() => openPopup(renderPopup())}>
+              <CustomButton title={'Mua vé'} />
+            </div>
+          )}
         </div>
       </div>
     </>

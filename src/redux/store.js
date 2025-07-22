@@ -3,6 +3,7 @@ import authReducer from '@redux/slices/authSlice.js';
 import snackbarReducer from '@redux/slices/snackbarSlice';
 import userReducer from '@redux/slices/userSlice.js';
 import movieReducer from '@redux/slices/movieSlice.js';
+import movieTheaterReducer from '@redux/slices/movieTheaterSlice.js';
 import {
   FLUSH,
   PAUSE,
@@ -32,6 +33,7 @@ const persistedReducer = persistReducer(
     user: userReducer,
     snackbar: snackbarReducer,
     movie: movieReducer,
+    movieTheater: movieTheaterReducer,
   })
 );
 

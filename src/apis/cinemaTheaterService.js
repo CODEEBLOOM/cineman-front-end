@@ -4,7 +4,7 @@ import axios from '@apis/axiosClient';
  * Lấy toàn bộ seat map của hệ thống
  * @returns
  */
-export const findAll = async ({ page, size, status }) => {
+export const findAll = async ({ page = null, size = null, status = null }) => {
   const url = '/admin/cinema-theater/all';
   return await axios.get(url, {
     params: {

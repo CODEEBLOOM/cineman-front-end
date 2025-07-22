@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '@apis/axiosClient';
-import { snackbarSlice } from '@redux/slices/snackbarSlice.js';
 
 const initialState = {
   accessToken: null,
@@ -39,6 +38,20 @@ export const authSlice = createSlice({
         state.isAuthentication = false;
         state.accessToken = null;
         state.refreshToken = null;
+      })
+
+      /* fetch login google */
+      .addCase(loginGoogle.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(loginGoogle.fulfilled, (state, action) => {
+        state.status = 'fulfilled';
+        state.isAuthentication = true;
+        state.accessToken = action.payload.accessToken;
+        state.refreshToken = action.payload.refreshToken;
+      })
+      .addCase(loginGoogle.rejected, (state) => {
+        state.status = 'rejected';
       });
   },
 });
@@ -68,6 +81,28 @@ export const fetchLogout = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       return await axios.post('/auth/logout');
+    } catch (err) {
+      console.log(err);
+      if (err.response.status >= 400) {
+        return rejectWithValue(err.response.data.message);
+      }
+    }
+  }
+);
+
+/**
+ * AsyncThunk login google
+ */
+export const loginGoogle = createAsyncThunk(
+  'auth/loginGoogle',
+  async (code, { rejectWithValue }) => {
+    try {
+      return await axios.get('/auth/social/callback', {
+        params: {
+          code,
+          login_type: 'google',
+        },
+      });
     } catch (err) {
       console.log(err);
       if (err.response.status >= 400) {

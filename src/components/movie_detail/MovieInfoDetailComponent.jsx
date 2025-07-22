@@ -1,3 +1,4 @@
+import ImageComponent from '@component/ImageComponent';
 import React from 'react';
 import { IoIosArrowForward } from 'react-icons/io';
 
@@ -13,9 +14,10 @@ const MovieInfoDetailComponent = ({ movie = {} }) => {
       </div>
       <div className="gap-8 md:flex">
         <div className="w-[260px] flex-none rounded-2xl">
-          <img
-            src="/film-05.jpg"
-            alt=""
+          <ImageComponent
+            src={movie?.posterImage}
+            width={260}
+            height={412}
             className="h-full w-full rounded-3xl object-cover"
           />
         </div>
@@ -63,7 +65,7 @@ const MovieInfoDetailComponent = ({ movie = {} }) => {
               <p className="w-[200px] flex-none font-bold uppercase">
                 Ngày khởi chiếu:
               </p>
-              <p>{}</p>
+              <p>{movie?.releaseDate}</p>
             </div>
           </div>
         </div>

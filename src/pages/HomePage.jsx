@@ -3,6 +3,7 @@ import Header from '@component/headers/Header';
 import { useMediaQuery, useTheme } from '@mui/material';
 import Footer from '@component/Footer';
 import MovieComponent from '@component/MovieComponent';
+import { useEffect } from 'react';
 
 const HomePage = () => {
   const theme = useTheme();
@@ -14,14 +15,17 @@ const HomePage = () => {
     'img-banner-03.png',
   ];
 
+  // Set document title
+  useEffect(() => {
+    document.title = 'Cineman Cinemas ( Trang chủ )';
+  }, []);
+
   return (
     <>
-      <Header />
       {isIpad && (
         <Carousel slides={slides} autoSlide={true} autoSlideInterval={4000} />
       )}
       <MovieComponent />
-      <Footer />
     </>
   );
 };

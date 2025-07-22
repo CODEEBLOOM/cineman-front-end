@@ -58,7 +58,7 @@ export const listMenuAdmin = [
     menus: [
       {
         name: 'Quản lý phim',
-        path: '/admin/phim',
+        path: '/admin/danh-sach-phim',
         icon: MdMovieEdit,
       },
       {

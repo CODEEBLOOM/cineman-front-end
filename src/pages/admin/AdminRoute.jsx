@@ -11,7 +11,7 @@ const AdminRoute = () => {
   const [isOpen, setIsOpen] = useState(!isMobile);
   return (
     <Suspense fallback={<p>Loading ...</p>}>
-      <div className={'flex bg-[#ebeaea]'}>
+      <div className={'flex bg-[#e8e8e8]'}>
         <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} isMobile={isMobile} />
         <div className="grid h-screen flex-grow grid-rows-[auto_1fr_auto]">
           <HeaderAdmin open={isOpen} setOpen={setIsOpen} />

@@ -68,7 +68,7 @@ const PreHeader = () => {
               <span>Xin chào:&nbsp;</span>
               <span>{user.fullName}</span>
               <IconButton size={'medium'} onClick={handleUserProfileClick}>
-                <Avatar sx={{ width: 32, height: 32 }} />
+                <Avatar sx={{ width: 32, height: 32 }} src={user.avatar} />
               </IconButton>
             </div>
             {renderMenu}
@@ -77,7 +77,7 @@ const PreHeader = () => {
           <ul className="flex gap-5 pr-2">
             <li>
               <Link
-                to={'/login?auth=login'}
+                to={'/auth/login?auth=login'}
                 className="text-[13px] text-white hover:underline"
               >
                 Đăng nhập
@@ -85,7 +85,7 @@ const PreHeader = () => {
             </li>
             <li>
               <Link
-                to={'/login?auth=register'}
+                to={'/auth/login?auth=register'}
                 className="text-[13px] text-white hover:underline"
               >
                 Đăng kí
@@ -96,7 +96,7 @@ const PreHeader = () => {
         <div className="h-6 w-6">
           <a href="#">
             <img
-              src="https://toppng.com/uploads/preview/vietnam-large-flag-11547887920ptaqfn7euo.png"
+              src={`https://toppng.com/uploads/preview/vietnam-large-flag-11547887920ptaqfn7euo.png`}
               alt=""
               className="w-full object-cover"
             />

@@ -16,6 +16,22 @@ export const findAllMovies = async ({ page, size, status }) => {
   });
 };
 
+export const findAllByFilter = async ({
+  page,
+  size,
+  status,
+  movieTheaterId,
+}) => {
+  const url = `/movie/movie-theater/${movieTheaterId}`;
+  return await axios.get(url, {
+    params: {
+      page,
+      size,
+      status,
+    },
+  });
+};
+
 /**
  * API lấy tất cả thông tin của một bộ phim theo id
  * @param {*} id id của bộ phim

@@ -32,6 +32,14 @@ const SeatGrid = ({ seats = [], cinemaTheater = {}, fetchSeatMap }) => {
   const renderSeatRows = () => {
     const rows = [];
     for (let row = 0; row < cinemaTheater.numberOfRows; row++) {
+      if (
+        row >=
+        cinemaTheater.regularSeatRow +
+          cinemaTheater.vipSeatRow +
+          cinemaTheater.doubleSeatRow
+      ) {
+        break;
+      }
       const cols = [];
       const isSeatDouble =
         row >= cinemaTheater.regularSeatRow + cinemaTheater.vipSeatRow;

@@ -6,7 +6,7 @@
   background-color: #337ab7;
 }
 
-.menu-items a {
+.menu-items p {
   display: block;
   text-decoration: none;
   padding: 0.7rem 1rem;
@@ -21,14 +21,21 @@
   width: 100%;
 }
 
+.ul-menu-items > li > button {
+  font-weight: bold;
+  color: #333;
+}
+
+.ul-menu-items > li > ul > div > li:hover button {
+  color: white;
+}
+
 .dropdown {
   position: absolute;
-  right: 0;
+  left: 100%;
   left: auto;
   z-index: 20;
-  box-shadow:
-    0 10px 15px -3px #ddd,
-    0 4px 6px -2px #dddd;
+  box-shadow: 6px 0 rgba(211, 211, 211, 0.5);
   padding: 0rem 0rem;
   list-style: none;
   background-color: #ffffff;

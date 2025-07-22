@@ -14,8 +14,8 @@ axiosClient.interceptors.request.use(
   function (config) {
     //TODO: cần phải gắn access token vào đây
     const localData = JSON.parse(localStorage.getItem('persist:root'));
-    if (localData?.auth !== null) {
-      const auth = JSON.parse(localData.auth);
+    if (localData !== null) {
+      const auth = JSON.parse(localData?.auth);
       if (auth?.accessToken) {
         config.headers.Authorization = `Bearer ${auth.accessToken}`;
       }

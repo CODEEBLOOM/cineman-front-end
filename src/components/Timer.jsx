@@ -1,0 +1,53 @@
+import { useEffect, useRef, useState } from 'react';
+
+const Timer = ({ deadlineTime }) => {
+  const [timer, setTimer] = useState('00:00:00');
+  const ref = useRef();
+
+  const getTimeRemaining = (e) => {
+    const total = Date.parse(e) - Date.parse(new Date());
+    const seconds = Math.floor((total / 1000) % 60);
+    const minute = Math.floor((total / 1000 / 60) % 60);
+    const hour = Math.floor((total / (1000 * 60 * 60)) % 24);
+    return { total, hour, minute, seconds };
+  };
+
+  const startTimer = (e) => {
+    let { total, hour, minute, seconds } = getTimeRemaining(e);
+    if (total >= 0) {
+      setTimer(
+        // (hour > 9 ? hour : '0' + hour) +
+        //   ':' +
+        (minute > 9 ? minute : '0' + minute) +
+          ':' +
+          (seconds > 9 ? seconds : '0' + seconds)
+      );
+    }
+  };
+
+  const clearTimer = (e) => {
+    setTimer('10:00');
+    if (ref.current) {
+      clearInterval(ref.current);
+    }
+    const id = setInterval(() => {
+      startTimer(e);
+    }, 1000);
+    ref.current = id;
+  };
+  const getDeadlineTime = () => {
+    let deadline = new Date();
+    deadline.setMinutes(deadline.getMinutes() + deadlineTime);
+    return deadline;
+  };
+
+  useEffect(() => {
+    clearTimer(getDeadlineTime());
+  }, []);
+  return (
+    <div className="flex items-center justify-center">
+      <p className="font-medium text-primary md:text-[20px]">{timer}</p>
+    </div>
+  );
+};
+export default Timer;

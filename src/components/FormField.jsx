@@ -14,7 +14,7 @@ const FormField = ({
 }) => {
   return (
     <div className="mb-3">
-      <p className="text-small text-dark-100 mb-1 font-bold">
+      <p className="text-small text-dark-100 mb-1 font-medium">
         {require && <span className={'text-red-600'}>*&nbsp;</span>}
         {label}
       </p>

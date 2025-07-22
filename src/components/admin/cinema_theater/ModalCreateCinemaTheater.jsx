@@ -19,7 +19,7 @@ const ModalCreateCinemaTheater = ({
   isUpdate = false,
   cinemaTheaters,
 }) => {
-  const { setIsShowing } = useModelContext();
+  const { closeTopModal } = useModelContext();
   const dispatch = useDispatch();
   const [cinemaTypes, setCinemaTypes] = useState([]);
   const [movieTheaters, setMovieTheaters] = useState([]);
@@ -70,12 +70,12 @@ const ModalCreateCinemaTheater = ({
       .number()
       .typeError('Vui điền số lượng hàng ghế rạp chiếu hợp lệ')
       .required('Số lượng hàng ghế VIP không được để trống !')
-      .min(1, 'Số hàng ghế VIP phải lớn hơn 0'),
+      .min(0, 'Số hàng ghế VIP phải lớn hơn hoặc bằng 0'),
     doubleSeatRow: yup
       .number()
       .typeError('Vui điền số lượng hàng ghế rạp chiếu hợp lệ')
       .required('Số lượng hàng ghế đôi không được để trống !')
-      .min(1, 'Số hàng ghế đôi phải lớn hơn 0'),
+      .min(0, 'Số hàng ghế đôi phải lớn hơn hoặc bằng 0'),
   });
 
   const {
@@ -140,7 +140,7 @@ const ModalCreateCinemaTheater = ({
             dispatch(
               openSnackbar({ message: 'Cập nhật phòng chiếu thành công ' })
             );
-            setIsShowing(false);
+            closeTopModal();
             fetchCinemaTheaters({ page: 0, size: 5, status: null });
           }
         })
@@ -164,7 +164,7 @@ const ModalCreateCinemaTheater = ({
           dispatch(
             openSnackbar({ message: 'Tạo tạo mới phòng chiếu thành công ' })
           );
-          setIsShowing(false);
+          closeTopModal();
           fetchCinemaTheaters({ page: 0, size: 5, status: null });
         }
       })
@@ -186,7 +186,7 @@ const ModalCreateCinemaTheater = ({
     <div className="relative max-h-screen w-[80vw] rounded-lg bg-white p-5 md:w-[50vw]">
       <span
         className={'absolute right-3 top-3 hover:cursor-pointer'}
-        onClick={() => setIsShowing(false)}
+        onClick={() => closeTopModal()}
       >
         <IoClose size={25} />
       </span>
@@ -213,6 +213,7 @@ const ModalCreateCinemaTheater = ({
               Component={TextInput}
               type="number"
               require={true}
+              disabled={isUpdate && cinemaTheaters.status === 'PUBLISHED'}
               placeHolder="Số hàng ghế"
               error={errors['numberOfRows']}
             />
@@ -223,6 +224,7 @@ const ModalCreateCinemaTheater = ({
               Component={TextInput}
               type="number"
               require={true}
+              disabled={isUpdate && cinemaTheaters.status === 'PUBLISHED'}
               placeHolder="Sốc cột ghế"
               error={errors['numberOfColumns']}
             />
@@ -235,6 +237,7 @@ const ModalCreateCinemaTheater = ({
               Component={TextInput}
               type="number"
               require={true}
+              disabled={isUpdate && cinemaTheaters.status === 'PUBLISHED'}
               placeHolder="số ghế thường"
               error={errors['regularSeatRow']}
             />
@@ -245,6 +248,7 @@ const ModalCreateCinemaTheater = ({
               Component={TextInput}
               type="number"
               require={true}
+              disabled={isUpdate && cinemaTheaters.status === 'PUBLISHED'}
               placeHolder="số ghế thường"
               error={errors['vipSeatRow']}
             />
@@ -255,6 +259,7 @@ const ModalCreateCinemaTheater = ({
               Component={TextInput}
               type="number"
               require={true}
+              disabled={isUpdate && cinemaTheaters.status === 'PUBLISHED'}
               placeHolder="số ghế đôi"
               error={errors['doubleSeatRow']}
             />
@@ -265,7 +270,8 @@ const ModalCreateCinemaTheater = ({
             control={control}
             Component={CustomSelect}
             type="text"
-            placeHolder="Loại phòng chiếu"
+            disabled={isUpdate && cinemaTheaters.status === 'PUBLISHED'}
+            placeHolder="Chọn loại phòng chiếu"
             options={cinemaTypes}
             error={errors['cinemaTypeId']}
           />
@@ -275,6 +281,7 @@ const ModalCreateCinemaTheater = ({
             control={control}
             Component={CustomSelect}
             type="text"
+            disabled={isUpdate && cinemaTheaters.status === 'PUBLISHED'}
             placeHolder="Chọn rạp chiếu"
             options={movieTheaters}
             error={errors['movieTheaterId']}

@@ -2,47 +2,50 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 const ModelContext = createContext();
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const useModelContext = () => {
-  return useContext(ModelContext);
-};
+export const useModelContext = () => useContext(ModelContext);
 
 const ModelProvider = ({ children }) => {
-  const [isShowing, setIsShowing] = useState(false);
-  const [content, setContent] = useState();
+  const [modals, setModals] = useState([]);
 
   useEffect(() => {
-    if (isShowing) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'scroll';
-    }
-  }, [isShowing]);
+    document.body.style.overflow = modals.length > 0 ? 'hidden' : 'scroll';
+  }, [modals]);
 
   const openPopup = (content) => {
-    setIsShowing(true);
-    setContent(content);
+    setModals((prev) => [...prev, content]); // Thêm modal vào stack
+  };
+
+  const closeTopModal = () => {
+    setModals((prev) => prev.slice(0, -1)); // Xóa modal trên cùng
+  };
+
+  const resetModal = () => {
+    setModals([]);
   };
 
   return (
-    <ModelContext.Provider value={{ openPopup, setIsShowing, isShowing }}>
+    <ModelContext.Provider value={{ openPopup, closeTopModal, resetModal }}>
       {children}
-      {isShowing && (
-        <div className="fixed inset-0 z-50 transition-opacity duration-200 ease-in-out">
+      {modals.map((content, index) => (
+        <div
+          key={index}
+          className="fixed inset-0 z-[1000] transition-opacity duration-200 ease-in-out"
+        >
           <div
             className="absolute inset-0 flex items-center justify-center bg-slate-600/60 backdrop-blur-sm"
-            onClick={() => setIsShowing(false)}
+            onClick={closeTopModal}
           >
             <div
-              className="scale-95 transform animate-fade-in opacity-0 transition-all duration-200 ease-out"
+              className="scale-95 transform transition-all duration-200 ease-out"
               onClick={(e) => e.stopPropagation()}
             >
               {content}
             </div>
           </div>
         </div>
-      )}
+      ))}
     </ModelContext.Provider>
   );
 };
+
 export default ModelProvider;

@@ -8,6 +8,7 @@ const TextInput = ({
   placeHolder = '',
   error = false,
   required = false,
+  disabled = false,
 }) => {
   return (
     <div>
@@ -24,6 +25,7 @@ const TextInput = ({
           htmlInput: { className: '!px-0' },
         }}
         error={!!error}
+        disabled={disabled}
       />
     </div>
   );

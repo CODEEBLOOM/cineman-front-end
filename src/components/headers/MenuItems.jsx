@@ -2,9 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import Dropdown from './Dropdown';
 import { FaCaretDown } from 'react-icons/fa';
 import { IoIosArrowForward } from 'react-icons/io';
+import { useDispatch } from 'react-redux';
+import { setMovieTheater } from '@redux/slices/movieTheaterSlice';
 
 const MenuItems = ({ items, depthLevel }) => {
   const [dropdown, setDropdown] = useState(false);
+  const dispatch = useDispatch();
   const ref = useRef();
 
   useEffect(() => {
@@ -28,6 +31,10 @@ const MenuItems = ({ items, depthLevel }) => {
     setDropdown(false);
   };
 
+  const handleChangeMovieTheater = () => {
+    dispatch(setMovieTheater(items));
+  };
+
   return (
     <li
       className={`menu-items ${depthLevel === 0 ? 'hover:!bg-transparent' : ''}`}
@@ -42,10 +49,10 @@ const MenuItems = ({ items, depthLevel }) => {
             aria-haspopup="menu"
             aria-expanded={dropdown ? 'true' : 'false'}
             onClick={() => setDropdown((prev) => !prev)}
-            className={`flex items-center justify-between ${depthLevel === 1 ? 'bg-white px-[.7rem] py-[.7rem]' : ''} `}
+            className={`flex items-center justify-between ${depthLevel === 1 ? 'px-[.7rem] py-[.7rem]' : ''} `}
           >
-            {items.title}{' '}
-            {depthLevel > 0 ? <IoIosArrowForward /> : <FaCaretDown />}
+            {items.title}&nbsp;
+            {depthLevel > 0 ? <IoIosArrowForward size={12} /> : <FaCaretDown />}
           </button>
           <Dropdown
             submenus={items.submenu}
@@ -54,7 +61,9 @@ const MenuItems = ({ items, depthLevel }) => {
           />
         </>
       ) : (
-        <a href="#">{items.title}</a>
+        <p className="hover:text-white" onClick={handleChangeMovieTheater}>
+          {items.title}
+        </p>
       )}
     </li>
   );

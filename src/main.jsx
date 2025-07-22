@@ -21,22 +21,30 @@ import StatisticalPage from '@pages/admin/StatisticalPage.jsx';
 import TheaterSystemPage from '@pages/admin/TheaterSystemPage.jsx';
 import CinemaTheater from '@component/admin/cinema_theater/CinemaTheater.jsx';
 import SeatMap from '@component/admin/seat/SeatMap';
+import GoogleCallback from '@pages/auth/GoogleCallback';
+import ClientLayout from '@pages/client/ClientLayout';
+import ListMovie from '@component/admin/movie/ListMovie';
 
 const router = createBrowserRouter([
   {
     element: <RootLayout />,
     children: [
       {
-        path: '/',
-        element: <HomePage />,
-      },
-      {
-        path: '/detail-movie/:id',
-        element: <DetailMoviePage />,
-      },
-      {
-        path: '/movie',
-        element: <MoviePage />,
+        element: <ClientLayout />,
+        children: [
+          {
+            path: '/',
+            element: <HomePage />,
+          },
+          {
+            path: '/detail-movie/:id',
+            element: <DetailMoviePage />,
+          },
+          {
+            path: '/movie',
+            element: <MoviePage />,
+          },
+        ],
       },
       {
         element: <ProtectedRoute />,
@@ -49,14 +57,16 @@ const router = createBrowserRouter([
       },
       {
         element: <AuthLayout />,
+        path: '/auth',
         children: [
           {
-            path: '/login',
+            index: true,
+            path: 'login',
             element: <LoginPage />,
           },
           {
-            path: '/login',
-            element: <LoginPage />,
+            path: 'google/callback',
+            element: <GoogleCallback />,
           },
         ],
       },
@@ -107,8 +117,8 @@ const router = createBrowserRouter([
             element: <p>Quản lý xuất chiếu</p>,
           },
           {
-            path: 'phim',
-            element: <p>Quản lý phim</p>,
+            path: 'danh-sach-phim',
+            element: <ListMovie />,
           },
           {
             path: 'hoa-don',
@@ -157,5 +167,5 @@ createRoot(document.getElementById('root')).render(
       </ThemeProvider>
     </PersistGate>
   </Provider>
-  // </StrictMode>
+  //{/* </StrictMode> */}
 );

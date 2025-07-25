@@ -1,7 +1,17 @@
 import { StrictMode } from 'react';
+
+/* Cấu hình react-toastify */
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { createRoot } from 'react-dom/client';
+
+/* Import main css */
 import './index.css';
+
+/* Import router */
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+
+/* Import component or page */
 import HomePage from '@pages/HomePage';
 import RootLayout from './RootLayout';
 import AuthLayout from '@pages/auth/AuthLayout';
@@ -24,6 +34,7 @@ import SeatMap from '@component/admin/seat/SeatMap';
 import GoogleCallback from '@pages/auth/GoogleCallback';
 import ClientLayout from '@pages/client/ClientLayout';
 import ListMovie from '@component/admin/movie/ListMovie';
+import BookingTicket from '@pages/protected_route/BookingTicket';
 
 const router = createBrowserRouter([
   {
@@ -51,7 +62,11 @@ const router = createBrowserRouter([
         children: [
           {
             path: '/choose-seat',
-            element: <ChooseSeatPage />,
+            element: <BookingTicket />,
+          },
+          {
+            path: '/payment',
+            element: <BookingTicket />,
           },
         ],
       },
@@ -164,6 +179,7 @@ createRoot(document.getElementById('root')).render(
     <PersistGate loading={<p>Loading ...</p>} persistor={persistor}>
       <ThemeProvider theme={theme}>
         <RouterProvider router={router} />
+        <ToastContainer theme="colored" autoClose={3000} position="top-right" />
       </ThemeProvider>
     </PersistGate>
   </Provider>

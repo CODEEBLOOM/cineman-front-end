@@ -1,8 +1,13 @@
+import { clearSnack } from '@redux/slices/snackSlice';
 import { useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const Timer = ({ deadlineTime }) => {
+  const navigate = useNavigate();
   const [timer, setTimer] = useState('00:00:00');
   const ref = useRef();
+  const dispatch = useDispatch();
 
   const getTimeRemaining = (e) => {
     const total = Date.parse(e) - Date.parse(new Date());
@@ -22,6 +27,10 @@ const Timer = ({ deadlineTime }) => {
           ':' +
           (seconds > 9 ? seconds : '0' + seconds)
       );
+    } else {
+      dispatch(clearSnack());
+      clearInterval(ref.current);
+      navigate('/', { replace: true });
     }
   };
 
@@ -43,6 +52,12 @@ const Timer = ({ deadlineTime }) => {
 
   useEffect(() => {
     clearTimer(getDeadlineTime());
+    return () => {
+      if (ref.current) {
+        dispatch(clearSnack());
+        clearInterval(ref.current);
+      }
+    };
   }, []);
   return (
     <div className="flex items-center justify-center">

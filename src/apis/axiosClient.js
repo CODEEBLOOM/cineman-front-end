@@ -46,7 +46,6 @@ axiosClient.interceptors.response.use(
           {},
           { withCredentials: true }
         );
-        console.log(res);
 
         /* Cập nhật lại accessToken trong localStorage */
         const localData = localStorage.getItem('persist:root');

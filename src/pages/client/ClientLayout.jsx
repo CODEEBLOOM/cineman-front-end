@@ -1,6 +1,6 @@
 import Footer from '@component/Footer';
 import Header from '@component/headers/Header';
-import { setIsAuthentication } from '@redux/slices/authSlice';
+import { clearInfoAuth } from '@redux/slices/authSlice';
 import { fetchProvince } from '@redux/slices/movieTheaterSlice';
 import { fetchInfoUser } from '@redux/slices/userSlice';
 import { useEffect } from 'react';
@@ -11,6 +11,7 @@ const ClientLayout = () => {
   const dispatch = useDispatch();
   const { movieTheater } = useSelector((state) => state.movieTheater);
   const { isAuthentication } = useSelector((state) => state.auth);
+
   /* Fetch danh sách rạp chiếu tại các chi nhánh */
   useEffect(() => {
     if (movieTheater.id == null) {
@@ -25,7 +26,7 @@ const ClientLayout = () => {
         await dispatch(fetchInfoUser()).unwrap();
       } catch (err) {
         console.log(err);
-        dispatch(setIsAuthentication(false));
+        dispatch(clearInfoAuth());
       }
     };
     if (isAuthentication) {

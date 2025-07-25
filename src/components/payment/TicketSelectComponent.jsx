@@ -1,3 +1,4 @@
+import { currencyFormatter } from '@libs/Utils';
 import React from 'react';
 
 const TicketSelectComponent = ({ ticketType, count, unitPrice }) => {
@@ -14,8 +15,7 @@ const TicketSelectComponent = ({ ticketType, count, unitPrice }) => {
             <span>{unitPrice}</span>
           </div>
           <div>
-            = <span>{count * unitPrice}</span>
-            vnđ
+            = <span>{currencyFormatter(count * unitPrice)}</span>
           </div>
         </div>
       </div>

@@ -26,7 +26,6 @@ export const movieTheaterSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(fetchProvince.fulfilled, (state, action) => {
-      console.log(action.payload);
       state.listMovieTheater = action.payload;
       state.movieTheater = action.payload[0];
     });

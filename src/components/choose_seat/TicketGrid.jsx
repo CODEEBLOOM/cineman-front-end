@@ -1,184 +1,205 @@
 import { getAllTicketByShowTime } from '@apis/ticketService';
 import React, { useEffect, useRef, useState } from 'react';
-import RenderSeat from './RenderSeat';
 import { Client } from '@stomp/stompjs';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import SeatMapRenderer from './SeatMapRenderer';
+import { toast } from 'react-toastify';
+import { setSelectedSeats } from '@redux/slices/ticketSlice';
 
-const TicketGrid = React.memo(
-  ({ showTime, invoiceId, selectedSeats, setSelectedSeats }) => {
-    const { user } = useSelector((state) => state.user);
-    const [ticketMap, setTicketMap] = useState(new Map());
-    const message = {
-      type: 'TICKET_CREATE',
-      content: {
-        showTimeId: showTime.id,
-        ticketType: 'ADULT',
-        seatId: null,
-        invoiceId: invoiceId,
-      },
-      userId: user.userId,
-    };
+const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
+  const dispatch = useDispatch();
+  const { selectedSeats } = useSelector((state) => state.ticket);
 
-    /* Call api lấy toàn bộ thông tin vé của một lịch chiếu: chạy khi lịch chiếu thay đổi */
-    useEffect(() => {
-      if (!showTime.id) return;
-      getAllTicketByShowTime({ userId: user.userId, showTimeId: showTime.id })
-        .then((res) => {
-          const newMap = new Map();
-          res.data.forEach((ticket) => {
-            const key = `${ticket.seat.rowIndex}-${ticket.seat.columnIndex}`;
-            newMap.set(key, ticket);
-          });
-          setTicketMap(newMap);
-        })
-        .catch((err) => {
-          console.log(err);
+  const selectedSeatsRef = useRef([]);
+
+  useEffect(() => {
+    selectedSeatsRef.current = selectedSeats;
+  }, [selectedSeats]);
+  const { user } = useSelector((state) => state.user);
+
+  const [ticketMap, setTicketMap] = useState(new Map());
+  const message = {
+    type: 'TICKET_CREATE',
+    content: {
+      showTimeId: showTime.id,
+      ticketType: 'ADULT',
+      seatId: null,
+      invoiceId: invoiceId,
+    },
+    ticketId: null,
+    userId: user.userId,
+  };
+
+  /* Call api lấy toàn bộ thông tin vé của một lịch chiếu: chạy khi lịch chiếu thay đổi */
+  useEffect(() => {
+    if (!showTime.id) return;
+    getAllTicketByShowTime({ userId: user.userId, showTimeId: showTime.id })
+      .then((res) => {
+        const newMap = new Map();
+        const seatSelected = [];
+        res.data.forEach((ticket) => {
+          const key = `${ticket.seat.rowIndex}-${ticket.seat.columnIndex}`;
+          newMap.set(key, ticket);
+          if (ticket.status === 'SELECTED') {
+            seatSelected.push({
+              ticketId: ticket.id,
+              seat: ticket.seat,
+              price: ticket.price,
+            });
+          }
         });
-    }, [showTime.id, user.userId]);
+        setTicketMap(newMap);
+        dispatch(setSelectedSeats(seatSelected));
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [showTime.id, user.userId, dispatch]);
 
-    /* Xử lý realtime */
-    const clientRef = useRef();
-    // Tạo STOMP client một lần
-    useEffect(() => {
-      if (!showTime.id) return;
-      const client = new Client({
-        brokerURL: 'ws://localhost:8081/cineman-ws',
-        reconnectDelay: 0,
+  /* Xử lý realtime */
+  const clientRef = useRef();
+  // Tạo STOMP client một lần
+  useEffect(() => {
+    if (!showTime.id) return;
+    const client = new Client({
+      brokerURL: import.meta.env.VITE_REALTIME,
+      reconnectDelay: 0,
 
-        // Chạy khi connected thành công  //
-        onConnect: (frame) => {
-          console.log('Connected:', frame);
-          client.subscribe(
-            `/cineman/topic/seat-map/show-time/${showTime.id}`,
-            (response) => {
-              const msg = JSON.parse(response.body);
-              console.log(msg);
-              if (msg.type === 'TICKET_CREATED' && msg.content) {
-                const seatKey = `${msg.content.seat.rowIndex}-${msg.content.seat.columnIndex}`;
-                const isCurrentUser = msg.userId === user.userId;
-                setTicketMap((prevMap) => {
-                  const newMap = new Map(prevMap);
-                  const updatedTicket = {
-                    ...msg.content,
-                    status: isCurrentUser ? 'SELECTED' : 'HOLDED',
-                  };
-                  newMap.set(seatKey, updatedTicket);
-                  return newMap;
-                });
-                if (isCurrentUser) {
-                  setSelectedSeats((prev) => [...prev, msg]);
+      /* Chạy khi kết nối với server thành công */
+      onConnect: (frame) => {
+        console.log('Connected:', frame);
+
+        client.subscribe('/user/queue/errors', (message) => {
+          const error = JSON.parse(message.body);
+          toast.error(error.message, { position: 'bottom-left' });
+        });
+
+        client.subscribe(
+          `/cineman/topic/seat-map/show-time/${showTime.id}`,
+          (response) => {
+            const msg = JSON.parse(response.body);
+            if (msg.type === 'TICKET_DELETED') {
+              const seatKey = `${msg.rowIndex}-${msg.columnIndex}`;
+              setTotalMoneyTicket(msg.totalMoney);
+              setTicketMap((prevMap) => {
+                const newMap = new Map(prevMap);
+                let updatedTicket = newMap.get(seatKey);
+                if (updatedTicket) {
+                  updatedTicket.status = 'EMPTY';
+                  updatedTicket.id = null;
                 }
+                newMap.set(seatKey, updatedTicket);
+                return newMap;
+              });
+
+              /* Xử lý xóa cập nhật state ghế đã chọn */
+              const index = selectedSeatsRef.current.findIndex(
+                (ticketSelected) => ticketSelected.ticketId === msg.ticketId
+              );
+              if (index !== -1) {
+                const updatedSelectedSeats = [...selectedSeatsRef.current];
+                updatedSelectedSeats.splice(index, 1);
+                dispatch(setSelectedSeats(updatedSelectedSeats));
               }
             }
-          );
-        },
 
-        onStompError: (error) => {
-          alert('STOMP Error');
-          console.error('STOMP error:', error);
-        },
-        onWebSocketError: (error) => {
-          alert('WebSocket Error');
-          console.error('WebSocket error:', error);
-          clientRef.current = null;
-        },
-      });
-
-      // Khởi chạy client
-      clientRef.current = client;
-      client.activate();
-      // Optional cleanup
-      return () => {
-        if (client.connected) {
-          clientRef.current.deactivate();
-        }
-      };
-    }, [showTime.id]);
-
-    const sendMessageChooseSeat = (data) => {
-      debugger;
-      if (selectedSeats.length > 0) {
-        const isCurrentSeat = selectedSeats.find(
-          (ticket) => ticket.content?.seat.id === data.content.seatId
-        );
-        if (isCurrentSeat) return;
-      }
-      if (!clientRef.current?.connected) return;
-      clientRef.current.publish({
-        destination: `/cineman/app/seat/choose-seat`,
-        body: JSON.stringify(data),
-      });
-    };
-
-    /* Hàm render toàn bộ sơ đồ */
-    const renderSeatMap = () => {
-      /* Lưu toàn bộ ghế cơ bản trong map */
-      if (!ticketMap.size) return;
-
-      const theater = showTime?.cinemaTheater;
-      if (!theater) return null;
-
-      const allSeats = [];
-      for (let row = 0; row < theater.numberOfRows; row++) {
-        if (
-          row >=
-          theater.regularSeatRow + theater.vipSeatRow + theater.doubleSeatRow
-        ) {
-          break;
-        }
-        allSeats.push(
-          <div
-            className="flex items-center justify-center"
-            key={String.fromCharCode(65 + row)}
-          >
-            {String.fromCharCode(65 + row)}
-          </div>
-        );
-
-        for (let col = 0; col < theater.numberOfColumns; col++) {
-          const seatKey = `${row}-${col}`;
-          const ticket = ticketMap.get(seatKey);
-          if (!ticket) {
-            allSeats.push(
-              <div
-                className={`h-[60px] w-[60px] bg-white ${row >= theater.regularSeatRow + theater.vipSeatRow ? 'col-span-2' : ''}`}
-                key={seatKey}
-              />
-            );
-            if (row >= theater.regularSeatRow + theater.vipSeatRow) {
-              col++;
+            // Xử lý sau khi tạo vé thành công //
+            if (msg.type === 'TICKET_CREATED' && msg.content) {
+              const seatKey = `${msg.content.seat.rowIndex}-${msg.content.seat.columnIndex}`;
+              const isCurrentUser = msg.userId === user.userId;
+              setTotalMoneyTicket(msg.totalMoney);
+              setTicketMap((prevMap) => {
+                const newMap = new Map(prevMap);
+                const updatedTicket = {
+                  ...msg.content,
+                  status: isCurrentUser ? 'SELECTED' : 'HOLDED',
+                };
+                newMap.set(seatKey, updatedTicket);
+                return newMap;
+              });
+              if (isCurrentUser) {
+                const newSelectedSeats = [
+                  ...selectedSeatsRef.current,
+                  {
+                    ticketId: msg.ticketId,
+                    seat: msg.content.seat,
+                    price: msg.content.price,
+                  },
+                ];
+                dispatch(setSelectedSeats(newSelectedSeats));
+              }
             }
-            continue;
           }
-          if (ticket.seat.seatType.id === 'DOUBLE') {
-            col++;
-          }
-          allSeats.push(
-            <RenderSeat
-              key={seatKey}
-              ticket={ticket}
-              cinemaTheater={theater}
-              message={message}
-              sendMessageChooseSeat={sendMessageChooseSeat}
-            />
-          );
-        }
+        );
+      },
+
+      onStompError: (error) => {
+        alert('STOMP Error');
+        console.error('STOMP error:', error);
+      },
+      onWebSocketError: (error) => {
+        alert('WebSocket Error');
+        console.error('WebSocket error:', error);
+        clientRef.current = null;
+      },
+    });
+
+    /* Khởi chạy client */
+    clientRef.current = client;
+    client.activate();
+
+    /* Optional cleanup */
+    return () => {
+      if (client.connected) {
+        clientRef.current.deactivate();
       }
-
-      return allSeats;
     };
+  }, [showTime.id]);
 
-    return (
-      <div
-        className="mx-auto grid gap-1"
-        style={{
-          gridTemplateColumns: `repeat(${showTime?.cinemaTheater?.numberOfColumns + 1}, 60px)`,
-          width: 'fit-content',
-        }}
-      >
-        {renderSeatMap()}
-      </div>
-    );
-  }
-);
+  /* Gửi thống báo cho server: chọn ghế ( Đặt vé ) */
+  const sendMessageChooseSeat = (data) => {
+    if (selectedSeats.length > 0) {
+      const seatFound = selectedSeats.find(
+        (ticketSelected) => ticketSelected.ticketId === data.ticketId
+      );
+
+      /* Nếu ghế đã được chọn thì hủy chọn */
+      if (seatFound) {
+        /* Gửi thống báo cho server: cancel ghế ( Đặt vé ) */
+        clientRef.current.publish({
+          destination: `/cineman/app/seat/cancel-seat`,
+          body: JSON.stringify(data),
+        });
+        return;
+      }
+    }
+    if (!clientRef.current?.connected) return;
+
+    /* Gửi thống báo cho server: chọn ghế ( Đặt vé ) */
+    if (selectedSeats.length + 1 > 8) return alert('bạn chỉ có thể đặt 8 ghế');
+    clientRef.current.publish({
+      destination: `/cineman/app/seat/choose-seat`,
+      body: JSON.stringify(data),
+    });
+  };
+
+  return (
+    <div
+      className="mx-auto grid gap-1"
+      style={{
+        gridTemplateColumns: `repeat(${showTime?.cinemaTheater?.numberOfColumns + 1}, 60px)`,
+        width: 'fit-content',
+      }}
+    >
+      {showTime.id && (
+        <SeatMapRenderer
+          ticketMap={ticketMap}
+          showTime={showTime}
+          message={message}
+          sendMessageChooseSeat={sendMessageChooseSeat}
+        />
+      )}
+    </div>
+  );
+};
 export default TicketGrid;

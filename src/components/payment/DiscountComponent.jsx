@@ -6,17 +6,17 @@ import React from 'react';
 const DiscountComponent = () => {
   return (
     <>
-      <div className={'mt-5 flex h-[35px] items-center gap-3 leading-[35px]'}>
+      <div className={'my-5 flex h-[35px] items-center gap-3 leading-[35px]'}>
         <img src="ic-payment.png" alt="" className={'h-[100%]'} />
         <h2 className={'text-[20px] font-bold uppercase'}>Giảm giá</h2>
       </div>
-      <Accordion title={'Cineman voucher'}>
+      <Accordion title={'Đổi điểm'}>
         <div className={'grid gap-2 md:grid-cols-4'}>
-          <div>
+          <div className="flex flex-col space-y-3">
             <p>Điêm hiện có</p>
-            <span className={'font-bold'}>0</span>
+            <p className={'text-[18px] font-bold'}>0</p>
           </div>
-          <div>
+          <div className="flex flex-col space-y-3">
             <p>Nhập điểm</p>
             <TextField
               fullWidth
@@ -29,12 +29,15 @@ const DiscountComponent = () => {
               }}
             />
           </div>
-          <div>
+
+          <div className="flex flex-col space-y-3">
             <p>Số tiền được giảm</p>
-            <span>30000</span>
-            vnđ
+            <div>
+              <span className={'text-[18px] font-bold'}>30000</span>
+              <span className={'text-[18px] font-bold'}>VNĐ</span>
+            </div>
           </div>
-          <div>
+          <div className="mt-3">
             <CustomButton title={'Đổi điểm'} />
           </div>
         </div>

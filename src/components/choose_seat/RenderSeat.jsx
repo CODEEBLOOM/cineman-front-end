@@ -89,6 +89,7 @@ const RenderSeat = ({
         ...message.content,
         seatId: ticket.seat.id,
       },
+      ticketId: ticket.id,
     };
     sendMessageChooseSeat(newMessage);
   };

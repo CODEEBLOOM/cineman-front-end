@@ -5,7 +5,15 @@ import axios from '@apis/axiosClient';
  * @param {Object} data - thống tin hóa đơn
  * @returns {Promise<axios.AxiosResponse<any>>}
  */
-export const create = async ({ email, phoneNumber, customerId, staffId }) => {
-  const url = '/invoice/add';
+export const create = async (
+  { email, phoneNumber, customerId, staffId },
+  showTimeId
+) => {
+  const url = `/invoice/show-time/${showTimeId}/add`;
   return await axios.post(url, { email, phoneNumber, customerId, staffId });
+};
+
+export const update = async (data) => {
+  const url = `/invoice/${data.id}/update`;
+  return await axios.put(url, data);
 };

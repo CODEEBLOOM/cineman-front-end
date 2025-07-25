@@ -3,6 +3,9 @@ import authReducer from '@redux/slices/authSlice.js';
 import snackbarReducer from '@redux/slices/snackbarSlice';
 import userReducer from '@redux/slices/userSlice.js';
 import movieReducer from '@redux/slices/movieSlice.js';
+import ticketReducer from '@redux/slices/ticketSlice.js';
+import invoiceReducer from '@redux/slices/invoiceSlice.js';
+import snackReducer from '@redux/slices/snackSlice.js';
 import movieTheaterReducer from '@redux/slices/movieTheaterSlice.js';
 import {
   FLUSH,
@@ -34,6 +37,9 @@ const persistedReducer = persistReducer(
     snackbar: snackbarReducer,
     movie: movieReducer,
     movieTheater: movieTheaterReducer,
+    ticket: ticketReducer,
+    invoice: invoiceReducer,
+    snack: snackReducer,
   })
 );
 

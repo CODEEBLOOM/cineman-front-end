@@ -15,6 +15,9 @@ export const authSlice = createSlice({
     setIsAuthentication: (state, action) => {
       state.isAuthentication = action.payload;
     },
+    clearInfoAuth: () => {
+      return initialState;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -33,11 +36,8 @@ export const authSlice = createSlice({
       })
 
       /* fetch logout */
-      .addCase(fetchLogout.fulfilled, (state) => {
-        state.status = 'idle';
-        state.isAuthentication = false;
-        state.accessToken = null;
-        state.refreshToken = null;
+      .addCase(fetchLogout.fulfilled, () => {
+        return initialState;
       })
 
       /* fetch login google */
@@ -112,5 +112,5 @@ export const loginGoogle = createAsyncThunk(
   }
 );
 
-export const { setIsAuthentication } = authSlice.actions;
+export const { setIsAuthentication, clearInfoAuth } = authSlice.actions;
 export default authSlice.reducer;

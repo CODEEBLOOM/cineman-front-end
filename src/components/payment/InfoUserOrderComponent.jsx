@@ -1,6 +1,8 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 
 const InfoUserComponent = () => {
+  const { user } = useSelector((state) => state.user);
   return (
     <>
       <div className={''}>
@@ -17,17 +19,17 @@ const InfoUserComponent = () => {
         >
           <div className={''}>
             <p className={'font-bold'}>Họ Tên:</p>
-            <p>Đỗ Quang Sơn</p>
+            <p>{user?.fullName}</p>
           </div>
 
           <div className={''}>
             <p className={'font-bold'}>Số điện thoại:</p>
-            <p>0443335223</p>
+            <p>{user?.phoneNumber}</p>
           </div>
 
           <div className={''}>
             <p className={'font-bold'}>Email:</p>
-            <p>sondoquang@gmail.com</p>
+            <p>{user?.email}</p>
           </div>
         </div>
       </div>

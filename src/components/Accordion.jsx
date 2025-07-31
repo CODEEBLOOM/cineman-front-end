@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 
-const Accordion = ({ title, children }) => {
+const Accordion = ({ title, subTitle = '', children }) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -11,7 +11,10 @@ const Accordion = ({ title, children }) => {
           onClick={() => setOpen(!open)}
           className={'flex w-full items-center justify-between'}
         >
-          <span className={'text-[20px] font-bold'}>{title}</span>
+          <span className={'text-[20px] font-bold'}>
+            {title}{' '}
+            <span className="text-[14px] italic text-primary">{subTitle}</span>
+          </span>
           {open ? (
             <span>
               <FaMinus />

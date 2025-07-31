@@ -3,7 +3,6 @@ import axios from '@apis/axiosClient';
 
 const initialState = {
   accessToken: null,
-  refreshToken: null,
   isAuthentication: false,
   status: 'idle',
 };
@@ -29,7 +28,6 @@ export const authSlice = createSlice({
         state.status = 'fulfilled';
         state.isAuthentication = true;
         state.accessToken = action.payload.accessToken;
-        state.refreshToken = action.payload.refreshToken;
       })
       .addCase(fetchLogin.rejected, (state) => {
         state.status = 'rejected';
@@ -45,10 +43,10 @@ export const authSlice = createSlice({
         state.status = 'loading';
       })
       .addCase(loginGoogle.fulfilled, (state, action) => {
+        console.log(action.payload);
         state.status = 'fulfilled';
-        state.isAuthentication = true;
         state.accessToken = action.payload.accessToken;
-        state.refreshToken = action.payload.refreshToken;
+        state.isAuthentication = true;
       })
       .addCase(loginGoogle.rejected, (state) => {
         state.status = 'rejected';

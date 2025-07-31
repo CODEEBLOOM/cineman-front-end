@@ -12,7 +12,7 @@ const Footer = () => {
           <div className="basic-[200px]">
             <div className="max-w-[120px] overflow-hidden">
               <img
-                src="/logo.png"
+                src="/logo-new-v01.png"
                 alt="cineman"
                 className="mb-4 w-full object-cover"
               />

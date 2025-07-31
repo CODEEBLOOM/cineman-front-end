@@ -5,6 +5,7 @@ import InfoUserComponent from './payment/InfoUserOrderComponent';
 import TicketSelectComponent from './payment/TicketSelectComponent';
 import { useSelector } from 'react-redux';
 import PaymentMethod from './payment/PaymentMethod';
+import { useState } from 'react';
 
 const Payment = ({
   showTime,
@@ -14,9 +15,12 @@ const Payment = ({
 }) => {
   const { invoices } = useSelector((state) => state.invoice);
   const { snackSelected } = useSelector((state) => state.snack);
+  const invoice = invoices.find((i) => i.showTimeId === showTime.id);
+  const [voucher, setVoucher] = useState(null);
+  let totalDiscount = voucher ? voucher.discount : 0;
 
   const totalMoney =
-    invoices.find((i) => i.showTimeId === showTime.id)?.invoice.totalMoney +
+    invoice?.invoice.totalMoney +
     snackSelected.reduce(
       (total, item) => total + item.unitPrice * item.quantity,
       0
@@ -24,7 +28,7 @@ const Payment = ({
   return (
     <>
       {/*Phần payment*/}
-      <InfoUserComponent />
+      <InfoUserComponent showTime={showTime} />
       {regularSeatsSelected.length > 0 && (
         <TicketSelectComponent
           ticketType={'Ghế thường'}
@@ -48,19 +52,25 @@ const Payment = ({
       )}
       {/*  Combo ưu đãi*/}
       <ComboComponent />
-      <DiscountComponent />
+      <DiscountComponent
+        invoice={invoice}
+        voucher={voucher}
+        setVoucher={setVoucher}
+      />
       <div>
-        <div className="flex gap-3 text-[20px] font-medium">
+        <div className="flex justify-between gap-3 text-[20px] font-medium">
           <p className="min-w-[80%] text-end">Tổng tiền:&nbsp;</p>
           <p className="text-red-500">{currencyFormatter(totalMoney)}</p>
         </div>
-        <div className="flex gap-3 text-[20px] font-medium">
+        <div className="flex justify-between gap-3 text-[20px] font-medium">
           <p className="min-w-[80%] text-end">Số tiền được giảm:&nbsp;</p>
-          <p className="text-red-500">{currencyFormatter(0)}</p>
+          <p className="text-red-500">{currencyFormatter(totalDiscount)}</p>
         </div>
-        <div className="flex gap-3 text-[20px] font-medium">
+        <div className="flex justify-between gap-3 text-[20px] font-medium">
           <p className="min-w-[80%] text-end">Số tiền cần thanh toán:&nbsp;</p>
-          <p className="text-red-500">{currencyFormatter(totalMoney)}</p>
+          <p className="text-red-500">
+            {currencyFormatter(totalMoney - totalDiscount)}
+          </p>
         </div>
       </div>
       {/* Thanh toán */}

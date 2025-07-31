@@ -1,8 +1,64 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import { findUserByEmail } from '@apis/userService';
+import { Button, CircularProgress, TextField } from '@mui/material';
+import { setInvoice } from '@redux/slices/invoiceSlice';
+import { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 
-const InfoUserComponent = () => {
+const InfoUserComponent = ({ showTime }) => {
+  const inputRef = useRef();
+  const [isLoading, setIsLoading] = useState(false);
+  const [infoCustomer, setInfoCustomer] = useState({});
   const { user } = useSelector((state) => state.user);
+  const isReceptionistRole = user.roles.find((role) => role.roleId === 'RCP');
+  const { invoices } = useSelector((state) => state.invoice);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (infoCustomer?.fullName) {
+      const invoice = invoices.find(
+        (i) => i.showTimeId === Number(showTime.id)
+      );
+      if (invoice) {
+        dispatch(
+          setInvoice({
+            ...invoice,
+            invoice: {
+              ...invoice.invoice,
+              fullName: infoCustomer.fullName,
+              email: infoCustomer.email,
+              phoneNumber: infoCustomer.phoneNumber,
+              customerId: infoCustomer.userId,
+            },
+          })
+        );
+      }
+    }
+  }, [infoCustomer, dispatch]);
+
+  const handleFindUser = () => {
+    setIsLoading(true);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const value = inputRef.current.value;
+    if (emailRegex.test(value)) {
+      console.log('Email is valid');
+      findUserByEmail(value)
+        .then((res) => {
+          console.log(res);
+          setInfoCustomer(res.data);
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    } else {
+      toast.error('Vui lòng nhập đúng định dạng email !');
+      setIsLoading(false);
+    }
+  };
+
   return (
     <>
       <div className={''}>
@@ -12,26 +68,97 @@ const InfoUserComponent = () => {
             Thông tin thanh toán
           </h2>
         </div>
-        <div
-          className={
-            'mt-4 flex flex-col flex-wrap justify-between gap-3 md:flex-row'
-          }
-        >
-          <div className={''}>
-            <p className={'font-bold'}>Họ Tên:</p>
-            <p>{user?.fullName}</p>
+        {isReceptionistRole ? (
+          <div className="grid grid-cols-2 gap-4">
+            <div className="mt-3">
+              <h2 className="text-[18px] font-bold">Thông tin người đặt vé</h2>
+              <div className="flex flex-wrap gap-2">
+                <p className={'font-bold'}>Họ Tên:</p>
+                <p>{user?.fullName}</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <p className={'font-bold'}>Số điện thoại:</p>
+                <p>{user?.phoneNumber}</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <p className={'font-bold'}>Email:</p>
+                <p>{user?.email}</p>
+              </div>
+            </div>
+            <div className="mt-3">
+              <h2 className="text-[18px] font-bold">Thông tin khách hàng</h2>
+              {!infoCustomer?.fullName && (
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <TextField
+                      fullWidth
+                      placeholder="Nhập email khách hàng ..."
+                      type="email"
+                      required={true}
+                      inputRef={inputRef}
+                      slotProps={{
+                        input: { className: 'h-10 px-3 py-2 ' },
+                        htmlInput: { className: '!px-0 ' },
+                      }}
+                    />
+                  </div>
+                  <div onClick={handleFindUser}>
+                    <Button variant="contained" className="mt-3 flex gap-2">
+                      {isLoading && (
+                        <CircularProgress
+                          size={20}
+                          thickness={2}
+                          color="inherit"
+                        />
+                      )}
+                      Xác nhận
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {infoCustomer?.fullName && (
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    <p className={'font-bold'}>Họ Tên:</p>
+                    <p>{infoCustomer?.fullName}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <p className={'font-bold'}>Số điện thoại:</p>
+                    <p>{infoCustomer?.phoneNumber}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <p className={'font-bold'}>Email:</p>
+                    <p>{infoCustomer?.email}</p>
+                  </div>
+                  <div onClick={() => setInfoCustomer({})}>
+                    <Button variant="outlined">Tìm kiếm thêm</Button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
+        ) : (
+          <div
+            className={
+              'mt-4 flex flex-col flex-wrap justify-between gap-3 md:flex-row'
+            }
+          >
+            <div className={''}>
+              <p className={'font-bold'}>Họ Tên:</p>
+              <p>{user?.fullName}</p>
+            </div>
 
-          <div className={''}>
-            <p className={'font-bold'}>Số điện thoại:</p>
-            <p>{user?.phoneNumber}</p>
-          </div>
+            <div className={''}>
+              <p className={'font-bold'}>Số điện thoại:</p>
+              <p>{user?.phoneNumber}</p>
+            </div>
 
-          <div className={''}>
-            <p className={'font-bold'}>Email:</p>
-            <p>{user?.email}</p>
+            <div className={''}>
+              <p className={'font-bold'}>Email:</p>
+              <p>{user?.email}</p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );

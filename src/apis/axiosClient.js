@@ -12,14 +12,17 @@ const axiosClient = axios.create({
 
 axiosClient.interceptors.request.use(
   function (config) {
-    //TODO: cần phải gắn access token vào đây
-    const localData = JSON.parse(localStorage.getItem('persist:root'));
-    if (localData !== null) {
-      const auth = JSON.parse(localData?.auth);
-      if (auth?.accessToken) {
-        config.headers.Authorization = `Bearer ${auth.accessToken}`;
+    // TODO: cần phải gắn access token vào đây
+    const localData = localStorage.getItem('persist:root');
+    if (localData) {
+      const auth = JSON.parse(JSON.parse(localData).auth);
+      if (auth !== null) {
+        if (auth?.accessToken) {
+          config.headers.Authorization = `Bearer ${auth.accessToken}`;
+        }
       }
     }
+
     return config;
   },
   function (error) {

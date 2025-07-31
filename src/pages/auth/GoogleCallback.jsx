@@ -1,9 +1,9 @@
-import { CircularProgress } from '@mui/material';
+import Loading from '@component/Loading';
 import { loginGoogle } from '@redux/slices/authSlice';
-import { openSnackbar } from '@redux/slices/snackbarSlice';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const GoogleCallback = () => {
   const dispatch = useDispatch();
@@ -16,7 +16,7 @@ const GoogleCallback = () => {
   useEffect(() => {
     try {
       dispatch(loginGoogle(code)).unwrap();
-      dispatch(openSnackbar({ message: 'Đăng nhập thành công ' }));
+      toast.success('Đăng nhập thành công !');
       navigate(from, { replace: true });
     } catch (error) {
       console.log(error);
@@ -25,8 +25,7 @@ const GoogleCallback = () => {
 
   return (
     <div className="flex h-[300px] flex-col items-center justify-center gap-3">
-      <CircularProgress size={50} className="mr-2" />
-      <p>Xử lý đăng nhập ...</p>
+      <Loading content={'Xử lý đăng nhập ...'} />
     </div>
   );
 };

@@ -9,6 +9,7 @@ const TextInput = ({
   error = false,
   required = false,
   disabled = false,
+  inputRef,
 }) => {
   return (
     <div>
@@ -20,6 +21,7 @@ const TextInput = ({
         onChange={onChange}
         type={type}
         required={required}
+        inputRef={inputRef}
         slotProps={{
           input: { className: 'h-10 px-3 py-2 ' },
           htmlInput: { className: '!px-0' },

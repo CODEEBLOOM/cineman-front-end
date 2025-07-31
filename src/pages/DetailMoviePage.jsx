@@ -28,7 +28,7 @@ const DetailMoviePage = () => {
   }, [id]);
 
   useEffect(() => {
-    document.title = 'Chi tiết phim - Cineman Cinemas';
+    document.title = 'Chi tiết phim - POLY CINEMAS';
   }, []);
 
   return (

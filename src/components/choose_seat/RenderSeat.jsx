@@ -93,10 +93,11 @@ const RenderSeat = ({
     };
     sendMessageChooseSeat(newMessage);
   };
+
   return (
     <>
       <div
-        className={`${ticket?.seat?.seatType?.id === 'DOUBLE' ? 'col-span-2' : ''} flex justify-center hover:cursor-pointer ${ticket.id ? 'hover:cursor-not-allowed' : ''} ${ticket.seat.status === 'INACTIVE' ? '!cursor-default' : ''} relative`}
+        className={`${ticket?.seat?.seatType?.id === 'DOUBLE' ? 'col-span-2' : ''} flex justify-center hover:cursor-pointer ${ticket.status !== 'EMPTY' && ticket.status !== 'SELECTED' ? '!hover:cursor-not-allowed' : ''} ${ticket.seat.status === 'INACTIVE' ? '!cursor-default' : ''} relative`}
         onClick={() => handleChooseSeat()}
       >
         {render()}

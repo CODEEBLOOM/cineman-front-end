@@ -1,4 +1,5 @@
 import { findAllCombos } from '@apis/snackService';
+import { currencyFormatter } from '@libs/Utils';
 import { setSnack } from '@redux/slices/snackSlice';
 import { useEffect, useState } from 'react';
 import { FaMinus, FaPlus } from 'react-icons/fa';
@@ -101,7 +102,11 @@ const ComboComponent = () => {
                     />
                   </td>
                   <td className={'px-3 py-5'}>
-                    <span className={'font-bold'}> {item.snackName}</span>
+                    <span className={'font-medium'}> {item.snackName}</span>
+                    <span className="text-[18px] font-medium text-pink-400">
+                      <FaMinus />
+                      {currencyFormatter(item.unitPrice)}
+                    </span>
                   </td>
                   <td className={'px-3 py-5'}>
                     <span className="whitespace-normal">
@@ -109,7 +114,11 @@ const ComboComponent = () => {
                     </span>
                   </td>
                   <td className={'px-3 py-5'}>
-                    <div className={'flex items-center justify-between gap-2'}>
+                    <div
+                      className={
+                        'flex select-none items-center justify-between gap-2'
+                      }
+                    >
                       <span className="text-[18px] font-medium">
                         {snackSelected.find((snack) => snack.id === item.id)
                           ?.quantity || 0}

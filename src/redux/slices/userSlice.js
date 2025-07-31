@@ -9,7 +9,11 @@ const initialState = {
 export const userSlice = createSlice({
   name: 'user',
   initialState,
-  reducers: {},
+  reducers: {
+    clearInfoUser: () => {
+      return initialState;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchInfoUser.pending, (state) => {
@@ -32,7 +36,8 @@ export const fetchInfoUser = createAsyncThunk(
   'auth/user',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.post('/auth/user');
+      const res = await axios.get('/auth/user');
+      console.log(res);
       return res.data;
     } catch (err) {
       console.log(err);
@@ -42,5 +47,5 @@ export const fetchInfoUser = createAsyncThunk(
     }
   }
 );
-
+export const { clearInfoUser } = userSlice.actions;
 export default userSlice.reducer;

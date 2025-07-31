@@ -7,12 +7,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import ImageComponent from '@component/ImageComponent';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { updateInvoice } from '@redux/slices/invoiceSlice';
+import { clearInvoice, setInvoice } from '@redux/slices/invoiceSlice';
 import { useModelContext } from '@context/ModalContext';
 import { IoClose } from 'react-icons/io5';
-import { useRef } from 'react';
-import { update } from '@apis/invoiceService';
+import { useRef, useState } from 'react';
+import { update, updateIxnRef } from '@apis/invoiceService';
 import { createMultiple } from '@apis/detailBookingSnack';
+import { getURLPayment } from '@apis/paymentService';
+import { CircularProgress } from '@mui/material';
+import Loading from '@component/Loading';
 
 const InfoBookingTicket = ({ showTime }) => {
   const { movieTheater } = useSelector((state) => state.movieTheater);
@@ -24,42 +27,42 @@ const InfoBookingTicket = ({ showTime }) => {
   const dispatch = useDispatch();
   const { openPopup, closeTopModal } = useModelContext();
   const inputRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   /* Xử lý chuyển sang trang thanh toán */
   const handleBeforePayment = () => {
     if (selectedSeats.length <= 0) {
       toast.info('Vui lòng chọn ghế trước khi thanh toán');
     } else {
-      const invoice = invoices.find((i) => i.showTimeId === showTime.id);
-      const totalMoneyTicket = selectedSeats.reduce(
-        (total, item) => total + item.price,
-        0
+      setIsLoading(true);
+      const existingInvoice = invoices.find(
+        (i) => i.showTimeId === showTime.id
       );
-      const infoUpdateInvoice = {
-        ...invoice,
-        invoice: {
-          ...invoice.invoice,
-          totalTicket: selectedSeats.length,
-          totalMoneyTicket,
-          totalMoney: totalMoneyTicket,
-        },
-      };
-      dispatch(updateInvoice(infoUpdateInvoice));
+      if (!existingInvoice) {
+        return toast.error('Lỗi khi cập nhật hóa đơn !');
+      }
       // Cập nhật hóa đơn //
       update({
-        id: infoUpdateInvoice.invoice.id,
-        email: infoUpdateInvoice.invoice.email,
-        phoneNumber: infoUpdateInvoice.invoice.phoneNumber,
-        paymentMethod: infoUpdateInvoice.invoice.paymentMethod,
+        id: existingInvoice.invoice.id,
+        email: existingInvoice.invoice.email,
+        phoneNumber: existingInvoice.invoice.phoneNumber,
+        paymentMethod: existingInvoice.invoice.paymentMethod,
         totalTicket: selectedSeats.length,
-        customerId: infoUpdateInvoice.invoice.customerId,
-        staffId: infoUpdateInvoice.invoice.staffId || null,
+        customerId: existingInvoice.invoice.customerId,
+        staffId: existingInvoice.invoice.staffId || null,
+        promotionId: null,
+        invoiceStatus: 'PROCESSING',
       })
         .then((res) => {
+          dispatch(clearInvoice());
+          dispatch(setInvoice({ showTimeId: showTime.id, invoice: res.data }));
           console.log(res.data);
           return navigate(`/payment?st=${showTime.id}`);
         })
-        .catch((error) => console.log(error));
+        .catch((error) => console.log(error))
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
   };
 
@@ -74,11 +77,46 @@ const InfoBookingTicket = ({ showTime }) => {
         totalSnack: item.quantity,
         invoiceId: invoice.invoice.id,
       }));
-      createMultiple(newSnackSelected)
-        .then((res) => {
-          console.log(res.data);
-        })
-        .catch((error) => console.log(error));
+
+      try {
+        let totalMoneySnack = 0;
+        let totalMoneyTicket = selectedSeats.reduce(
+          (total, item) => total + item.price,
+          0
+        );
+
+        if (newSnackSelected.length > 0) {
+          const res = await createMultiple(newSnackSelected);
+          totalMoneySnack = res.data.reduce(
+            (total, item) => total + item.totalMoney,
+            0
+          );
+        }
+
+        const paymentRes = await getURLPayment({
+          amount: totalMoneySnack + totalMoneyTicket,
+        });
+
+        const paymentUrl = paymentRes.data;
+        const vnp_TxnRef =
+          new URL(paymentUrl).searchParams.get('vnp_TxnRef') || '';
+
+        try {
+          await updateIxnRef({
+            invoiceId: invoice.invoice.id,
+            txnRef: vnp_TxnRef,
+            promotionId: invoice.invoice.promotionId,
+          });
+        } catch (error) {
+          if (error.response.status >= 400) {
+            return toast.error(error.response.data.message);
+          }
+        }
+        window.location.href = paymentUrl;
+      } catch (error) {
+        console.error(error);
+        toast.error('Có lỗi xảy ra khi thanh toán hoặc cập nhật thông tin!');
+      }
     }
   };
 
@@ -170,7 +208,7 @@ const InfoBookingTicket = ({ showTime }) => {
             </span>
           </label>
           <div
-            className="mx-auto max-w-[150px]"
+            className="mx-auto max-w-[200px]"
             onClick={handleNavigatePayment}
           >
             <CustomButton title={'Thanh toán'} />
@@ -327,7 +365,7 @@ const InfoBookingTicket = ({ showTime }) => {
                   }}
                   className="min-w-[100px]"
                 >
-                  <CustomButton title={'Tiếp tục'} />
+                  <CustomButton title={'Tiếp tục'} isLoading={isLoading} />
                 </div>
               ) : (
                 <div

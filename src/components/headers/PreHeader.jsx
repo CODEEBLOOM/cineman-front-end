@@ -1,30 +1,16 @@
 import { Link } from 'react-router-dom';
 import { Avatar, IconButton, Menu, MenuItem } from '@mui/material';
-import { useEffect, useState } from 'react';
-import { fetchInfoUser } from '@redux/slices/userSlice.js';
-import { openSnackbar } from '@redux/slices/snackbarSlice.js';
+import { useState } from 'react';
+import { clearInfoUser } from '@redux/slices/userSlice.js';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchLogout, setIsAuthentication } from '@redux/slices/authSlice.js';
+import { fetchLogout } from '@redux/slices/authSlice.js';
+import { toast } from 'react-toastify';
 const PreHeader = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const dispatch = useDispatch();
 
   const { isAuthentication } = useSelector((state) => state.auth);
   const { user } = useSelector((state) => state.user);
-
-  useEffect(() => {
-    const getInfoUser = async () => {
-      try {
-        await dispatch(fetchInfoUser()).unwrap();
-      } catch (err) {
-        console.log(err);
-        dispatch(setIsAuthentication(false));
-      }
-    };
-    if (isAuthentication) {
-      getInfoUser();
-    }
-  }, [isAuthentication, dispatch]);
 
   const handleUserProfileClick = (event) => {
     setAnchorEl(event.target);
@@ -37,7 +23,8 @@ const PreHeader = () => {
   const handleLogout = async () => {
     try {
       await dispatch(fetchLogout()).unwrap();
-      dispatch(openSnackbar({ message: 'Đăng xuất thành công.' }));
+      dispatch(clearInfoUser());
+      toast.success('Đăng xuất thành công');
     } catch (err) {
       console.log(err);
     }

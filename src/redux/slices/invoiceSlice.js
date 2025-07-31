@@ -19,8 +19,11 @@ export const invoiceSlice = createSlice({
         return invoice;
       });
     },
+    clearInvoice: () => {
+      return initialState;
+    },
   },
 });
 
-export const { setInvoice, updateInvoice } = invoiceSlice.actions;
+export const { setInvoice, updateInvoice, clearInvoice } = invoiceSlice.actions;
 export default invoiceSlice.reducer;

@@ -10,9 +10,9 @@ import * as yup from 'yup';
 import { FcGoogle } from 'react-icons/fc';
 import { loginWithGoogle } from '@apis/authService';
 import { useState } from 'react';
-import Timer from '@component/Timer';
+import { toast } from 'react-toastify';
 
-const LoginComponent = ({ dispatch, openSnackbar, navigate }) => {
+const LoginComponent = ({ dispatch, navigate }) => {
   const { status: loginStatus } = useSelector((state) => state.auth);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -49,11 +49,11 @@ const LoginComponent = ({ dispatch, openSnackbar, navigate }) => {
   const handleLogin = async (data) => {
     try {
       await dispatch(fetchLogin(data))?.unwrap();
-      dispatch(openSnackbar({ message: 'Đăng nhập thành công ' }));
+      toast.success('Đăng nhập thành công !');
       loginReset();
       navigate(redirectUrl, { replace: true });
     } catch (error) {
-      dispatch(openSnackbar({ message: error, type: 'error' }));
+      toast.error(error);
     }
   };
 

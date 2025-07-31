@@ -9,12 +9,12 @@ const TicketSelectComponent = ({ ticketType, count, unitPrice }) => {
           {ticketType}
         </h2>
         <div className={'flex flex-grow flex-wrap justify-end gap-2'}>
-          <div>
+          <div className="text-[18px] font-medium text-pink-400">
             <span>{count}</span>
             <span>x</span>
             <span>{unitPrice}</span>
           </div>
-          <div>
+          <div className="text-[18px] font-medium text-pink-400">
             = <span>{currencyFormatter(count * unitPrice)}</span>
           </div>
         </div>

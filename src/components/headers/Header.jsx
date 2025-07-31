@@ -67,12 +67,12 @@ const Header = () => {
           <div className="flex items-center">
             <Link
               to={'/'}
-              className="block w-[80px] py-2 sm:w-[100px] lg:w-[120px]"
+              className="block w-[80px] py-2 sm:w-[80px] lg:w-[100px]"
             >
               <img
-                src="/logo.png"
+                src="/logo-new-v01.png"
                 alt=""
-                className="h-full w-full object-cover"
+                className="aspect-[3/2] h-auto w-full object-contain"
               />
             </Link>
             <DropdownHeader />

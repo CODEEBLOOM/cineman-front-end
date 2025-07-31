@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 const MoviePage = () => {
   useEffect(() => {
-    document.title = 'Phim - Cineman Cinemas';
+    document.title = 'Phim - POLY CINEMAS';
   }, []);
   return (
     <>

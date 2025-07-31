@@ -11,8 +11,11 @@ export const ticketSlice = createSlice({
     setSelectedSeats: (state, action) => {
       state.selectedSeats = action.payload;
     },
+    clearSelectedSeats: () => {
+      return initialState;
+    },
   },
 });
 
-export const { setSelectedSeats } = ticketSlice.actions;
+export const { setSelectedSeats, clearSelectedSeats } = ticketSlice.actions;
 export default ticketSlice.reducer;

@@ -10,7 +10,7 @@ import { Outlet } from 'react-router-dom';
 const ClientLayout = () => {
   const dispatch = useDispatch();
   const { movieTheater } = useSelector((state) => state.movieTheater);
-  const { isAuthentication } = useSelector((state) => state.auth);
+  const { isAuthentication, accessToken } = useSelector((state) => state.auth);
 
   /* Fetch danh sách rạp chiếu tại các chi nhánh */
   useEffect(() => {
@@ -32,7 +32,7 @@ const ClientLayout = () => {
     if (isAuthentication) {
       getInfoUser();
     }
-  }, [isAuthentication, dispatch]);
+  }, [isAuthentication, accessToken, dispatch]);
 
   return (
     <>

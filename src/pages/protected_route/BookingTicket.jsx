@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 
-import { create } from '@apis/invoiceService';
+import { create, findInvoiceByUserIdAndShowTimeId } from '@apis/invoiceService';
 import { findById } from '@apis/showTimeService';
 import InfoBookingTicket from '@component/choose_seat/InfoBookingTicket';
 import { useEffect, useState } from 'react';
@@ -11,7 +11,7 @@ import ChooseSeatPage from './ChooseSeatsPage';
 import Header from '@component/choose_seat/Header';
 import PaymentPage from './PaymentPage';
 import Footer from '@component/choose_seat/Footer';
-import { setInvoice } from '@redux/slices/invoiceSlice';
+import { setInvoice, updateInvoice } from '@redux/slices/invoiceSlice';
 
 const BookingTicket = () => {
   const { pathname } = useLocation();
@@ -33,26 +33,60 @@ const BookingTicket = () => {
 
   // Tạo hóa đơn cho người dùng - Trạng thái PEDDING //
   useEffect(() => {
-    if (!user) return;
-    const invoice = invoices.find((i) => i.showTimeId === Number(showTimeId));
-    if (invoice && invoice.invoice.status === 'PENDING') return;
-    create(
-      {
-        email: user.email,
-        phoneNumber: user.phoneNumber,
-        customerId: user.userId,
-      },
-      showTimeId
-    )
+    if (!user?.userId) return;
+    findInvoiceByUserIdAndShowTimeId(user.userId, Number(showTimeId))
       .then((res) => {
-        const existingInvoice = invoices.find(
-          (i) => i.invoice.id === res.data.id
-        );
-        if (existingInvoice) return;
-        dispatch(
-          setInvoice({ showTimeId: Number(showTimeId), invoice: res.data })
-        );
-        setTotalMoneyTicket(res.data.totalMoneyTicket);
+        if (res && res.data) {
+          const existingInvoice = invoices.find(
+            (i) => i.invoice.id === res.data.id
+          );
+          if (existingInvoice) {
+            dispatch(updateInvoice(existingInvoice));
+          } else {
+            dispatch(
+              setInvoice({ showTimeId: Number(showTimeId), invoice: res.data })
+            );
+          }
+          setTotalMoneyTicket(res.data.totalMoneyTicket);
+        } else {
+          const isReceptionist = user.roles.find(
+            (role) => role.roleId === 'RCP'
+          );
+          let data;
+          if (isReceptionist) {
+            data = {
+              email: user.email,
+              phoneNumber: user.phoneNumber,
+              staffId: user.userId,
+            };
+          } else {
+            data = {
+              email: user.email,
+              phoneNumber: user.phoneNumber,
+              customerId: user.userId,
+            };
+          }
+          create(data)
+            .then((res) => {
+              const existingInvoice = invoices.find(
+                (i) => i.invoice.id === res.data.id
+              );
+              if (existingInvoice) {
+                dispatch(updateInvoice(existingInvoice));
+              } else {
+                dispatch(
+                  setInvoice({
+                    showTimeId: Number(showTimeId),
+                    invoice: res.data,
+                  })
+                );
+              }
+              setTotalMoneyTicket(res.data.totalMoneyTicket);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        }
       })
       .catch((err) => {
         console.log(err);

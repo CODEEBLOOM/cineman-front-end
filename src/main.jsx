@@ -35,6 +35,7 @@ import GoogleCallback from '@pages/auth/GoogleCallback';
 import ClientLayout from '@pages/client/ClientLayout';
 import ListMovie from '@component/admin/movie/ListMovie';
 import BookingTicket from '@pages/protected_route/BookingTicket';
+import PaymentCallback from '@component/payment/PaymentCallback';
 
 const router = createBrowserRouter([
   {
@@ -67,6 +68,10 @@ const router = createBrowserRouter([
           {
             path: '/payment',
             element: <BookingTicket />,
+          },
+          {
+            path: '/payment/payment-callback',
+            element: <PaymentCallback />,
           },
         ],
       },

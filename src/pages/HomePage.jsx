@@ -17,7 +17,7 @@ const HomePage = () => {
 
   // Set document title
   useEffect(() => {
-    document.title = 'Cineman Cinemas ( Trang chủ )';
+    document.title = 'POLY CINEMAS - ( Trang chủ )';
   }, []);
 
   return (

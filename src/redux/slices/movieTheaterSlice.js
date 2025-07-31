@@ -37,6 +37,7 @@ export const fetchProvince = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await axios.get('/admin/province/all');
+      console.log(res);
       let listItems = res?.data.map((item) => {
         return {
           title: item.name,

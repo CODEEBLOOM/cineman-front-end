@@ -8,6 +8,10 @@ import { toast } from 'react-toastify';
 import { clearInvoice } from '@redux/slices/invoiceSlice';
 import { clearSnack } from '@redux/slices/snackSlice';
 import { clearSelectedSeats } from '@redux/slices/ticketSlice';
+import { IoInformationCircleOutline } from 'react-icons/io5';
+import { MdCardMembership } from 'react-icons/md';
+import { RiLogoutCircleLine, RiMovie2AiLine } from 'react-icons/ri';
+import { TfiTicket } from 'react-icons/tfi';
 const PreHeader = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const dispatch = useDispatch();
@@ -59,11 +63,28 @@ const PreHeader = () => {
       transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
     >
-      <MenuItem>Thông tin tài khoản</MenuItem>
-      <MenuItem>Thẻ thành viên</MenuItem>
-      <MenuItem>Hành trình điện ảnh</MenuItem>
-      <MenuItem>Voucher của tôi</MenuItem>
-      <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
+      <MenuItem>
+        <Link to={'/my-account'} className="flex items-center">
+          <IoInformationCircleOutline size={20} className="mr-2" />
+          Thông tin tài khoản
+        </Link>
+      </MenuItem>
+      <MenuItem>
+        <MdCardMembership size={20} className="mr-2" />
+        Thẻ thành viên
+      </MenuItem>
+      <MenuItem>
+        <RiMovie2AiLine size={20} className="mr-2" />
+        Hành trình điện ảnh
+      </MenuItem>
+      <MenuItem>
+        <TfiTicket size={20} className="mr-2" />
+        Voucher của tôi
+      </MenuItem>
+      <MenuItem onClick={handleLogout}>
+        <RiLogoutCircleLine size={20} className="mr-2" />
+        Đăng xuất
+      </MenuItem>
     </Menu>
   );
 

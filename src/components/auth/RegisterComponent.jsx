@@ -77,7 +77,7 @@ const RegisterComponent = ({ dispatch, openSnackbar, navigate, setValue }) => {
   return (
     <>
       <form onSubmit={handleRegisterSubmit(handleRegister)}>
-        <div className="grid grid-cols-2 justify-between gap-x-2">
+        <dv className="grid grid-cols-2 justify-between gap-x-2">
           <FormField
             name="fullName"
             label="Họ tên"
@@ -158,7 +158,7 @@ const RegisterComponent = ({ dispatch, openSnackbar, navigate, setValue }) => {
             ]}
             error={registerErrors['gender']}
           />
-        </div>
+        </dv>
         <div className="mx-auto mt-4 flex flex-col items-center gap-3">
           <Button
             type="submit"

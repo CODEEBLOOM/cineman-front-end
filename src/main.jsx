@@ -37,6 +37,7 @@ import ListMovie from '@component/admin/movie/ListMovie';
 import BookingTicket from '@pages/protected_route/BookingTicket';
 import PaymentCallback from '@component/payment/PaymentCallback';
 import { injectStore } from '@apis/axiosClient';
+import MyAccount from '@pages/protected_route/MyAccount';
 
 const router = createBrowserRouter([
   {
@@ -73,6 +74,10 @@ const router = createBrowserRouter([
           {
             path: '/payment/payment-callback',
             element: <PaymentCallback />,
+          },
+          {
+            path: '/my-account',
+            element: <MyAccount />,
           },
         ],
       },

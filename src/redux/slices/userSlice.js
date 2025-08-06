@@ -25,6 +25,7 @@ export const userSlice = createSlice({
       })
       .addCase(fetchInfoUser.rejected, (state) => {
         state.status = 'rejected';
+        state.user = {};
       });
   },
 });
@@ -36,8 +37,7 @@ export const fetchInfoUser = createAsyncThunk(
   'auth/user',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.get('/auth/user');
-      console.log(res);
+      const res = await axios.get(`/auth/user`);
       return res.data;
     } catch (err) {
       console.log(err);

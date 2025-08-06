@@ -30,6 +30,7 @@ const Timer = ({ deadlineTime }) => {
     } else {
       dispatch(clearSnack());
       clearInterval(ref.current);
+      sessionStorage.removeItem('bookingDeadline');
       navigate('/', { replace: true });
     }
   };
@@ -45,13 +46,31 @@ const Timer = ({ deadlineTime }) => {
     ref.current = id;
   };
   const getDeadlineTime = () => {
-    let deadline = new Date();
+    // let deadline = new Date();
+    // deadline.setMinutes(deadline.getMinutes() + deadlineTime);
+    // return deadline;
+    const saved = sessionStorage.getItem('bookingDeadline');
+    if (saved) return new Date(saved);
+
+    const deadline = new Date();
     deadline.setMinutes(deadline.getMinutes() + deadlineTime);
+    sessionStorage.setItem('bookingDeadline', deadline.toISOString());
     return deadline;
   };
 
+  // useEffect(() => {
+  //   clearTimer(getDeadlineTime());
+  //   return () => {
+  //     if (ref.current) {
+  //       dispatch(clearSnack());
+  //       clearInterval(ref.current);
+  //     }
+  //   };
+  // }, []);
   useEffect(() => {
-    clearTimer(getDeadlineTime());
+    const deadline = getDeadlineTime(); // <-- sử dụng deadline từ session
+    clearTimer(deadline);
+
     return () => {
       if (ref.current) {
         dispatch(clearSnack());
@@ -59,6 +78,7 @@ const Timer = ({ deadlineTime }) => {
       }
     };
   }, []);
+
   return (
     <div className="flex items-center justify-center">
       <p className="font-medium text-primary md:text-[20px]">{timer}</p>

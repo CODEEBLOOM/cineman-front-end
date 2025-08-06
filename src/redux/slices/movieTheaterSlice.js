@@ -36,8 +36,7 @@ export const fetchProvince = createAsyncThunk(
   'movieTheater/fetchProvince',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.get('/admin/province/all');
-      console.log(res);
+      const res = await axios.get(`/admin/province/all`);
       let listItems = res?.data.map((item) => {
         return {
           title: item.name,

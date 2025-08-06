@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '@apis/axiosClient';
-
 const initialState = {
   accessToken: null,
   isAuthentication: false,
@@ -14,8 +13,17 @@ export const authSlice = createSlice({
     setIsAuthentication: (state, action) => {
       state.isAuthentication = action.payload;
     },
+    setAuthState: (state, action) => {
+      state.isAuthentication = action.payload.isAuthentication;
+      state.accessToken = action.payload.accessToken;
+      state.status = 'fulfilled';
+    },
     clearInfoAuth: () => {
       return initialState;
+    },
+    setAccessToken: (state, action) => {
+      state.accessToken = action.payload;
+      state.isAuthentication = true;
     },
   },
   extraReducers: (builder) => {
@@ -61,12 +69,15 @@ export const fetchLogin = createAsyncThunk(
   'auth/fetchLogin',
   async (data, { rejectWithValue }) => {
     try {
-      return await axios.post('/auth/login', data);
+      const res = await axios.post('/auth/login', data);
+      axios.defaults.headers.common['Authorization'] =
+        `Bearer ${res.accessToken}`;
+      return res;
     } catch (err) {
-      console.log(err);
-      if (err.response.status >= 400) {
+      if (err.response?.status >= 400) {
         return rejectWithValue(err.response.data.message);
       }
+      console.error(err);
     }
   }
 );
@@ -78,7 +89,8 @@ export const fetchLogout = createAsyncThunk(
   'auth/fetchLogout',
   async (_, { rejectWithValue }) => {
     try {
-      return await axios.post('/auth/logout');
+      const res = await axios.post(`/auth/logout`);
+      return res;
     } catch (err) {
       console.log(err);
       if (err.response.status >= 400) {
@@ -95,12 +107,21 @@ export const loginGoogle = createAsyncThunk(
   'auth/loginGoogle',
   async (code, { rejectWithValue }) => {
     try {
-      return await axios.get('/auth/social/callback', {
-        params: {
-          code,
-          login_type: 'google',
+      const res = await axios.get(
+        `/auth/social/callback`,
+        {
+          params: {
+            code,
+            login_type: 'google',
+          },
         },
-      });
+        {
+          withCredentials: true,
+        }
+      );
+      axios.defaults.headers.common['Authorization'] =
+        `Bearer ${res.accessToken}`;
+      return res;
     } catch (err) {
       console.log(err);
       if (err.response.status >= 400) {
@@ -110,5 +131,6 @@ export const loginGoogle = createAsyncThunk(
   }
 );
 
-export const { setIsAuthentication, clearInfoAuth } = authSlice.actions;
+export const { setIsAuthentication, clearInfoAuth, setAccessToken } =
+  authSlice.actions;
 export default authSlice.reducer;

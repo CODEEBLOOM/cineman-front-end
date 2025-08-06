@@ -1,45 +1,30 @@
 import axios from 'axios';
-import cookies from 'js-cookie';
+import { setAccessToken, clearInfoAuth } from '@redux/slices/authSlice';
 
-/**
- * Custom base axios for
- */
+let store; // sẽ được inject sau
+export const injectStore = (_store) => {
+  store = _store;
+};
+
 const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_HOST,
   timeout: 10000,
   withCredentials: true,
 });
 
-axiosClient.interceptors.request.use(
-  function (config) {
-    // TODO: cần phải gắn access token vào đây
-    const localData = localStorage.getItem('persist:root');
-    if (localData) {
-      const auth = JSON.parse(JSON.parse(localData).auth);
-      if (auth !== null) {
-        if (auth?.accessToken) {
-          config.headers.Authorization = `Bearer ${auth.accessToken}`;
-        }
-      }
-    }
-
-    return config;
-  },
-  function (error) {
-    return Promise.reject(error);
+axiosClient.interceptors.request.use((config) => {
+  const { auth } = store.getState();
+  if (auth?.accessToken) {
+    config.headers.Authorization = `Bearer ${auth.accessToken}`;
   }
-);
+  return config;
+});
 
 axiosClient.interceptors.response.use(
-  function (response) {
-    if (response && response.data) {
-      return response.data;
-    }
-    return response;
-  },
+  (response) => response?.data ?? response,
   async (error) => {
-    // TODO: Cần phải refresh token nếu access token hết hạn và trả vể mã lỗi 401
     const originalRequest = error.config;
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
@@ -49,28 +34,20 @@ axiosClient.interceptors.response.use(
           {},
           { withCredentials: true }
         );
+        const newAccessToken = res.data.accessToken;
 
-        /* Cập nhật lại accessToken trong localStorage */
-        const localData = localStorage.getItem('persist:root');
-        if (localData) {
-          const parsedData = JSON.parse(localData);
-          if (parsedData.auth) {
-            const auth = JSON.parse(parsedData.auth);
-            auth.accessToken = res.data.accessToken;
-            parsedData.auth = JSON.stringify(auth);
-            localStorage.setItem('persist:root', JSON.stringify(parsedData));
-          }
-        }
+        // Cập nhật accessToken trong Redux store
+        store.dispatch(setAccessToken(newAccessToken));
 
-        /* Thực hiện gọi lại request vừa bị chặn */
-        originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
+        // Gắn token mới vào request ban đầu rồi gọi lại
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return axiosClient(originalRequest);
-      } catch (error) {
-        cookies.remove('refreshToken');
-        localStorage.removeItem('persist:root');
-        return Promise.reject(error);
+      } catch (err) {
+        store.dispatch(clearInfoAuth());
+        return Promise.reject(err);
       }
     }
+
     return Promise.reject(error);
   }
 );

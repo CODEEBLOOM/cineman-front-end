@@ -4,14 +4,18 @@ import { motion } from 'framer-motion';
 import { create, findInvoiceByUserIdAndShowTimeId } from '@apis/invoiceService';
 import { findById } from '@apis/showTimeService';
 import InfoBookingTicket from '@component/choose_seat/InfoBookingTicket';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import ChooseSeatPage from './ChooseSeatsPage';
 import Header from '@component/choose_seat/Header';
 import PaymentPage from './PaymentPage';
 import Footer from '@component/choose_seat/Footer';
-import { setInvoice, updateInvoice } from '@redux/slices/invoiceSlice';
+import {
+  removeInvoice,
+  setInvoice,
+  updateInvoice,
+} from '@redux/slices/invoiceSlice';
 
 const BookingTicket = () => {
   const { pathname } = useLocation();
@@ -28,70 +32,78 @@ const BookingTicket = () => {
   // Cuộn thành Scroll về đầu trang
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-    document.title = 'Chọn Ghế - Cineman Cinemas';
+    document.title = 'Chọn Ghế - Poly Cinemas';
   }, [pathname]);
 
-  // Tạo hóa đơn cho người dùng - Trạng thái PEDDING //
+  const invoiceCreatedRef = useRef(false);
   useEffect(() => {
-    if (!user?.userId) return;
-    findInvoiceByUserIdAndShowTimeId(user.userId, Number(showTimeId))
-      .then((res) => {
-        if (res && res.data) {
-          const existingInvoice = invoices.find(
-            (i) => i.invoice.id === res.data.id
+    if (!user?.userId || invoiceCreatedRef.current) return;
+
+    invoiceCreatedRef.current = true;
+
+    const loadInvoice = async () => {
+      try {
+        const res = await findInvoiceByUserIdAndShowTimeId(
+          user.userId,
+          Number(showTimeId)
+        );
+        const invoiceData = res?.data;
+
+        if (invoiceData) {
+          const alreadyExists = invoices.some(
+            (i) => i.invoice.id === invoiceData.id
           );
-          if (existingInvoice) {
-            dispatch(updateInvoice(existingInvoice));
+          if (alreadyExists) {
+            if (invoiceData.showTimeId !== Number(showTimeId)) {
+              dispatch(removeInvoice(invoiceData.id));
+              dispatch(
+                setInvoice({
+                  showTimeId: Number(showTimeId),
+                  invoice: invoiceData,
+                })
+              );
+            } else {
+              dispatch(updateInvoice(invoiceData));
+            }
           } else {
             dispatch(
-              setInvoice({ showTimeId: Number(showTimeId), invoice: res.data })
+              setInvoice({
+                showTimeId: Number(showTimeId),
+                invoice: invoiceData,
+              })
             );
           }
-          setTotalMoneyTicket(res.data.totalMoneyTicket);
+          setTotalMoneyTicket(invoiceData.totalMoneyTicket);
         } else {
-          const isReceptionist = user.roles.find(
-            (role) => role.roleId === 'RCP'
-          );
-          let data;
-          if (isReceptionist) {
-            data = {
-              email: user.email,
-              phoneNumber: user.phoneNumber,
-              staffId: user.userId,
-            };
-          } else {
-            data = {
-              email: user.email,
-              phoneNumber: user.phoneNumber,
-              customerId: user.userId,
-            };
-          }
-          create(data)
-            .then((res) => {
-              const existingInvoice = invoices.find(
-                (i) => i.invoice.id === res.data.id
-              );
-              if (existingInvoice) {
-                dispatch(updateInvoice(existingInvoice));
-              } else {
-                dispatch(
-                  setInvoice({
-                    showTimeId: Number(showTimeId),
-                    invoice: res.data,
-                  })
-                );
+          const isReceptionist = user.roles.some((r) => r.roleId === 'RCP');
+          const data = isReceptionist
+            ? {
+                email: user.email,
+                phoneNumber: user.phoneNumber,
+                staffId: user.userId,
               }
-              setTotalMoneyTicket(res.data.totalMoneyTicket);
+            : {
+                email: user.email,
+                phoneNumber: user.phoneNumber,
+                customerId: user.userId,
+              };
+
+          const newInvoice = await create(data);
+          dispatch(
+            setInvoice({
+              showTimeId: Number(showTimeId),
+              invoice: newInvoice.data,
             })
-            .catch((err) => {
-              console.log(err);
-            });
+          );
+          setTotalMoneyTicket(newInvoice.data.totalMoneyTicket);
         }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [dispatch, user.email, user.phoneNumber, user.userId]);
+      } catch (err) {
+        console.error('Error handling invoice:', err);
+      }
+    };
+
+    loadInvoice();
+  }, [dispatch, user, showTimeId, invoices]);
 
   /* Lấy thông tin của rạp chiếu */
   const [showTime, setShowTime] = useState({});
@@ -105,6 +117,14 @@ const BookingTicket = () => {
         navigate('/', { replace: true });
       });
   }, [showTimeId, navigate]);
+
+  // Clear Timer //
+  useEffect(() => {
+    return () => {
+      sessionStorage.removeItem('bookingDeadline'); // Xóa khi unmount
+    };
+  }, []);
+
   return (
     <>
       <div className={'container pb-6'}>

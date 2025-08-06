@@ -1,15 +1,18 @@
 import { Link } from 'react-router-dom';
 import { Avatar, IconButton, Menu, MenuItem } from '@mui/material';
-import { useState } from 'react';
-import { clearInfoUser } from '@redux/slices/userSlice.js';
+import { useEffect, useState } from 'react';
+import { clearInfoUser, fetchInfoUser } from '@redux/slices/userSlice.js';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchLogout } from '@redux/slices/authSlice.js';
+import { clearInfoAuth, fetchLogout } from '@redux/slices/authSlice.js';
 import { toast } from 'react-toastify';
+import { clearInvoice } from '@redux/slices/invoiceSlice';
+import { clearSnack } from '@redux/slices/snackSlice';
+import { clearSelectedSeats } from '@redux/slices/ticketSlice';
 const PreHeader = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const dispatch = useDispatch();
 
-  const { isAuthentication } = useSelector((state) => state.auth);
+  const { isAuthentication, accessToken } = useSelector((state) => state.auth);
   const { user } = useSelector((state) => state.user);
 
   const handleUserProfileClick = (event) => {
@@ -24,11 +27,29 @@ const PreHeader = () => {
     try {
       await dispatch(fetchLogout()).unwrap();
       dispatch(clearInfoUser());
+      dispatch(clearInvoice());
+      dispatch(clearSnack());
+      dispatch(clearSelectedSeats());
       toast.success('Đăng xuất thành công');
     } catch (err) {
       console.log(err);
     }
   };
+
+  /* Fetch thông tin user nếu đã đăng nhập thành công */
+  useEffect(() => {
+    const getInfoUser = async () => {
+      try {
+        await dispatch(fetchInfoUser()).unwrap();
+      } catch (err) {
+        console.log(err);
+        dispatch(clearInfoAuth());
+      }
+    };
+    if (isAuthentication && accessToken) {
+      getInfoUser();
+    }
+  }, [isAuthentication, accessToken, dispatch]);
 
   const renderMenu = (
     <Menu
@@ -49,11 +70,11 @@ const PreHeader = () => {
   return (
     <div className="bg-black">
       <div className="container flex items-center justify-end text-center text-white">
-        {isAuthentication ? (
+        {isAuthentication && user?.userId ? (
           <>
             <div className={'mr-2'}>
               <span>Xin chào:&nbsp;</span>
-              <span>{user.fullName}</span>
+              <span>{user?.fullName}</span>
               <IconButton size={'medium'} onClick={handleUserProfileClick}>
                 <Avatar sx={{ width: 32, height: 32 }} src={user.avatar} />
               </IconButton>

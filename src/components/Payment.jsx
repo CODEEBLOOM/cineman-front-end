@@ -3,9 +3,10 @@ import ComboComponent from './payment/ComboComponent';
 import DiscountComponent from './payment/DiscountComponent';
 import InfoUserComponent from './payment/InfoUserOrderComponent';
 import TicketSelectComponent from './payment/TicketSelectComponent';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import PaymentMethod from './payment/PaymentMethod';
-import { useState } from 'react';
+import { useEffect, useRef } from 'react';
+import { updateInvoice } from '@redux/slices/invoiceSlice';
 
 const Payment = ({
   showTime,
@@ -14,17 +15,53 @@ const Payment = ({
   doubleSeatsSelected,
 }) => {
   const { invoices } = useSelector((state) => state.invoice);
-  const { snackSelected } = useSelector((state) => state.snack);
   const invoice = invoices.find((i) => i.showTimeId === showTime.id);
-  const [voucher, setVoucher] = useState(null);
+  const { snackSelected } = useSelector((state) => state.snack);
+  const { selectedSeats } = useSelector((state) => state.ticket);
+  const { voucher } = useSelector((state) => state.invoice);
   let totalDiscount = voucher ? voucher.discount : 0;
+  const dispatch = useDispatch();
 
-  const totalMoney =
-    invoice?.invoice.totalMoney +
-    snackSelected.reduce(
+  const lastTotalMoneyRef = useRef(null);
+
+  useEffect(() => {
+    if (!invoice) return;
+
+    const totalTicketMoney =
+      selectedSeats.reduce((total, item) => total + item.price, 0) -
+      totalDiscount;
+
+    const totalSnackMoney = snackSelected.reduce(
       (total, item) => total + item.unitPrice * item.quantity,
       0
     );
+
+    const newTotalMoney = totalTicketMoney + totalSnackMoney;
+
+    // Nếu chưa thay đổi thì không update nữa để tránh vòng lặp
+    if (invoice.invoice.totalMoney === newTotalMoney) return;
+
+    // Lưu lại để tránh redundant update
+    if (lastTotalMoneyRef.current === newTotalMoney) return;
+    lastTotalMoneyRef.current = newTotalMoney;
+    console.log({
+      ...invoice,
+      invoice: {
+        ...invoice.invoice,
+        totalMoney: newTotalMoney,
+      },
+    });
+    dispatch(
+      updateInvoice({
+        ...invoice,
+        invoice: {
+          ...invoice.invoice,
+          totalMoney: newTotalMoney,
+        },
+      })
+    );
+  }, [selectedSeats, snackSelected, totalDiscount, invoice, dispatch]);
+
   return (
     <>
       {/*Phần payment*/}
@@ -51,16 +88,14 @@ const Payment = ({
         />
       )}
       {/*  Combo ưu đãi*/}
-      <ComboComponent />
-      <DiscountComponent
-        invoice={invoice}
-        voucher={voucher}
-        setVoucher={setVoucher}
-      />
+      <ComboComponent invoice={invoice} voucher={voucher} />
+      <DiscountComponent showTime={showTime} />
       <div>
         <div className="flex justify-between gap-3 text-[20px] font-medium">
           <p className="min-w-[80%] text-end">Tổng tiền:&nbsp;</p>
-          <p className="text-red-500">{currencyFormatter(totalMoney)}</p>
+          <p className="text-red-500">
+            {currencyFormatter(invoice?.invoice?.totalMoney + totalDiscount)}
+          </p>
         </div>
         <div className="flex justify-between gap-3 text-[20px] font-medium">
           <p className="min-w-[80%] text-end">Số tiền được giảm:&nbsp;</p>
@@ -69,7 +104,7 @@ const Payment = ({
         <div className="flex justify-between gap-3 text-[20px] font-medium">
           <p className="min-w-[80%] text-end">Số tiền cần thanh toán:&nbsp;</p>
           <p className="text-red-500">
-            {currencyFormatter(totalMoney - totalDiscount)}
+            {currencyFormatter(invoice?.invoice?.totalMoney)}
           </p>
         </div>
       </div>

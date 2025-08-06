@@ -29,7 +29,6 @@ const ComboComponent = () => {
    * Otherwise, increase the quantity of the combo in snackSelected by 1.
    */
   const handleSelectCombo = (combo) => {
-    console.log(combo);
     const foundSnackSelected = snackSelected.find(
       (item) => item.id === combo.id
     );
@@ -38,7 +37,6 @@ const ComboComponent = () => {
         ...combo,
         quantity: 1,
       };
-      console.log(createSnackSelected);
       dispatch(setSnack([...snackSelected, createSnackSelected]));
     } else {
       const findIndex = snackSelected.findIndex((item) => item.id === combo.id);

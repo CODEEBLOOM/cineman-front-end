@@ -6,7 +6,6 @@ import { useDispatch } from 'react-redux';
 import { openSnackbar } from '@redux/slices/snackbarSlice';
 import RegisterComponent from '@component/auth/RegisterComponent';
 import LoginComponent from '@component/auth/LoginComponent';
-import Timer from '@component/Timer';
 
 const LoginPage = () => {
   const [searchParams] = useSearchParams();

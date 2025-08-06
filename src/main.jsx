@@ -36,6 +36,7 @@ import ClientLayout from '@pages/client/ClientLayout';
 import ListMovie from '@component/admin/movie/ListMovie';
 import BookingTicket from '@pages/protected_route/BookingTicket';
 import PaymentCallback from '@component/payment/PaymentCallback';
+import { injectStore } from '@apis/axiosClient';
 
 const router = createBrowserRouter([
   {
@@ -178,6 +179,7 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+injectStore(store);
 createRoot(document.getElementById('root')).render(
   // <StrictMode>
   <Provider store={store}>

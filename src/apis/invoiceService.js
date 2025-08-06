@@ -27,7 +27,12 @@ export const update = async (data) => {
  * @param {string} data.txnRef - Mã giao dịch VNPay
  * @returns {Promise<axios.AxiosResponse<any>>}
  */
-export const updateIxnRef = async ({ invoiceId, txnRef, promotionId }) => {
+export const updateIxnRef = async ({
+  invoiceId,
+  txnRef,
+  promotionId,
+  totalMoney,
+}) => {
   const url = `/invoice/${invoiceId}/update-tnx`;
   return await axios.put(
     url,
@@ -36,6 +41,7 @@ export const updateIxnRef = async ({ invoiceId, txnRef, promotionId }) => {
       params: {
         txnRef,
         promotionId,
+        totalMoney,
       },
     }
   );

@@ -1,51 +1,92 @@
 import { findUserByEmail } from '@apis/userService';
 import { Button, CircularProgress, TextField } from '@mui/material';
-import { setInvoice } from '@redux/slices/invoiceSlice';
+import {
+  setCustomer,
+  setVoucher,
+  updateInvoice,
+} from '@redux/slices/invoiceSlice';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 const InfoUserComponent = ({ showTime }) => {
+  const { user } = useSelector((state) => state.user);
+  const isReceptionistRole = user?.roles?.some((role) => role.roleId === 'RCP');
+  const { invoices, customer, voucher } = useSelector((state) => state.invoice);
+  const dispatch = useDispatch();
   const inputRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
-  const [infoCustomer, setInfoCustomer] = useState({});
-  const { user } = useSelector((state) => state.user);
-  const isReceptionistRole = user.roles.find((role) => role.roleId === 'RCP');
-  const { invoices } = useSelector((state) => state.invoice);
-  const dispatch = useDispatch();
 
   useEffect(() => {
-    if (infoCustomer?.fullName) {
-      const invoice = invoices.find(
-        (i) => i.showTimeId === Number(showTime.id)
-      );
+    const invoice = invoices.find((i) => i.showTimeId === Number(showTime.id));
+
+    if (customer) {
       if (invoice) {
         dispatch(
-          setInvoice({
+          updateInvoice({
             ...invoice,
             invoice: {
               ...invoice.invoice,
-              fullName: infoCustomer.fullName,
-              email: infoCustomer.email,
-              phoneNumber: infoCustomer.phoneNumber,
-              customerId: infoCustomer.userId,
+              email: customer.email,
+              phoneNumber: customer.phoneNumber,
+              customerId: customer.userId,
             },
           })
         );
+        return;
+      }
+    } else {
+      if (invoice) {
+        let newInfoInvoice;
+        if (isReceptionistRole) {
+          newInfoInvoice = {
+            ...invoice,
+            invoice: {
+              ...invoice.invoice,
+              email: user.email,
+              phoneNumber: user.phoneNumber,
+              customerId: null,
+              staffId: user.userId,
+            },
+          };
+        } else {
+          newInfoInvoice = {
+            ...invoice,
+            invoice: {
+              ...invoice.invoice,
+              email: user.email,
+              phoneNumber: user.phoneNumber,
+              customerId: user.userId,
+              staffId: null,
+            },
+          };
+        }
+        dispatch(updateInvoice(newInfoInvoice));
       }
     }
-  }, [infoCustomer, dispatch]);
+  }, [customer, dispatch, showTime, isReceptionistRole, user]);
 
   const handleFindUser = () => {
     setIsLoading(true);
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const value = inputRef.current.value;
     if (emailRegex.test(value)) {
-      console.log('Email is valid');
       findUserByEmail(value)
         .then((res) => {
-          console.log(res);
-          setInfoCustomer(res.data);
+          if (res.data === null) {
+            toast.error('Không tìm thấy người dùng !');
+            setIsLoading(false);
+            return;
+          }
+
+          // Kiểm tra có phải là user hay không //
+          const isUser = res.data.roles.find((role) => role.roleId === 'USER');
+          if (!isUser) {
+            toast.error('Không tìm thấy người dùng !');
+            setIsLoading(false);
+            return;
+          }
+          dispatch(setCustomer(res.data));
         })
         .catch((err) => {
           console.log(err);
@@ -56,6 +97,31 @@ const InfoUserComponent = ({ showTime }) => {
     } else {
       toast.error('Vui lòng nhập đúng định dạng email !');
       setIsLoading(false);
+    }
+  };
+
+  const handleCancelCustomer = () => {
+    dispatch(setCustomer(null));
+    if (voucher) {
+      const invoice = invoices.find(
+        (i) => i.showTimeId === Number(showTime.id)
+      );
+      dispatch(
+        updateInvoice({
+          ...invoice,
+          invoice: {
+            ...invoice.invoice,
+            customerId: null,
+            staffId: user.userId,
+            fullName: user.fullName,
+            email: user.email,
+            phoneNumber: user.phoneNumber,
+            totalMoney: invoice.invoice.totalMoney + voucher.discount,
+            promotionId: null,
+          },
+        })
+      );
+      dispatch(setVoucher(null));
     }
   };
 
@@ -87,7 +153,7 @@ const InfoUserComponent = ({ showTime }) => {
             </div>
             <div className="mt-3">
               <h2 className="text-[18px] font-bold">Thông tin khách hàng</h2>
-              {!infoCustomer?.fullName && (
+              {!customer?.fullName && (
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <TextField
@@ -116,21 +182,21 @@ const InfoUserComponent = ({ showTime }) => {
                   </div>
                 </div>
               )}
-              {infoCustomer?.fullName && (
+              {customer?.fullName && (
                 <>
                   <div className="flex flex-wrap gap-2">
                     <p className={'font-bold'}>Họ Tên:</p>
-                    <p>{infoCustomer?.fullName}</p>
+                    <p>{customer?.fullName}</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <p className={'font-bold'}>Số điện thoại:</p>
-                    <p>{infoCustomer?.phoneNumber}</p>
+                    <p>{customer?.phoneNumber}</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <p className={'font-bold'}>Email:</p>
-                    <p>{infoCustomer?.email}</p>
+                    <p>{customer?.email}</p>
                   </div>
-                  <div onClick={() => setInfoCustomer({})}>
+                  <div onClick={handleCancelCustomer}>
                     <Button variant="outlined">Tìm kiếm thêm</Button>
                   </div>
                 </>

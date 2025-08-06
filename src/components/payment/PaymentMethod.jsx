@@ -6,13 +6,21 @@ import { useDispatch, useSelector } from 'react-redux';
 const PaymentMethod = ({ showTimeId }) => {
   const { user } = useSelector((state) => state.user);
   const { invoices } = useSelector((state) => state.invoice);
+  const isReceptionist = user?.roles?.some((role) => role.roleId === 'RCP');
   const dispatch = useDispatch();
 
-  const { register, watch } = useForm({
+  const { register, watch, reset } = useForm({
     defaultValues: {
-      paymentMethod: 'BANK_TRANSFER',
+      paymentMethod: `${isReceptionist ? 'CASH' : 'BANK_TRANSFER'}`,
     },
   });
+
+  // Khi load trang, chọn phuong thuc thanh toan mac dinh //
+  useEffect(() => {
+    if (isReceptionist) {
+      reset({ paymentMethod: 'CASH' });
+    }
+  }, [isReceptionist, reset]);
   // Theo dõi giá trị khi user chọn
   const selectedPayment = watch('paymentMethod');
 
@@ -28,7 +36,7 @@ const PaymentMethod = ({ showTimeId }) => {
       };
       dispatch(updateInvoice(infoUpdateInvoice));
     }
-  }, [selectedPayment, dispatch]);
+  }, [selectedPayment, showTimeId, dispatch]);
 
   return (
     <div>
@@ -42,28 +50,28 @@ const PaymentMethod = ({ showTimeId }) => {
         </h2>
       </div>
       <form className="mt-3 flex gap-4">
-        <label htmlFor="payment-vnpay" className="cursor-pointer">
-          <div className="flex select-none items-center gap-3">
-            <input
-              type="radio"
-              id="payment-vnpay"
-              name="payment-method"
-              value="BANK_TRANSFER"
-              {...register('paymentMethod')}
-              defaultChecked
-            />
-            <div className="h-[50px] w-[50px] rounded-sm border">
-              <img
-                src="/vnpay-logo.png"
-                alt="vnpay logo payment"
-                className="h-full w-full object-cover"
+        {!isReceptionist ? (
+          <label htmlFor="payment-vnpay" className="cursor-pointer">
+            <div className="flex select-none items-center gap-3">
+              <input
+                type="radio"
+                id="payment-vnpay"
+                name="payment-method"
+                value="BANK_TRANSFER"
+                {...register('paymentMethod')}
+                defaultChecked
               />
+              <div className="h-[50px] w-[50px] rounded-sm border">
+                <img
+                  src="/vnpay-logo.png"
+                  alt="vnpay logo payment"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <p className="text-[18px] font-medium text-gray-800">VNPay</p>
             </div>
-            <p className="text-[18px] font-medium text-gray-800">VNPay</p>
-          </div>
-        </label>
-        {user?.roles.find((r) => r.roleId !== 'ADMIN' && r.roleId !== 'CADMIN')
-          .roleId !== 'USER' && (
+          </label>
+        ) : (
           <label
             htmlFor="payment-cash"
             className="flex cursor-pointer select-none items-center gap-3"

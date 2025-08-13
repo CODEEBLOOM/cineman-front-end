@@ -64,22 +64,28 @@ const PreHeader = () => {
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
     >
       <MenuItem>
-        <Link to={'/my-account'} className="flex items-center">
+        <Link to={'/my-account?tab=profile'} className="flex items-center">
           <IoInformationCircleOutline size={20} className="mr-2" />
           Thông tin tài khoản
         </Link>
       </MenuItem>
       <MenuItem>
-        <MdCardMembership size={20} className="mr-2" />
-        Thẻ thành viên
+        <Link to={'/my-account?tab=membership'} className="flex items-center">
+          <MdCardMembership size={20} className="mr-2" />
+          Thẻ thành viên
+        </Link>
       </MenuItem>
       <MenuItem>
-        <RiMovie2AiLine size={20} className="mr-2" />
-        Hành trình điện ảnh
+        <Link to={'/my-account?tab=transaction'} className="flex items-center">
+          <RiMovie2AiLine size={20} className="mr-2" />
+          Lịch sử giao dịch
+        </Link>
       </MenuItem>
       <MenuItem>
-        <TfiTicket size={20} className="mr-2" />
-        Voucher của tôi
+        <Link to={'/my-account?tab=voucher'} className="flex items-center">
+          <TfiTicket size={20} className="mr-2" />
+          Voucher của tôi
+        </Link>
       </MenuItem>
       <MenuItem onClick={handleLogout}>
         <RiLogoutCircleLine size={20} className="mr-2" />
@@ -97,7 +103,7 @@ const PreHeader = () => {
               <span>Xin chào:&nbsp;</span>
               <span>{user?.fullName}</span>
               <IconButton size={'medium'} onClick={handleUserProfileClick}>
-                <Avatar sx={{ width: 32, height: 32 }} src={user.avatar} />
+                <Avatar sx={{ width: 32, height: 32 }} src={user?.avatar} />
               </IconButton>
             </div>
             {renderMenu}

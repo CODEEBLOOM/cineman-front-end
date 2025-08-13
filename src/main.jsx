@@ -38,17 +38,24 @@ import BookingTicket from '@pages/protected_route/BookingTicket';
 import PaymentCallback from '@component/payment/PaymentCallback';
 import { injectStore } from '@apis/axiosClient';
 import MyAccount from '@pages/protected_route/MyAccount';
+import NotFoundPage from '@pages/NotFound';
+import CinemaShowtime from '@pages/CinemaShowTime';
 
 const router = createBrowserRouter([
   {
     element: <RootLayout />,
     children: [
+      { path: '*', element: <NotFoundPage /> },
       {
         element: <ClientLayout />,
         children: [
           {
             path: '/',
             element: <HomePage />,
+          },
+          {
+            path: '/showtimes',
+            element: <CinemaShowtime />,
           },
           {
             path: '/detail-movie/:id',
@@ -102,6 +109,10 @@ const router = createBrowserRouter([
         path: '/admin',
         children: [
           {
+            path: 'invoice',
+            element: <p>Quản lý hóa đơn</p>,
+          },
+          {
             index: true,
             path: 'dashboard',
             element: <DashBoardPage />,
@@ -145,10 +156,6 @@ const router = createBrowserRouter([
           {
             path: 'danh-sach-phim',
             element: <ListMovie />,
-          },
-          {
-            path: 'hoa-don',
-            element: <p>Quản lý hóa đơn</p>,
           },
           {
             path: 'do-an',

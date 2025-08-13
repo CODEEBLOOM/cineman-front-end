@@ -14,6 +14,8 @@ import Footer from '@component/choose_seat/Footer';
 import {
   removeInvoice,
   setInvoice,
+  setSavePointRedeem,
+  setVoucher,
   updateInvoice,
 } from '@redux/slices/invoiceSlice';
 
@@ -122,8 +124,10 @@ const BookingTicket = () => {
   useEffect(() => {
     return () => {
       sessionStorage.removeItem('bookingDeadline'); // Xóa khi unmount
+      dispatch(setVoucher(null));
+      dispatch(setSavePointRedeem(0));
     };
-  }, []);
+  }, [dispatch]);
 
   return (
     <>

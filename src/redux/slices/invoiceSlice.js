@@ -4,6 +4,7 @@ const initialState = {
   invoices: [],
   customer: null,
   voucher: null,
+  savePointRedeem: 0,
 };
 
 export const invoiceSlice = createSlice({
@@ -15,18 +16,12 @@ export const invoiceSlice = createSlice({
     },
     updateInvoice: (state, action) => {
       state.invoices = state.invoices.map((invoice) => {
-        if (invoice.id === action.payload.id) {
+        if (invoice.invoice.id === action.payload.invoice.id) {
           return action.payload;
         }
         return invoice;
       });
     },
-    /*************  ✨ Windsurf Command ⭐  *************/
-    /**
-     * Clear all invoices
-     * @returns {object} Initial state of invoices
-     */
-    /*******  24bbbf81-a4df-4ce1-9e55-037f4ab2e77c  *******/
     clearInvoice: () => {
       return initialState;
     },
@@ -41,6 +36,9 @@ export const invoiceSlice = createSlice({
     setVoucher: (state, action) => {
       state.voucher = action.payload;
     },
+    setSavePointRedeem: (state, action) => {
+      state.savePointRedeem = action.payload;
+    },
   },
 });
 
@@ -51,5 +49,6 @@ export const {
   removeInvoice,
   setCustomer,
   setVoucher,
+  setSavePointRedeem,
 } = invoiceSlice.actions;
 export default invoiceSlice.reducer;

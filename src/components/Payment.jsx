@@ -5,7 +5,7 @@ import InfoUserComponent from './payment/InfoUserOrderComponent';
 import TicketSelectComponent from './payment/TicketSelectComponent';
 import { useDispatch, useSelector } from 'react-redux';
 import PaymentMethod from './payment/PaymentMethod';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { updateInvoice } from '@redux/slices/invoiceSlice';
 
 const Payment = ({
@@ -18,8 +18,16 @@ const Payment = ({
   const invoice = invoices.find((i) => i.showTimeId === showTime.id);
   const { snackSelected } = useSelector((state) => state.snack);
   const { selectedSeats } = useSelector((state) => state.ticket);
-  const { voucher } = useSelector((state) => state.invoice);
-  let totalDiscount = voucher ? voucher.discount : 0;
+  const { voucher, savePointRedeem } = useSelector((state) => state.invoice);
+
+  let totalDiscount = useMemo(() => {
+    const conv =
+      Number(import.meta.env.VITE_CONVERSION_FACTOR_REDEEM_POINT) || 0;
+    return (
+      (Number(voucher?.discount) || 0) + (Number(savePointRedeem) || 0) * conv
+    );
+  }, [voucher?.discount, savePointRedeem]);
+  console.log('Total discount:', totalDiscount);
   const dispatch = useDispatch();
 
   const lastTotalMoneyRef = useRef(null);
@@ -44,13 +52,6 @@ const Payment = ({
     // Lưu lại để tránh redundant update
     if (lastTotalMoneyRef.current === newTotalMoney) return;
     lastTotalMoneyRef.current = newTotalMoney;
-    console.log({
-      ...invoice,
-      invoice: {
-        ...invoice.invoice,
-        totalMoney: newTotalMoney,
-      },
-    });
     dispatch(
       updateInvoice({
         ...invoice,
@@ -89,7 +90,7 @@ const Payment = ({
       )}
       {/*  Combo ưu đãi*/}
       <ComboComponent invoice={invoice} voucher={voucher} />
-      <DiscountComponent showTime={showTime} />
+      <DiscountComponent showTime={showTime} invoice={invoice} />
       <div>
         <div className="flex justify-between gap-3 text-[20px] font-medium">
           <p className="min-w-[80%] text-end">Tổng tiền:&nbsp;</p>

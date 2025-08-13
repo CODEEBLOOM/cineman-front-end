@@ -7,10 +7,12 @@ import { RiDashboard3Fill } from 'react-icons/ri';
 import { FaChartColumn } from 'react-icons/fa6';
 import Submenu from '@component/admin/layout/sidebar/Submenu.jsx';
 import { listMenuAdmin } from '@utils/listMenuAdmin.js';
+import { useSelector } from 'react-redux';
 
 const subMenuList = listMenuAdmin;
 
 const Sidebar = ({ isOpen = true, setIsOpen, isMobile }) => {
+  const { user } = useSelector((state) => state.user);
   const Sidebar_Amination = isMobile
     ? {
         open: {
@@ -79,7 +81,12 @@ const Sidebar = ({ isOpen = true, setIsOpen, isMobile }) => {
             'mx-3 flex items-center justify-center gap-2.5 border-b border-slate-300 py-3 font-medium'
           }
         >
-          <img src="/logo.png" alt="" width={80} className={'object-cover'} />
+          <img
+            src="/logo-new-v01.png"
+            alt=""
+            width={80}
+            className={'object-cover'}
+          />
         </div>
         {/*Menu*/}
         <div className={'flex flex-col'}>
@@ -91,21 +98,30 @@ const Sidebar = ({ isOpen = true, setIsOpen, isMobile }) => {
               'flex flex-col gap-1 overflow-y-auto overflow-x-hidden scroll-smooth whitespace-pre px-2.5 py-5 text-[0.9rem] font-medium scrollbar-thin scrollbar-track-white scrollbar-thumb-slate-100'
             }
           >
-            <li>
-              <NavLink to={'/admin/dashboard'} className={'link'}>
-                <RiDashboard3Fill size={20} className={'min-w-max'} />
-                Dashboard
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to={'/admin/thong-ke'} className={'link'}>
-                <FaChartColumn size={20} className={'min-w-max'} />
-                Thống kê
-              </NavLink>
-            </li>
+            {user?.roles?.some((r) => r.roleId === 'ADMIN') && (
+              <>
+                <li>
+                  <NavLink
+                    to={'/admin/dashboard'}
+                    className={({ isActive }) =>
+                      `link text-gray-400 ${isActive ? 'active' : ''}`
+                    }
+                  >
+                    <RiDashboard3Fill size={20} className={'min-w-max'} />
+                    Dashboard
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to={'/admin/thong-ke'} className={'link'}>
+                    <FaChartColumn size={20} className={'min-w-max'} />
+                    Thống kê
+                  </NavLink>
+                </li>
+              </>
+            )}
             {/*  Submenu */}
             {isOpen && (
-              <div className={'border-y border-slate-300 py-5'}>
+              <div className={'border-b border-slate-300 py-5'}>
                 {subMenuList.map((subMenu) => (
                   <div key={subMenu.name} className={'flex flex-col gap-1'}>
                     <Submenu data={subMenu} />

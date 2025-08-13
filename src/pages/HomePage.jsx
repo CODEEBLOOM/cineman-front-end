@@ -1,7 +1,5 @@
 import Carousel from '@component/Carousel';
-import Header from '@component/headers/Header';
 import { useMediaQuery, useTheme } from '@mui/material';
-import Footer from '@component/Footer';
 import MovieComponent from '@component/MovieComponent';
 import { useEffect } from 'react';
 
@@ -17,7 +15,7 @@ const HomePage = () => {
 
   // Set document title
   useEffect(() => {
-    document.title = 'Trang chủ - Poly Cinemas';
+    document.title = 'Poly Cinemas - Trang chủ';
   }, []);
 
   return (

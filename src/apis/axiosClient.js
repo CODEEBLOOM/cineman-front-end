@@ -8,7 +8,7 @@ export const injectStore = (_store) => {
 
 const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_HOST,
-  timeout: 10000,
+  // timeout: 10000,
   withCredentials: true,
 });
 

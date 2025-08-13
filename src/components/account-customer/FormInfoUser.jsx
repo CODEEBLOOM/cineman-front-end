@@ -3,19 +3,22 @@ import TextInput from '@component/form_field/TextInput';
 import FormField from '@component/FormField';
 import { Button } from '@mui/material';
 import { useForm } from 'react-hook-form';
+import { useSelector } from 'react-redux';
 
 const FormInfoUser = () => {
+  const { user } = useSelector((state) => state.user);
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm({
     defaultValues: {
-      fullName: '',
-      email: '',
-      phoneNumber: '',
-      gender: '',
-      dateOfBirth: new Date(),
+      fullName: user.fullName || '',
+      email: user.email || '',
+      phoneNumber: user.phoneNumber || '',
+      gender: user.gender || '',
+      address: user.address || '',
+      dateOfBirth: user.dateOfBirth || '',
     },
   });
 

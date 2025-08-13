@@ -6,26 +6,38 @@ import { applyVoucher } from '@apis/promotionService';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { setVoucher, updateInvoice } from '@redux/slices/invoiceSlice';
-import { currencyFormatter, formatNumber } from '@libs/Utils';
+import { currencyFormatter } from '@libs/Utils';
 import { MdOutlineNoEncryptionGmailerrorred } from 'react-icons/md';
+import RedeemPoint from './RedeemPoint';
 
 const DiscountComponent = ({ showTime }) => {
   const { user } = useSelector((state) => state.user);
-  const { customer, voucher } = useSelector((state) => state.invoice);
+  const { customer, voucher, savePointRedeem } = useSelector(
+    (state) => state.invoice
+  );
   const isCustomer = user?.roles.some((role) => role.roleId === 'USER');
   const { invoices } = useSelector((state) => state.invoice);
   const invoice = invoices.find((i) => i.showTimeId === Number(showTime.id));
 
   const voucherRef = useRef();
-  const savePointRef = useRef();
   const dispatch = useDispatch();
 
   const handleApplyVoucher = () => {
     const code = voucherRef.current.value;
+    if (invoice.invoice.totalMoney === 0) {
+      return toast.error(
+        'Hóa đơn đã tối thiểu không thể áp dụng thêm voucher !'
+      );
+    }
 
     if (code && !voucher && invoice.invoice.customerId !== null) {
       applyVoucher({ code, amount: invoice.invoice.totalMoneyTicket })
         .then((res) => {
+          if (invoice.invoice.totalMoney - res.data.discount < 0) {
+            return toast.error(
+              'Hóa đơn đã tối thiểu không thể áp dụng thêm voucher !'
+            );
+          }
           dispatch(setVoucher(res.data));
           dispatch(
             updateInvoice({
@@ -91,7 +103,10 @@ const DiscountComponent = ({ showTime }) => {
                   htmlInput: { className: '!px-0' },
                 }}
               />
-              <div className="w-[200px]" onClick={handleApplyVoucher}>
+              <div
+                className={`w-[200px] ${voucher && 'hidden'}`}
+                onClick={handleApplyVoucher}
+              >
                 <CustomButton title={'Áp dụng'} />
               </div>
             </div>
@@ -128,52 +143,15 @@ const DiscountComponent = ({ showTime }) => {
           </div>
         )}
       </Accordion>
-      <Accordion title={'Đổi điểm'} subTitle="( Nhấn vào đây để đổi điểm )">
+      <Accordion title={'Đổi điểm'} subTitle="( Nhấn vào đây để đổi điểm )">
         {customer || isCustomer ? (
-          <table>
-            <thead>
-              <tr>
-                <th className="text-center">Điểm hiện có</th>
-                <th className="text-center">Nhập điểm</th>
-                <th className="text-center">Số tiền được giảm</th>
-                <th className="text-center"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="text-center">
-                  {' '}
-                  <p className={'text-[18px] font-bold'}>
-                    {formatNumber(user?.savePoint || customer?.savePoint)}
-                  </p>
-                </td>
-                <td className="text-center">
-                  <TextField
-                    inputRef={savePointRef}
-                    fullWidth
-                    placeholder={'Nhập điểm'}
-                    name={'savePoint'}
-                    type={'number'}
-                    slotProps={{
-                      input: { className: 'h-10 px-3 py-2 ' },
-                      htmlInput: { className: '!px-0' },
-                    }}
-                  />
-                </td>
-                <td className="text-center">
-                  <div>
-                    <span className={'text-[18px] font-bold'}>30000</span>
-                    <span className={'text-[18px] font-bold'}>VNĐ</span>
-                  </div>
-                </td>
-                <td className="text-center">
-                  <div className="">
-                    <CustomButton title={'Đổi điểm'} />
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <RedeemPoint
+            customer={customer}
+            isCustomer={isCustomer}
+            user={user}
+            savePointRedeem={savePointRedeem}
+            invoice={invoice}
+          />
         ) : (
           <div className="rounded-md border border-red-400 px-2 py-3">
             <p className="flex items-center gap-3 italic text-red-500">

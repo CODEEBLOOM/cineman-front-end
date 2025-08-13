@@ -150,6 +150,14 @@ const InfoUserComponent = ({ showTime }) => {
                 <p className={'font-bold'}>Email:</p>
                 <p>{user?.email}</p>
               </div>
+              <div className="flex flex-wrap gap-2">
+                <p className={'font-bold'}>Vai trò:</p>
+                <p>
+                  {user?.roles[0].roleId === 'RCP'
+                    ? 'Nhân viên tiếp nhận'
+                    : 'Khách hàng'}
+                </p>
+              </div>
             </div>
             <div className="mt-3">
               <h2 className="text-[18px] font-bold">Thông tin khách hàng</h2>

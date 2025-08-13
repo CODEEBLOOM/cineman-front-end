@@ -83,7 +83,7 @@ const ComboComponent = () => {
         <table className={'w-full'}>
           <thead>
             <tr className={'border-b-2'}>
-              <th className={'min-w-[100px] pb-3'}></th>
+              <th className={'w-[100px] pb-3'}></th>
               <th className={'pb-3'}>Tên Combo</th>
               <th className={'pb-3'}>Mô tả</th>
               <th className={'pb-3'}>Số lượng</th>
@@ -93,7 +93,7 @@ const ComboComponent = () => {
             {combos.map((item) => {
               return (
                 <tr key={item.id}>
-                  <td className={'flex min-w-[100px] justify-center px-3 py-5'}>
+                  <td className={'flex w-[100px] justify-center px-3 py-5'}>
                     <img
                       src="/combo-online-03.png"
                       className="h-[80px] w-[80px] rounded-full"
@@ -107,9 +107,9 @@ const ComboComponent = () => {
                     </span>
                   </td>
                   <td className={'px-3 py-5'}>
-                    <span className="whitespace-normal">
+                    <p className="whitespace-normal break-words text-justify">
                       {item.description}
-                    </span>
+                    </p>
                   </td>
                   <td className={'px-3 py-5'}>
                     <div

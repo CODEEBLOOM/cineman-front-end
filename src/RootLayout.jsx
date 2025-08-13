@@ -1,8 +1,8 @@
 // Supports weights 100-900
-import '@fontsource-variable/roboto-condensed';
+import '@fontsource-variable/roboto';
 import { Alert, Snackbar } from '@mui/material';
 import { closeSnackbar } from '@redux/slices/snackbarSlice';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { IoIosArrowUp } from 'react-icons/io';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet } from 'react-router-dom';
@@ -18,6 +18,10 @@ function RootLayout() {
       behavior: 'smooth',
     });
   };
+
+  useEffect(() => {
+    handleScroll();
+  }, []);
 
   return (
     <ModalProvider>

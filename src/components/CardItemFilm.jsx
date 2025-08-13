@@ -113,14 +113,14 @@ const CardItemFilm = ({
             <ul>
               <li className="w-full">
                 <span className="font-bold">Thể loại:</span>&nbsp;{' '}
-                <span className="whitespace-normal lowercase md:truncate">
+                <span className="truncate whitespace-normal lowercase">
                   {genres.map((genre) => genre.name).join(',\u200B ')}
                 </span>
               </li>
 
               <li className="flex flex-wrap">
-                <span className="font-bold">Thời lượng:</span>&nbsp; {duration}{' '}
-                <span>Phút</span>
+                <span className="font-bold">Thời lượng:</span>&nbsp; {duration}
+                <span> &nbsp;Phút</span>
               </li>
               {isUpcoming && (
                 <li className="flex flex-wrap">

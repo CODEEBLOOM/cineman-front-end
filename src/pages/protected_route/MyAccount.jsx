@@ -6,9 +6,28 @@ import VoucherCustomer from '@component/account-customer/VoucherCustomer';
 import TabPanel from '@component/Tabpanel';
 import { Box, Tab, Tabs } from '@mui/material';
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 const MyAccount = () => {
-  const [activeTab, setActiveTab] = useState(0);
+  const [searchParams] = useSearchParams();
+  const tabActive = () => {
+    const tab = searchParams.get('tab');
+    if (tab) {
+      switch (tab) {
+        case 'profile':
+          return 0;
+        case 'membership':
+          return 1;
+        case 'transaction':
+          return 2;
+        case 'voucher':
+          return 3;
+        default:
+          return 0;
+      }
+    }
+  };
+  const [activeTab, setActiveTab] = useState(tabActive());
   const handleChangeTab = (event, newValue) => {
     setActiveTab(newValue);
   };

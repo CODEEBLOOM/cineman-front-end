@@ -43,3 +43,27 @@ export const findById = async (id) => {
   const url = `/show-times/${id}`;
   return await axios.get(url);
 };
+
+/**
+ * Lấy tất cả các ngày chiếu phim của rạp chiếu theo id rạp chiếu
+ * @param {number} id - ID của rạp chiếu
+ * @returns {Promise<axios.AxiosResponse<any>>} A promise that resolves to the array of show dates in featured.
+ */
+export const findAllShowDateByCinemaTheaterIdInFeatured = async (id) => {
+  const url = `/show-times/cinema-theater/${id}`;
+  return await axios.get(url);
+};
+
+/**
+ * Lấy tất cả các phim chiếu tại rạp chiếu theo id rạp chiếu và ngày chiếu
+ * @param {number} cinemaTheaterId - ID của rạp chiếu
+ * @param {string} showDate - Ngày chiếu
+ * @returns {Promise<axios.AxiosResponse<any>>} A promise that resolves to the movies list.
+ */
+export const findAllMovieByCinemaTheaterIdAndShowDate = async (
+  cinemaTheaterId,
+  showDate
+) => {
+  const url = `/show-times/cinema-theater/${cinemaTheaterId}/show-date/${showDate}`;
+  return await axios.get(url);
+};

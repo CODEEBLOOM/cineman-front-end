@@ -1,7 +1,7 @@
 export const menuHeader = [
   {
     id: 1,
-    link: '#1',
+    link: '/showtimes',
     name: 'Lịch chiếu theo rạp',
   },
   {

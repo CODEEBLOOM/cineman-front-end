@@ -16,11 +16,12 @@ import { createMultiple } from '@apis/detailBookingSnack';
 import { getURLPayment } from '@apis/paymentService';
 import { clearSnack } from '@redux/slices/snackSlice';
 import { clearSelectedSeats } from '@redux/slices/ticketSlice';
+import { createUserHistoryPoint } from '@apis/userPointHistoryService';
 
 const InfoBookingTicket = ({ showTime }) => {
   const { movieTheater } = useSelector((state) => state.movieTheater);
   const { selectedSeats } = useSelector((state) => state.ticket);
-  const { invoices } = useSelector((state) => state.invoice);
+  const { invoices, savePointRedeem } = useSelector((state) => state.invoice);
   const { snackSelected } = useSelector((state) => state.snack);
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -31,7 +32,6 @@ const InfoBookingTicket = ({ showTime }) => {
 
   /* Xử lý chuyển sang trang thanh toán */
   const handleBeforePayment = () => {
-    console.log('==> handleBeforePayment CALLED');
     if (selectedSeats.length <= 0) {
       toast.info('Vui lòng chọn ghế trước khi thanh toán');
     } else {
@@ -63,8 +63,10 @@ const InfoBookingTicket = ({ showTime }) => {
         .then((res) => {
           dispatch(
             updateInvoice({
-              ...existingInvoice,
-              invoice: res.data,
+              showTimeId: showTime.id,
+              invoice: {
+                ...res.data,
+              },
             })
           );
           return navigate(`/payment?st=${showTime.id}`);
@@ -94,6 +96,22 @@ const InfoBookingTicket = ({ showTime }) => {
           await createMultiple(newSnackSelected);
         }
 
+        // Nếu có điểm tích lũy nghĩa là người dùng muốn đổi điểm - cần phải tạo lịch sử đổi điểm cho người dùng //
+        if (savePointRedeem > 0) {
+          // Chỉ cần biết là có điểm tích lũy hay không vì dù thành toán tại rạp hay thanh toán online thì đều có thể tích điểm cho người dùng //
+          try {
+            await createUserHistoryPoint({
+              userId: invoice.invoice.customerId,
+              invoiceId: invoice.invoice.id,
+              changePoint: savePointRedeem,
+              reason: `Đổi điểm tích lũy thanh toán hóa đơn`,
+            });
+          } catch (error) {
+            console.error('Error creating user history point:', error);
+            toast.error('Có lỗi xảy ra khi đổi điểm tích lũy!');
+          }
+        }
+
         // Nếu thanh toán tại quầy //
         if (invoice.invoice.paymentMethod === 'CASH') {
           try {
@@ -118,9 +136,8 @@ const InfoBookingTicket = ({ showTime }) => {
               toast.success('Thanh toán thành công !');
               return navigate('/', { replace: true });
             }
-            console.log('Update response:', res);
           } catch (err) {
-            console.log(err);
+            console.log('Error updating invoice:', err);
             if (err.response.status >= 400) {
               return toast.error(err.response.data.message);
             }
@@ -130,6 +147,7 @@ const InfoBookingTicket = ({ showTime }) => {
           amount: invoice.invoice.totalMoney,
         });
 
+        // Lấy URL thanh toán - khi thanh toán qua VNPay //
         const paymentUrl = paymentRes.data;
         const vnp_TxnRef =
           new URL(paymentUrl).searchParams.get('vnp_TxnRef') || '';

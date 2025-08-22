@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Roboto Variable', sans-serif;
+  font-family: 'Be Vietnam Pro', sans-serif;
   font-size: 16px;
-  /* overflow-x: hidden !important; */
+  overflow-x: hidden !important;
   /* overflow-y: hidden !important; */
 }
 

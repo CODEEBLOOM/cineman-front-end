@@ -51,3 +51,37 @@ export const updateInvoiceStatusSuccess = async ({ id }) => {
   const url = `/invoice/${String(id)}/update-status-success`;
   return await axios.put(url);
 };
+
+export const findAllByUserId = async (userId) => {
+  const url = `/invoice/user/${userId}/all`;
+  return await axios.get(url);
+};
+
+export const findAllByDateAndCinemaTheaterId = async ({
+  date,
+  pageNo = 0,
+  pageSize = 10,
+  movieTheaterId = null,
+}) => {
+  const url = `/admin/invoice/all/date/${date}`;
+  if (movieTheaterId) {
+    return await axios.get(url, {
+      params: {
+        pageNo,
+        pageSize,
+        movieTheaterId,
+      },
+    });
+  }
+  return await axios.get(url, {
+    params: {
+      pageNo,
+      pageSize,
+    },
+  });
+};
+
+export const findByQRCode = async (qrCode) => {
+  const url = `/admin/invoice/qr-code/${qrCode}`;
+  return await axios.get(url);
+};

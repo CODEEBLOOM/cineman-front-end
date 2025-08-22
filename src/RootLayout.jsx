@@ -1,5 +1,4 @@
-// Supports weights 100-900
-import '@fontsource-variable/roboto';
+import '@fontsource/be-vietnam-pro/300.css';
 import { Alert, Snackbar } from '@mui/material';
 import { closeSnackbar } from '@redux/slices/snackbarSlice';
 import { Suspense, useEffect } from 'react';

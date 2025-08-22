@@ -5,6 +5,8 @@ import { update } from '@apis/cinemaTheaterService.js';
 import CinemaTheaterTable from './CinemaTheaterTable';
 
 import CreateCinemaTheater from './CreateCinemaTheater';
+import Breadcrumb from '@component/Breakcrumb';
+import CustomBreadcrumb from '@component/CustomBreakcrumb';
 
 const CinemaTheater = () => {
   const [tab, setTab] = useState(0);
@@ -51,10 +53,19 @@ const CinemaTheater = () => {
 
   return (
     <>
-      <div className={'flex items-center justify-between bg-white px-5 py-2'}>
-        <h2 className="font-medium uppercase">Quản lý phòng chiếu</h2>
-      </div>
-      <div className="p-10">
+      <CustomBreadcrumb
+        className="mb-2"
+        linkComponent={''}
+        items={[
+          {
+            label: 'Quản lý phòng chiếu',
+            // isHome: true,
+            // icon: <TfiTicket fontSize="small" />,
+          },
+        ]}
+        title={'Quản lý phòng chiếu'}
+      />
+      <div className="px-2">
         <div className="rounded-md bg-white p-5">
           <CreateCinemaTheater fetchCinemaTheaters={fetchCinemaTheaters} />
           {/*  Phần chính */}

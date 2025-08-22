@@ -6,10 +6,13 @@ import VoucherCustomer from '@component/account-customer/VoucherCustomer';
 import TabPanel from '@component/Tabpanel';
 import { Box, Tab, Tabs } from '@mui/material';
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 
 const MyAccount = () => {
   const [searchParams] = useSearchParams();
+  const { user } = useSelector((state) => state.user);
+  const [avatar, setAvatar] = useState(user.avatar || '');
   const tabActive = () => {
     const tab = searchParams.get('tab');
     if (tab) {
@@ -64,8 +67,8 @@ const MyAccount = () => {
               <h1 className="mb-3 text-[18px] font-medium uppercase text-primary underline">
                 Thông tin tài khoản
               </h1>
-              <UploadAvatar />
-              <FormInfoUser />
+              <UploadAvatar setAvatar={setAvatar} avatar={avatar} />
+              <FormInfoUser avatar={avatar} />
             </TabPanel>
             <TabPanel value={activeTab} index={1}>
               <MembershipCard />

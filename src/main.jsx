@@ -40,6 +40,8 @@ import { injectStore } from '@apis/axiosClient';
 import MyAccount from '@pages/protected_route/MyAccount';
 import NotFoundPage from '@pages/NotFound';
 import CinemaShowtime from '@pages/CinemaShowTime';
+import InvoiceIndex from '@component/admin/invoice/InvoiceIndex';
+import TicketManagementPage from '@pages/admin/TicketManagementPage';
 
 const router = createBrowserRouter([
   {
@@ -110,7 +112,11 @@ const router = createBrowserRouter([
         children: [
           {
             path: 'invoice',
-            element: <p>Quản lý hóa đơn</p>,
+            element: <InvoiceIndex />,
+          },
+          {
+            path: 'invoice-detail/:qrCode',
+            element: <TicketManagementPage />,
           },
           {
             index: true,

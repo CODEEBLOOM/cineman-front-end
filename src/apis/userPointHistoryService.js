@@ -17,3 +17,12 @@ export const createUserHistoryPoint = async (data) => {
 export const refundUserHistoryPoint = async (vnTxnRef) => {
   return axios.get(`/user-point-histories/refund/${vnTxnRef}`);
 };
+
+/**
+ * Lấy toàn bộ lịch sử điểm của người dùng
+ * @param {number} userId - Id của người dùng
+ * @returns {Promise<axios.AxiosResponse<any>>} A promise that resolves to the user point history.
+ */
+export const findAllUserPointHistory = async (userId) => {
+  return axios.get(`/user-point-history/user/${userId}/all`);
+};

@@ -3,17 +3,9 @@ import { NavLink } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
 
 const Submenu = ({ data }) => {
   const [submenuOpen, setSubmenuOpen] = useState(false);
-  const { user } = useSelector((state) => state.user);
-
-  const checkRole = (role) => {
-    if (!user || !user.roles) return false;
-    return user.roles.some((r) => role.includes(r.roleId));
-  };
-
   return (
     <>
       <li className={'link'} onClick={() => setSubmenuOpen(!submenuOpen)}>
@@ -35,17 +27,14 @@ const Submenu = ({ data }) => {
         }
         className={'flex h-0 flex-col overflow-hidden pl-5 text-[.8rem]'}
       >
-        {data.menus.map(
-          (item) =>
-            checkRole(item.role) && (
-              <li key={item.name}>
-                <NavLink to={item.path} className={'link text-gray-400'}>
-                  <item.icon size={20} />
-                  {item.name}
-                </NavLink>
-              </li>
-            )
-        )}
+        {data.menus.map((item) => (
+          <li key={item.name}>
+            <NavLink to={item.path} className={'link text-gray-400'}>
+              <item.icon size={20} />
+              {item.name}
+            </NavLink>
+          </li>
+        ))}
       </motion.ul>
     </>
   );

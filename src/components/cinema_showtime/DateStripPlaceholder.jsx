@@ -42,7 +42,7 @@ const DateStripPlaceholder = () => {
   }, [movieTheater.id, dispatch]);
 
   return (
-    <div className="border-b bg-white/80 backdrop-blur">
+    <div className={`${showDates && 'border-b'} bg-white/80 backdrop-blur`}>
       <div className="mx-auto max-w-6xl px-4">
         <div className="no-scrollbar flex gap-4 overflow-x-auto py-3">
           {(showDates || []).map((d) => (

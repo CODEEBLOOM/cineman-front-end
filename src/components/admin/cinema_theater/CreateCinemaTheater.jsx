@@ -10,7 +10,7 @@ const CreateCinemaTheater = ({ fetchCinemaTheaters }) => {
   return (
     <>
       <div className={'flex items-center justify-between'}>
-        <h1 className={'text-[1.2rem]'}>Danh sách phòng chiếu</h1>
+        <h1 className={'font-semibold'}>Danh sách phòng chiếu</h1>
         <Button
           variant={'contained'}
           className={'bg-primary'}

@@ -43,6 +43,24 @@ const MovieItem = ({ movie }) => {
     );
   };
 
+  const groupShowtimesByTheater = (list) => {
+    return list.reduce((acc, item) => {
+      const id = item.cinemaTheater.cinemaTheaterId;
+
+      // Nếu chưa có phòng này thì tạo mới
+      if (!acc[id]) {
+        acc[id] = {
+          theater: item.cinemaTheater, // thông tin phòng
+          items: [], // danh sách suất chiếu thuộc phòng đó
+        };
+      }
+
+      // Thêm lịch chiếu vào phòng tương ứng
+      acc[id].items.push(item);
+      return acc;
+    }, {});
+  };
+
   // Lấy danh sách tất cả các lịch chiếu theo showTimeSelected, movieId, movieTheaterId //
   useEffect(() => {
     if (!showDateActive && movie) return;
@@ -52,7 +70,13 @@ const MovieItem = ({ movie }) => {
       showDate: showDateActive,
     })
       .then((res) => {
-        setShowTimeDetails(res.data);
+        const grouped = groupShowtimesByTheater(res.data);
+        Object.values(grouped).forEach((g) => {
+          g.items.sort((a, b) =>
+            a.showTime.startTime.localeCompare(b.showTime.startTime)
+          );
+        });
+        setShowTimeDetails(grouped);
       })
       .catch((err) => {
         console.log(err);
@@ -114,13 +138,23 @@ const MovieItem = ({ movie }) => {
             )}
 
             <CardContent className="p-0">
-              <div className="flex flex-wrap gap-2 md:gap-3">
-                {showTimeDetails?.map((showTimeDetail) => (
-                  <TimeBadge
-                    key={showTimeDetail.showTime.id}
-                    showTimeDetail={showTimeDetail.showTime}
-                  />
-                ))}
+              <div className="flex flex-col flex-wrap gap-2 md:gap-3">
+                {showTimeDetails &&
+                  Object.values(showTimeDetails)?.map((showTimeGroup) => (
+                    <>
+                      <div>
+                        <p className="font-semibold">{`${showTimeGroup.theater.name} - ${showTimeGroup.items[0].movieVariation.name}`}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 md:gap-3">
+                        {showTimeGroup.items.map((showTime) => (
+                          <TimeBadge
+                            key={showTime.showTimeId}
+                            showTimeDetail={showTime.showTime}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  ))}
               </div>
             </CardContent>
 

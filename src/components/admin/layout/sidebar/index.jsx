@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { IoIosArrowBack } from 'react-icons/io';
@@ -6,13 +6,20 @@ import { NavLink } from 'react-router-dom';
 import { RiDashboard3Fill } from 'react-icons/ri';
 import { FaChartColumn } from 'react-icons/fa6';
 import Submenu from '@component/admin/layout/sidebar/Submenu.jsx';
-import { listMenuAdmin } from '@utils/listMenuAdmin.js';
 import { useSelector } from 'react-redux';
-
-const subMenuList = listMenuAdmin;
+import BuildMenuForUser from '@component/buildMenuForUser';
 
 const Sidebar = ({ isOpen = true, setIsOpen, isMobile }) => {
   const { user } = useSelector((state) => state.user);
+  const menu = useMemo(
+    () => BuildMenuForUser(user?.roles, { visibleIfNoRole: false }),
+    [user?.roles]
+  );
+  const isAdmin = user?.roles?.some((r) => r.roleId === 'ADMIN');
+  const isAdminOrCAdmin = user?.roles?.some(
+    (r) => r.roleId === 'ADMIN' || r.roleId === 'CADMIN'
+  );
+
   const Sidebar_Amination = isMobile
     ? {
         open: {
@@ -54,7 +61,6 @@ const Sidebar = ({ isOpen = true, setIsOpen, isMobile }) => {
       setIsOpen(true);
     }
   }, [isMobile, setIsOpen]);
-
   return (
     <div
       style={{
@@ -95,16 +101,16 @@ const Sidebar = ({ isOpen = true, setIsOpen, isMobile }) => {
               height: 'calc(100vh - 60px)',
             }}
             className={
-              'flex flex-col gap-1 overflow-y-auto overflow-x-hidden scroll-smooth whitespace-pre px-2.5 py-5 text-[0.9rem] font-medium scrollbar-thin scrollbar-track-white scrollbar-thumb-slate-100'
+              'flex flex-col gap-1 overflow-y-auto overflow-x-hidden scroll-smooth whitespace-pre px-2.5 pb-5 text-[0.9rem] font-medium scrollbar-thin scrollbar-track-white scrollbar-thumb-slate-100'
             }
           >
-            {user?.roles?.some((r) => r.roleId === 'ADMIN') && (
+            {isAdmin && (
               <>
                 <li>
                   <NavLink
                     to={'/admin/dashboard'}
                     className={({ isActive }) =>
-                      `link text-gray-400 ${isActive ? 'active' : ''}`
+                      `link ${isActive ? 'active' : ''}`
                     }
                   >
                     <RiDashboard3Fill size={20} className={'min-w-max'} />
@@ -121,11 +127,11 @@ const Sidebar = ({ isOpen = true, setIsOpen, isMobile }) => {
             )}
             {/*  Submenu */}
             {isOpen && (
-              <div className={'border-b border-slate-300 py-5'}>
-                {subMenuList.map((subMenu) => (
-                  <div key={subMenu.name} className={'flex flex-col gap-1'}>
-                    <Submenu data={subMenu} />
-                  </div>
+              <div
+                className={`border-b border-slate-300 py-5 ${isAdminOrCAdmin ? 'border-t' : ''}`}
+              >
+                {menu.map((group) => (
+                  <Submenu key={group.name} data={group} />
                 ))}
               </div>
             )}

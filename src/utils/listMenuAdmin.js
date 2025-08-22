@@ -6,7 +6,7 @@ import {
   MdOutlinePriceChange,
   MdOutlineTheaters,
 } from 'react-icons/md';
-import { LuTheater } from 'react-icons/lu';
+import { LuTheater, LuTicketsPlane } from 'react-icons/lu';
 import { BsDiagram3 } from 'react-icons/bs';
 import { FaRegAddressCard, FaShieldAlt } from 'react-icons/fa';
 import {
@@ -44,12 +44,6 @@ export const listMenuAdmin = [
         role: ['CADMIN'],
       },
       {
-        name: 'Sơ đồ ghế',
-        icon: BsDiagram3,
-        path: '/admin/so-do-ghe',
-        role: ['CADMIN'],
-      },
-      {
         name: 'Thẻ thành viên',
         icon: FaRegAddressCard,
         path: 'the-thanh-vien',
@@ -77,7 +71,13 @@ export const listMenuAdmin = [
         name: 'Quản lý hóa đơn',
         icon: PiInvoiceBold,
         path: '/admin/invoice',
-        role: ['ADMIN', 'CADMIN', 'RCP'],
+        role: ['CADMIN', 'RCP'],
+      },
+      {
+        name: 'Quản lý xuất vé',
+        icon: LuTicketsPlane,
+        path: '/admin/invoice-detail/abc',
+        role: ['RCP'],
       },
     ],
   },
@@ -103,12 +103,12 @@ export const listMenuAdmin = [
         path: '/admin/ma-giam-gia',
         role: ['CADMIN'],
       },
-      {
-        name: 'Quản lý giá vé',
-        icon: MdOutlinePriceChange,
-        path: '/admin/gia-ve',
-        role: ['CADMIN'],
-      },
+      // {
+      //   name: 'Quản lý giá vé',
+      //   icon: MdOutlinePriceChange,
+      //   path: '/admin/gia-ve',
+      //   role: ['CADMIN'],
+      // },
     ],
   },
   {

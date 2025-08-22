@@ -13,6 +13,9 @@ export const userSlice = createSlice({
     clearInfoUser: () => {
       return initialState;
     },
+    updateUser: (state, action) => {
+      state.user = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -47,5 +50,5 @@ export const fetchInfoUser = createAsyncThunk(
     }
   }
 );
-export const { clearInfoUser } = userSlice.actions;
+export const { clearInfoUser, updateUser } = userSlice.actions;
 export default userSlice.reducer;

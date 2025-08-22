@@ -51,7 +51,6 @@ export const authSlice = createSlice({
         state.status = 'loading';
       })
       .addCase(loginGoogle.fulfilled, (state, action) => {
-        console.log(action.payload);
         state.status = 'fulfilled';
         state.accessToken = action.payload.accessToken;
         state.isAuthentication = true;

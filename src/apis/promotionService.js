@@ -30,3 +30,8 @@ export const revertApplyVoucher = async (vnp_TxnRef) => {
   const url = `/promotion/revert-quantity/invoice/${vnp_TxnRef}`;
   return await axios.put(url);
 };
+
+export const findAllPromotions = async (userId) => {
+  const url = `/promotion/user/${userId}/all`;
+  return await axios.get(url);
+};

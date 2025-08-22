@@ -12,6 +12,7 @@ import { IoInformationCircleOutline } from 'react-icons/io5';
 import { MdCardMembership } from 'react-icons/md';
 import { RiLogoutCircleLine, RiMovie2AiLine } from 'react-icons/ri';
 import { TfiTicket } from 'react-icons/tfi';
+import { FaFileInvoiceDollar } from 'react-icons/fa';
 const PreHeader = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const dispatch = useDispatch();
@@ -87,6 +88,14 @@ const PreHeader = () => {
           Voucher của tôi
         </Link>
       </MenuItem>
+      {user?.roles?.some((role) => role.roleId === 'RCP') && (
+        <MenuItem>
+          <Link to={'/admin/invoice'} className="flex items-center">
+            <FaFileInvoiceDollar size={20} className="mr-2" />
+            Xuất hóa đơn
+          </Link>
+        </MenuItem>
+      )}
       <MenuItem onClick={handleLogout}>
         <RiLogoutCircleLine size={20} className="mr-2" />
         Đăng xuất

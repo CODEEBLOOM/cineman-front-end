@@ -1,15 +1,23 @@
 import { findAllByFilter } from '@apis/movieService';
-import { Box, Tab, Tabs } from '@mui/material';
+import { Box, Pagination, Tab, Tabs } from '@mui/material';
 import { useEffect, useState } from 'react';
 import CardItemFilm from './CardItemFilm';
 import TabPanel from './Tabpanel';
 import { useDispatch, useSelector } from 'react-redux';
 import { setMovieStatus } from '@redux/slices/movieSlice.js';
 import Loading from '@component/Loading';
+import EmptyList from './cinema_showtime/EmptyList';
 
 const MovieComponent = () => {
   const { movieStatus } = useSelector((state) => state.movie);
   const { movieTheater } = useSelector((state) => state.movieTheater);
+  const [pageActive, setPageActive] = useState(1);
+  const [meta, setMeta] = useState({
+    currentPage: 0,
+    pageSize: 4,
+    totalPages: 0,
+    totalElements: 0,
+  });
   const [value, setValue] = useState(
     movieStatus === 'SC' ? 0 : movieStatus === 'DB' ? 2 : 1
   );
@@ -20,6 +28,7 @@ const MovieComponent = () => {
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
+    setPageActive(1);
   };
 
   function a11yProps(index) {
@@ -38,19 +47,25 @@ const MovieComponent = () => {
     if (movieTheater?.id) {
       setIsLoading(true);
       findAllByFilter({
-        page: 0,
-        size: 10,
+        page: pageActive - 1,
+        size: meta.pageSize,
         status: movieStatus,
         movieTheaterId: movieTheater.id,
       })
         .then((res) => {
           setListMovies(res.data.movies);
+          setMeta(res.data.meta);
         })
         .finally(() => {
           setIsLoading(false);
         });
     }
-  }, [movieStatus, movieTheater]);
+  }, [movieStatus, movieTheater, pageActive]);
+
+  const handleChangePage = (event, newPage) => {
+    console.log(newPage);
+    setPageActive(newPage);
+  };
 
   return (
     <div className="container">
@@ -88,6 +103,11 @@ const MovieComponent = () => {
               />
             </Tabs>
           </Box>
+          {listMovies.length === 0 && !isLoading && (
+            <div className="col-span-full w-full">
+              <EmptyList content="Danh sách trống" />
+            </div>
+          )}
           <TabPanel value={value} index={0}>
             <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-4">
               {isLoading ? (
@@ -159,6 +179,21 @@ const MovieComponent = () => {
               )}
             </div>
           </TabPanel>
+          {console.log(meta.totalPage)}
+          <Box className="py-3">
+            {!isLoading && (
+              <Pagination
+                onChange={handleChangePage}
+                sx={{ justifyContent: 'center', display: 'flex' }}
+                size="large"
+                count={meta.totalPages}
+                page={meta.currentPage + 1}
+                variant="outlined"
+                shape="rounded"
+                color="primary"
+              />
+            )}
+          </Box>
         </Box>
       </div>
     </div>

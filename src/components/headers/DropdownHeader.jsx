@@ -6,11 +6,21 @@ const DropdownHeader = () => {
     (state) => state.movieTheater
   );
 
-  const movieTheaters = {
+  const { user } = useSelector((state) => state.user);
+
+  let movieTheaters = {
     title: movieTheater.title,
     id: movieTheater.id,
     submenu: listMovieTheater,
   };
+
+  if (user?.roles?.some((role) => role.roleId === 'RCP')) {
+    movieTheaters = {
+      title: user.movieTheater.name,
+      id: movieTheater.id,
+      submenu: [],
+    };
+  }
 
   const depthLevel = 0;
   return (

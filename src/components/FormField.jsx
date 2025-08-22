@@ -38,7 +38,7 @@ const FormField = ({
         }}
       />
       {error && (
-        <FormHelperText error={true} className="!text-[14px] capitalize">
+        <FormHelperText error={true} className="!text-[14px]">
           {error.message}
         </FormHelperText>
       )}

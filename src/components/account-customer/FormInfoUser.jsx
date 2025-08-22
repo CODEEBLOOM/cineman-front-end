@@ -3,29 +3,89 @@ import TextInput from '@component/form_field/TextInput';
 import FormField from '@component/FormField';
 import { Button } from '@mui/material';
 import { useForm } from 'react-hook-form';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { updateInfoUser } from '@apis/userService';
+import { toast } from 'react-toastify';
+import { updateUser } from '@redux/slices/userSlice';
+import DateFormatter from '@utils/DateFormatter';
+import { useEffect } from 'react';
 
-const FormInfoUser = () => {
+const FormInfoUser = ({ avatar }) => {
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user);
+
+  const formSchema = yup.object().shape({
+    fullName: yup.string().required('Họ tên không được để trống !'),
+    email: yup
+      .string()
+      .matches(
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        'Email chưa đúng định dạng !'
+      )
+      .required(),
+    phoneNumber: yup
+      .string()
+      .matches(/^0[0-9]{9,10}$/, 'Số điện thoại chưa đúng định dạng !')
+      .required('Số điện thoại không được để trống !'),
+    dateOfBirth: yup.date().required('Ngày sinh không được để trống !'),
+    gender: yup.string().required('Giới tính không được để trống !'),
+  });
+
   const {
     control,
     handleSubmit,
+    setValue,
+    reset,
     formState: { errors },
   } = useForm({
+    resolver: yupResolver(formSchema),
     defaultValues: {
+      userId: user.userId || '',
       fullName: user.fullName || '',
       email: user.email || '',
       phoneNumber: user.phoneNumber || '',
       gender: user.gender || '',
       address: user.address || '',
-      dateOfBirth: user.dateOfBirth || '',
+      dateOfBirth:
+        new DateFormatter(user.dateOfBirth).format('YYYY-MM-DD') || '',
+      avatar: avatar || '',
     },
   });
 
   const handleSubmitForm = (data) => {
-    console.log('Submitted data:', data);
-    // Xử lý dữ liệu sau khi submit
+    updateInfoUser(data)
+      .then((res) => {
+        if (res.status === 200) {
+          dispatch(updateUser(res.data));
+          toast.success('Cập nhật thông tin thành công');
+        }
+      })
+      .catch((error) => {
+        if (error.response.status === 400) {
+          toast.error(error.response.data.message);
+        } else {
+          toast.error('Cập nhật thông tin thất bại !');
+        }
+        reset({
+          userId: user.userId || '',
+          fullName: user.fullName || '',
+          email: user.email || '',
+          phoneNumber: user.phoneNumber || '',
+          gender: user.gender || '',
+          address: user.address || '',
+          dateOfBirth:
+            new DateFormatter(user.dateOfBirth).format('YYYY-MM-DD') || '',
+          avatar: avatar || '',
+        });
+      });
   };
+
+  useEffect(() => {
+    setValue('avatar', avatar || '');
+  }, [avatar, setValue]);
+
   return (
     <div className="mt-4">
       <form onSubmit={handleSubmit(handleSubmitForm)}>

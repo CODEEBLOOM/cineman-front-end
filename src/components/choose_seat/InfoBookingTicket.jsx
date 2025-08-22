@@ -308,7 +308,7 @@ const InfoBookingTicket = ({ showTime }) => {
                 </p>
               </div>
               <div>
-                <p className="font-medium">
+                <p className="truncate whitespace-nowrap font-medium">
                   {showTime?.movie?.genres.map((item) => item.name).join(', ')}
                 </p>
               </div>
@@ -342,7 +342,9 @@ const InfoBookingTicket = ({ showTime }) => {
                 </p>
               </div>
               <div>
-                <p className="font-medium">{movieTheater?.title}</p>
+                <p className="truncate whitespace-nowrap font-medium">
+                  {movieTheater?.title}
+                </p>
               </div>
             </div>
           </li>
@@ -381,7 +383,7 @@ const InfoBookingTicket = ({ showTime }) => {
                 </p>
               </div>
               <div>
-                <span className="font-medium">
+                <span className="truncate whitespace-nowrap font-medium">
                   {showTime?.cinemaTheater?.name}
                 </span>
               </div>
@@ -396,7 +398,7 @@ const InfoBookingTicket = ({ showTime }) => {
                 </p>
               </div>
               <div>
-                <span className="font-medium">
+                <span className="truncate whitespace-nowrap font-medium">
                   {selectedSeats.map((item) => item.seat.label).join(', ')}
                 </span>
               </div>

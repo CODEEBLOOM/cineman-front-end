@@ -8,7 +8,6 @@ import { deleteCinemaTheater } from '@apis/cinemaTheaterService';
 import { openSnackbar } from '@redux/slices/snackbarSlice';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { FaSitemap } from 'react-icons/fa';
 const CinemaTheaterTable = ({
   tab,
   setTab,
@@ -81,7 +80,7 @@ const CinemaTheaterTable = ({
         <div>
           <p>{params.value}</p>
           <p>
-            Phòng chiếu:{' '}
+            Phòng chiếu:
             <span
               className="ml-2 cursor-pointer text-primary hover:underline"
               onClick={() => handleUpdateCinemaTheater(params.row)}
@@ -120,11 +119,11 @@ const CinemaTheaterTable = ({
       headerName: 'Trạng thái',
       field: 'status',
       renderCell: (params) => (
-        <span
-          className={`rounded-lg p-2 capitalize ${params.value !== 'PUBLISHED' ? 'bg-yellow-100 text-yellow-500' : 'bg-[#b7e9e0] text-[#0bb392]'}`}
+        <small
+          className={`rounded-lg p-2 font-semibold capitalize ${params.value !== 'PUBLISHED' ? 'bg-yellow-100 text-yellow-500' : 'bg-[#b7e9e0] text-[#0bb392]'}`}
         >
-          {params.value === 'PUBLISHED' ? 'Đã xuất bản' : 'Nháp'}
-        </span>
+          {params.value === 'PUBLISHED' ? 'Xuất bản' : 'Nháp'}
+        </small>
       ),
     },
     {
@@ -139,8 +138,7 @@ const CinemaTheaterTable = ({
             variant="contained"
             size="medium"
           >
-            <MdDeleteForever size={20} />
-            Xóa
+            <MdDeleteForever size={25} />
           </Button>
           <Link to={`/admin/so-do-ghe/${params.row.cinemaTheaterId}`}>
             <Button
@@ -149,7 +147,7 @@ const CinemaTheaterTable = ({
               className="!capitalize"
               size="medium"
             >
-              sơ đồ ghế
+              Sơ đồ ghế
             </Button>
           </Link>
         </div>
@@ -174,7 +172,6 @@ const CinemaTheaterTable = ({
                 marginLeft: '16px',
               },
             }}
-            icon={<Badge badgeContent={4} color="warning" />}
             iconPosition={'end'}
             label="tất cả"
             {...a11yProps(0)}
@@ -188,7 +185,6 @@ const CinemaTheaterTable = ({
                 marginLeft: '16px',
               },
             }}
-            icon={<Badge badgeContent={4} color="success" />}
             iconPosition={'end'}
             label="Đã xuất bản"
             {...a11yProps(1)}
@@ -202,7 +198,6 @@ const CinemaTheaterTable = ({
                 marginLeft: '16px',
               },
             }}
-            icon={<Badge badgeContent={4} color="info" />}
             iconPosition={'end'}
             label="Bản nháp"
             {...a11yProps(1)}

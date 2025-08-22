@@ -9,7 +9,24 @@ import { getShowTimeDetail } from '@apis/showTimeService';
 const ShowTimeDetail = ({ showTimeSelected, movieId }) => {
   const { movieTheater } = useSelector((state) => state.movieTheater);
   const [showTimeDetails, setShowTimeDetails] = useState();
-  const [cinemas, setCinemas] = useState([]);
+
+  const groupShowtimesByTheater = (list) => {
+    return list.reduce((acc, item) => {
+      const id = item.cinemaTheater.cinemaTheaterId;
+
+      // Nếu chưa có phòng này thì tạo mới
+      if (!acc[id]) {
+        acc[id] = {
+          theater: item.cinemaTheater, // thông tin phòng
+          items: [], // danh sách suất chiếu thuộc phòng đó
+        };
+      }
+
+      // Thêm lịch chiếu vào phòng tương ứng
+      acc[id].items.push(item);
+      return acc;
+    }, {});
+  };
 
   // Lấy danh sách tất cả các lịch chiếu theo showTimeSelected, movieId, movieTheaterId //
   useEffect(() => {
@@ -20,28 +37,34 @@ const ShowTimeDetail = ({ showTimeSelected, movieId }) => {
       showDate: showTimeSelected?.showDate,
     })
       .then((res) => {
-        setShowTimeDetails(res.data);
+        const grouped = groupShowtimesByTheater(res.data);
+        Object.values(grouped).forEach((g) => {
+          g.items.sort((a, b) =>
+            a.showTime.startTime.localeCompare(b.showTime.startTime)
+          );
+        });
+        setShowTimeDetails(grouped);
       })
       .catch((err) => {
         console.log(err);
       });
   }, [showTimeSelected, movieTheater.id, movieId]);
 
-  /* Get unique cinemas */
-  useEffect(() => {
-    const seenIds = new Set();
-    const uniqueTheaters = [];
-    if (!showTimeDetails) return;
-    showTimeDetails.forEach((item) => {
-      const theater = item.cinemaTheater;
-      if (!seenIds.has(theater.cinemaTheaterId)) {
-        seenIds.add(theater.cinemaTheaterId);
-        uniqueTheaters.push(theater);
-      }
-    });
-    setCinemas(uniqueTheaters);
-    // Chỉ chạy lại khi showTimeDetails thay đổi //
-  }, [showTimeDetails]);
+  // /* Get unique cinemas */
+  // useEffect(() => {
+  //   const seenIds = new Set();
+  //   const uniqueTheaters = [];
+  //   if (!showTimeDetails) return;
+  //   showTimeDetails.forEach((item) => {
+  //     const theater = item.cinemaTheater;
+  //     if (!seenIds.has(theater.cinemaTheaterId)) {
+  //       seenIds.add(theater.cinemaTheaterId);
+  //       uniqueTheaters.push(theater);
+  //     }
+  //   });
+  //   setCinemas(uniqueTheaters);
+  //   // Chỉ chạy lại khi showTimeDetails thay đổi //
+  // }, [showTimeDetails]);
 
   const { openPopup, closeTopModal, resetModal } = useModelContext();
 
@@ -119,38 +142,34 @@ const ShowTimeDetail = ({ showTimeSelected, movieId }) => {
 
   return (
     <div>
-      {cinemas &&
-        cinemas.map((item) => (
-          <div key={`${item.cinemaTheaterId}}`}>
-            <div className="mt-3">
-              <p className={'font-bold uppercase'}>{item.name} lồng tiếng</p>
+      {showTimeDetails &&
+        Object.values(showTimeDetails)?.map((showTimeGroup) => (
+          <div
+            className="flex flex-col flex-wrap gap-2 md:gap-3"
+            key={showTimeGroup.theater.id}
+          >
+            <div>
+              <p className="font-semibold">{`${showTimeGroup.theater.name} - ${showTimeGroup.items[0].movieVariation.name}`}</p>
             </div>
-            <div className={'flex flex-wrap gap-3'}>
-              {showTimeDetails.map((showTimeDetail, index) => {
-                if (
-                  showTimeDetail.cinemaTheater.cinemaTheaterId ===
-                  item.cinemaTheaterId
-                ) {
-                  return (
-                    <div
-                      className={'flex flex-col text-center'}
-                      key={showTimeDetail.showTime.id || `${item.id}-${index}`}
-                      onClick={() => openPopup(renderPopup(showTimeDetail))}
-                    >
-                      <p
-                        className={
-                          'inline-block bg-[#e5e5e5] px-10 py-2 transition-colors duration-200 hover:cursor-pointer hover:bg-slate-300'
-                        }
-                      >
-                        {showTimeDetail.showTime.startTime}
-                      </p>
-                      <small>
-                        <span>{showTimeDetail.totalSeatEmpty}</span> ghế trống
-                      </small>
-                    </div>
-                  );
-                }
-              })}
+            <div className="flex flex-wrap gap-2 md:gap-3">
+              {showTimeGroup.items.map((showTimeDetail) => (
+                <div
+                  className={'flex flex-col text-center'}
+                  key={showTimeDetail.showTime.id}
+                  onClick={() => openPopup(renderPopup(showTimeDetail))}
+                >
+                  <p
+                    className={
+                      'inline-block bg-[#e5e5e5] px-10 py-2 transition-colors duration-200 hover:cursor-pointer hover:bg-slate-300'
+                    }
+                  >
+                    {showTimeDetail.showTime.startTime}
+                  </p>
+                  <small>
+                    <span>{showTimeDetail.totalSeatEmpty}</span> ghế trống
+                  </small>
+                </div>
+              ))}
             </div>
           </div>
         ))}

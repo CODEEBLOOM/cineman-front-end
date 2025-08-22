@@ -34,7 +34,7 @@ export const cinemaShowtimeSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(fetchShowDates.fulfilled, (state, action) => {
       state.showDates = action.payload;
-      state.showDateActive = action.payload[0];
+      state.showDateActive = action.payload && action.payload[0];
     });
   },
 });

@@ -15,7 +15,7 @@ const DiscountComponent = ({ showTime }) => {
   const { customer, voucher, savePointRedeem } = useSelector(
     (state) => state.invoice
   );
-  const isCustomer = user?.roles.some((role) => role.roleId === 'USER');
+  const isCustomer = user?.roles?.some((role) => role.roleId === 'USER');
   const { invoices } = useSelector((state) => state.invoice);
   const invoice = invoices.find((i) => i.showTimeId === Number(showTime.id));
 

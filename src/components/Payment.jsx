@@ -27,7 +27,6 @@ const Payment = ({
       (Number(voucher?.discount) || 0) + (Number(savePointRedeem) || 0) * conv
     );
   }, [voucher?.discount, savePointRedeem]);
-  console.log('Total discount:', totalDiscount);
   const dispatch = useDispatch();
 
   const lastTotalMoneyRef = useRef(null);

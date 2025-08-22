@@ -50,7 +50,7 @@ const CardItemFilm = ({
 
   return (
     <>
-      <div className="mb-14 flex w-full gap-5 px-4 pb-4 sm:block">
+      <div className="mb-3 flex w-full gap-5 px-4 pb-4 sm:block">
         <div className="relative">
           <div className="h-auto w-full min-w-[100px] max-w-[150px] overflow-hidden rounded-2xl sm:max-w-[300px] md:min-h-[300px] xl:min-h-[370px]">
             <ImageComponent

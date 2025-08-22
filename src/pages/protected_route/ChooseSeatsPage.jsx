@@ -3,12 +3,10 @@ import NoteInfo from '@component/choose_seat/NoteInfo';
 import { useSelector } from 'react-redux';
 
 const ChooseSeatPage = ({ isPayment, showTime, setTotalMoneyTicket }) => {
-  console.log(showTime);
   const { invoices } = useSelector((state) => state.invoice);
   const invoice = invoices.find(
     (invoice) => invoice.showTimeId === showTime.id
   );
-  console.log(invoices);
   return (
     <>
       {/* Phần sơ đồ ghế */}

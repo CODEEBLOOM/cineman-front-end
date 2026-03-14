@@ -67,3 +67,13 @@ export const findAllMovieByCinemaTheaterIdAndShowDate = async (
   const url = `/show-times/cinema-theater/${cinemaTheaterId}/show-date/${showDate}`;
   return await axios.get(url);
 };
+
+export const findAll = async () => {
+  const url = '/admin/show-time/all';
+  return await axios.get(url);
+};
+
+export const addShowTime = async (data) => {
+  const url = '/admin/show-time/add';
+  return await axios.post(url, data);
+};

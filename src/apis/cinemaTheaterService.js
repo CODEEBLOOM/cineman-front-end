@@ -20,6 +20,11 @@ export const findById = async (id) => {
   return await axios.get(url);
 };
 
+export const findByMovieTheaterId = async (movieTheaterId) => {
+  const url = `/admin/cinema-theater/movie-theater/${movieTheaterId}/all`;
+  return await axios.get(url);
+};
+
 export const create = async (data) => {
   const url = `/admin/cinema-theater/add`;
   return await axios.post(url, data);

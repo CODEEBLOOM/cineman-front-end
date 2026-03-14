@@ -14,12 +14,19 @@ const GoogleCallback = () => {
   const from = location.state?.from?.pathname || '/';
 
   useEffect(() => {
-    try {
-      dispatch(loginGoogle(code)).unwrap();
-      toast.success('Đăng nhập thành công !');
-      navigate(from, { replace: true });
-    } catch (error) {
-      console.log(error);
+    const login = async () => {
+      try {
+        await dispatch(loginGoogle(code)).unwrap();
+        toast.success('Đăng nhập thành công !');
+        navigate(from, { replace: true });
+      } catch (error) {
+        toast.error(error);
+        navigate('/auth/login?auth=login', { replace: true });
+      }
+    };
+
+    if (code) {
+      login();
     }
   }, [code, dispatch, navigate, from]);
 

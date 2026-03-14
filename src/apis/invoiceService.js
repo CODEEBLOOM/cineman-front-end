@@ -85,3 +85,8 @@ export const findByQRCode = async (qrCode) => {
   const url = `/admin/invoice/qr-code/${qrCode}`;
   return await axios.get(url);
 };
+
+export const updateStatusUsed = async (id) => {
+  const url = `/admin/invoice/qr-code/${id}`;
+  return await axios.put(url);
+};

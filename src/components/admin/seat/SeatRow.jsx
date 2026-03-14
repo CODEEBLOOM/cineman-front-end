@@ -3,6 +3,11 @@ import SeatComponent from './SeatComponent';
 import { GoPlus } from 'react-icons/go';
 import { useEffect, useState } from 'react';
 import { createMul, deleteMulSeat } from '@apis/seatService';
+import {
+  buildSeatLabel,
+  getSeatRowLabel,
+  toApiSeatPosition,
+} from '@utils/seatPosition';
 
 const SeatRow = ({ seatData = [], cinemaTheaterId, fetchSeatMap, status }) => {
   const [emptySeats, setEmptySeats] = useState([]);
@@ -32,9 +37,8 @@ const SeatRow = ({ seatData = [], cinemaTheaterId, fetchSeatMap, status }) => {
   const handleCreateMultipleSeat = () => {
     const createSeats = emptySeats.map((seat) => ({
       seatType: seat.seatType,
-      rowIndex: seat.rowIndex,
-      columnIndex: seat.columnIndex,
-      label: String.fromCharCode(65 + seat.rowIndex) + (seat.columnIndex + 1),
+      ...toApiSeatPosition(seat),
+      label: buildSeatLabel(seat.rowIndex, seat.columnIndex),
       cinemaTheaterId,
     }));
     if (createSeats.length === 0) return;
@@ -101,7 +105,7 @@ const SeatRow = ({ seatData = [], cinemaTheaterId, fetchSeatMap, status }) => {
       {
         // Render the row label
         <div className="flex items-center justify-center">
-          {String.fromCharCode(65 + seatData[0].rowIndex)}
+          {getSeatRowLabel(seatData[0].rowIndex)}
         </div>
       }
 

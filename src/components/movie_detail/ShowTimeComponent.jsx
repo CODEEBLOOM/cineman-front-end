@@ -9,9 +9,17 @@ const ShowTimeComponent = ({ movieId }) => {
   const [showTimeSelected, setShowTimeSelected] = useState();
   const [showTimes, setShowTimes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { movieTheater } = useSelector((state) => state.movieTheater);
+  const movieTheater = useSelector(
+    (state) => state.movieTheater?.movieTheater ?? { id: null }
+  );
 
   useEffect(() => {
+    if (!movieId || !movieTheater?.id) {
+      setShowTimes([]);
+      setShowTimeSelected(undefined);
+      return;
+    }
+
     setIsLoading(true);
     findAllShowTimeByMovieIdAndMovieTheaterId({
       movieId: movieId,
@@ -39,14 +47,14 @@ const ShowTimeComponent = ({ movieId }) => {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [movieId, movieTheater.id]);
+  }, [movieId, movieTheater?.id]);
 
-  /* Hàm thay đổi show time */
+  /* HÃ m thay Ä‘á»•i show time */
   const handleChangeShowTimeSelected = (id) => {
     setShowTimeSelected(id);
   };
 
-  // Hiệu ứng loading khi vẫn còn gọi API //
+  // Hiá»‡u á»©ng loading khi váº«n cÃ²n gá»i API //
   if (isLoading) {
     return <Loading />;
   }

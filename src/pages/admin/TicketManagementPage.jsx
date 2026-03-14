@@ -11,8 +11,13 @@ import { useEffect, useState } from 'react';
 import { findByQRCode } from '@apis/invoiceService';
 import ImageComponent from '@component/ImageComponent';
 import { currencyFormatter } from '@libs/Utils';
+import BookingSnack from '@component/admin/invoice/BookingSnack';
+import { useDispatch } from 'react-redux';
+import { setSnacks } from '@redux/slices/invoiceASlide';
+import RenderInvoice from '@component/admin/invoice/RenderInvoice';
 
 const TicketManagementPage = () => {
+  const dispatch = useDispatch();
   const { qrCode } = useParams();
   const [invoiceDetail, setInvoiceDetail] = useState({});
 
@@ -22,6 +27,11 @@ const TicketManagementPage = () => {
       try {
         const res = await findByQRCode(qrCode);
         setInvoiceDetail(res.data);
+        const item = res.data.detailBookingSnacks.map((item) => ({
+          ...item.snack,
+          quantity: item.totalSnack,
+        }));
+        dispatch(setSnacks(item));
       } catch (error) {
         console.log(error);
       }
@@ -53,20 +63,14 @@ const TicketManagementPage = () => {
       />
       <div className="px-2 py-2">
         <div>
-          <div className="grid gap-2 md:grid-cols-12">
-            <div className="col-span-9 rounded-md bg-white px-3 py-2">
-              <div className="mb-3 flex justify-end">
-                <Button
-                  variant="contained"
-                  color="info"
-                  startIcon={<MdPrint />}
-                >
-                  In vé
-                </Button>
-              </div>
-              <div>
+          <div className="grid grid-cols-12 gap-2">
+            <div className="col-span-12 rounded-md bg-white px-3 py-2 md:col-span-9">
+              {invoiceDetail?.id && (
+                <RenderInvoice invoiceDetail={invoiceDetail} />
+              )}
+              <div className="overflow-auto">
                 {!invoiceDetail?.id ? (
-                  <div className="flex h-64 flex-col items-center justify-center text-center">
+                  <div className="flex h-64 flex-col items-center justify-center overflow-auto text-center">
                     <p>Danh sách hóa đơn trống</p>
                   </div>
                 ) : (
@@ -122,16 +126,17 @@ const TicketManagementPage = () => {
                           <div>
                             {(invoiceDetail?.detailBookingSnacks || []).map(
                               (snack) => (
-                                <>
-                                  <p key={snack.snackId} className="truncate">
+                                <div key={snack.id}>
+                                  <p className="truncate">
                                     <span className="font-semibold">
                                       {snack.snack.snackName}{' '}
                                     </span>
                                   </p>
                                   <span className="text-pink-400">
-                                    {currencyFormatter(snack.totalMoney)}
+                                    {snack.totalSnack} x{' '}
+                                    {currencyFormatter(snack.snack.unitPrice)}
                                   </span>
-                                </>
+                                </div>
                               )
                             )}
                             {invoiceDetail?.detailBookingSnacks?.length ===
@@ -213,65 +218,77 @@ const TicketManagementPage = () => {
                           </div>
                         </td>
                         <td>
-                          <div className="grid grid-cols-2">
-                            <p className="w-[100px] font-semibold">
-                              Tổng tiền vé:{' '}
+                          <div>
+                            <div className="grid grid-cols-2">
+                              <p className="w-[100px] font-semibold">
+                                Tổng tiền vé:{' '}
+                              </p>
+                              <p className="text-pink-400">
+                                {currencyFormatter(
+                                  invoiceDetail?.totalMoneyTicket
+                                )}
+                              </p>
+                            </div>
+                            <p>
+                              <span className="font-semibold">
+                                Tổng tiền discount:{' '}
+                              </span>
+                              <span className="text-pink-400">
+                                {currencyFormatter(
+                                  invoiceDetail?.totalMoneyPromotion
+                                )}
+                              </span>
                             </p>
-                            <p className="text-pink-400">
-                              {currencyFormatter(
-                                invoiceDetail?.totalMoneyTicket
-                              )}
+                            <p>
+                              <span className="font-semibold">Đổi điểm: </span>
+                              <span className="text-pink-400">
+                                {currencyFormatter(
+                                  invoiceDetail?.totalMoneyDiscount
+                                )}
+                              </span>
+                            </p>
+                            <p>
+                              <span className="font-semibold">
+                                Tổng tiền snack:{' '}
+                              </span>
+                              <span className="text-pink-400">
+                                {currencyFormatter(
+                                  invoiceDetail?.totalMoneySnack
+                                )}
+                              </span>
+                            </p>
+                            <p>
+                              <span className="font-semibold">
+                                Tổng tiền còn lại:{' '}
+                              </span>
+                              <span className="text-pink-400">
+                                {currencyFormatter(invoiceDetail?.totalMoney)}
+                              </span>
                             </p>
                           </div>
-                          <p>
-                            <span className="font-semibold">
-                              Tổng tiền discount:{' '}
-                            </span>
-                            <span className="text-pink-400">
-                              {currencyFormatter(
-                                invoiceDetail?.totalMoneyPromotion
-                              )}
-                            </span>
-                          </p>
-                          <p>
-                            <span className="font-semibold">Đổi điểm: </span>
-                            <span className="text-pink-400">
-                              {currencyFormatter(
-                                invoiceDetail?.totalMoneyDiscount
-                              )}
-                            </span>
-                          </p>
-                          <p>
-                            <span className="font-semibold">
-                              Tổng tiền snack:{' '}
-                            </span>
-                            <span className="text-pink-400">
-                              {currencyFormatter(
-                                invoiceDetail?.totalMoneySnack
-                              )}
-                            </span>
-                          </p>
-                          <p>
-                            <span className="font-semibold">
-                              Tổng tiền còn lại:{' '}
-                            </span>
-                            <span className="text-pink-400">
-                              {currencyFormatter(invoiceDetail?.totalMoney)}
-                            </span>
-                          </p>
                         </td>
                       </tr>
                     </tbody>
                   </table>
                 )}
               </div>
+              {invoiceDetail?.id && (
+                <BookingSnack
+                  invoiceId={invoiceDetail?.id}
+                  status={invoiceDetail?.status}
+                />
+              )}
             </div>
-            <div className="col-span-3 flex flex-col space-y-2">
+            <div className="col-span-12 flex flex-col space-y-2 md:col-span-3">
               <div className="rounded-md bg-white px-3 py-2">
                 <div className="flex justify-between border-b-2 pb-2">
                   <p className="font-medium">Trạng thái vé: </p>
-                  <small className="rounded-sm bg-red-100 p-1 text-red-500">
-                    Chưa xuất vé
+                  <small
+                    className={`rounded-sm bg-red-100 p-1 text-red-500 ${invoiceDetail?.status === 'USED' ? 'bg-green-100 !text-green-500' : ''}`}
+                  >
+                    {invoiceDetail?.status === 'USED'
+                      ? 'Đã xuất vé'
+                      : 'Chưa xuất vé'}
                   </small>
                 </div>
                 <QRGenerator text={qrCode} />

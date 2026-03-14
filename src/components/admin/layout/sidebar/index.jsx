@@ -117,12 +117,6 @@ const Sidebar = ({ isOpen = true, setIsOpen, isMobile }) => {
                     Dashboard
                   </NavLink>
                 </li>
-                <li>
-                  <NavLink to={'/admin/thong-ke'} className={'link'}>
-                    <FaChartColumn size={20} className={'min-w-max'} />
-                    Thống kê
-                  </NavLink>
-                </li>
               </>
             )}
             {/*  Submenu */}

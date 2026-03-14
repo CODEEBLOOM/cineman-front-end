@@ -96,6 +96,11 @@ const TransactionHistory = () => {
                           Chưa xuất vé
                         </span>
                       )}
+                      {invoice.status === 'USED' && (
+                        <span className="rounded-lg bg-green-200 p-1 font-medium text-green-500">
+                          Đã xuất vé
+                        </span>
+                      )}
                     </p>
                     <p className="font-medium">
                       Tổng tiền thanh toán:{' '}

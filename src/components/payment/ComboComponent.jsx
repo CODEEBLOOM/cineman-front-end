@@ -90,9 +90,9 @@ const ComboComponent = () => {
             </tr>
           </thead>
           <tbody>
-            {combos.map((item) => {
+            {combos.map((item, index) => {
               return (
-                <tr key={item.id}>
+                <tr key={`combo-${item.id}-${index}`}>
                   <td className={'flex w-[100px] justify-center px-3 py-5'}>
                     <img
                       src="/combo-online-03.png"

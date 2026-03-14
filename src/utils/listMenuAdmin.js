@@ -62,7 +62,7 @@ export const listMenuAdmin = [
         role: ['ADMIN'],
       },
       {
-        name: 'Quản lý xuất chiếu',
+        name: 'Quản lý suất chiếu',
         icon: RiSlideshow2Line,
         path: '/admin/xuat-chieu',
         role: ['CADMIN'],
@@ -71,7 +71,7 @@ export const listMenuAdmin = [
         name: 'Quản lý hóa đơn',
         icon: PiInvoiceBold,
         path: '/admin/invoice',
-        role: ['CADMIN', 'RCP'],
+        role: ['RCP'],
       },
       {
         name: 'Quản lý xuất vé',

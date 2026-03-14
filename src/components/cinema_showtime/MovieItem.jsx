@@ -18,7 +18,9 @@ import { useModelContext } from '@context/ModalContext';
 import { IoClose } from 'react-icons/io5';
 
 const MovieItem = ({ movie }) => {
-  const { movieTheater } = useSelector((state) => state.movieTheater);
+  const movieTheater = useSelector(
+    (state) => state.movieTheater?.movieTheater ?? { id: null }
+  );
   const { showDateActive } = useSelector((state) => state.cinemaShowTime);
   const [showTimeDetails, setShowTimeDetails] = useState();
 
@@ -47,23 +49,23 @@ const MovieItem = ({ movie }) => {
     return list.reduce((acc, item) => {
       const id = item.cinemaTheater.cinemaTheaterId;
 
-      // Nếu chưa có phòng này thì tạo mới
+      // Náº¿u chÆ°a cÃ³ phÃ²ng nÃ y thÃ¬ táº¡o má»›i
       if (!acc[id]) {
         acc[id] = {
-          theater: item.cinemaTheater, // thông tin phòng
-          items: [], // danh sách suất chiếu thuộc phòng đó
+          theater: item.cinemaTheater, // thÃ´ng tin phÃ²ng
+          items: [], // danh sÃ¡ch suáº¥t chiáº¿u thuá»™c phÃ²ng Ä‘Ã³
         };
       }
 
-      // Thêm lịch chiếu vào phòng tương ứng
+      // ThÃªm lá»‹ch chiáº¿u vÃ o phÃ²ng tÆ°Æ¡ng á»©ng
       acc[id].items.push(item);
       return acc;
     }, {});
   };
 
-  // Lấy danh sách tất cả các lịch chiếu theo showTimeSelected, movieId, movieTheaterId //
+  // Láº¥y danh sÃ¡ch táº¥t cáº£ cÃ¡c lá»‹ch chiáº¿u theo showTimeSelected, movieId, movieTheaterId //
   useEffect(() => {
-    if (!showDateActive && movie) return;
+    if (!showDateActive || !movie?.movieId || !movieTheater?.id) return;
     getShowTimeDetail({
       movieId: movie.movieId,
       movieTheaterId: movieTheater.id,
@@ -81,7 +83,7 @@ const MovieItem = ({ movie }) => {
       .catch((err) => {
         console.log(err);
       });
-  }, [showDateActive, movieTheater.id, movie]);
+  }, [showDateActive, movieTheater?.id, movie]);
 
   return (
     <motion.div
@@ -127,7 +129,7 @@ const MovieItem = ({ movie }) => {
                   .join(',\u200B ')}
               </span>
               <span className="inline-flex items-center gap-1">
-                <Clock3 size={16} /> {movie.duration} phút
+                <Clock3 size={16} /> {movie.duration} phÃºt
               </span>
             </Box>
 

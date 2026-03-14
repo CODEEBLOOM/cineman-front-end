@@ -18,7 +18,9 @@ const CardItemFilm = ({
   trailerLink,
 }) => {
   const { openPopup, closeTopModal } = useModelContext();
-  const { movieTheater } = useSelector((state) => state.movieTheater);
+  const movieTheater = useSelector(
+    (state) => state.movieTheater?.movieTheater ?? { title: '' }
+  );
 
   const renderPopup = () => {
     return (
@@ -35,12 +37,12 @@ const CardItemFilm = ({
         </span>
         <div className={'border-b-2 px-4'}>
           <p className={'font-bold uppercase lg:text-[25px]'}>
-            Lịch chiếu phim - <span className="capitalize">{title}</span>
+            Lá»‹ch chiáº¿u phim - <span className="capitalize">{title}</span>
           </p>
         </div>
         <div className="pb-3 pt-10 text-center">
           <p className="text-[30px] font-medium uppercase text-primary">
-            {movieTheater.title}
+            {movieTheater?.title || 'Chọn rạp'}
           </p>
         </div>
         <ShowTimeComponent movieId={id} />
@@ -63,7 +65,7 @@ const CardItemFilm = ({
           <span className="absolute left-2 top-2">
             <img
               src={`${Number(age) >= 18 ? 'c-18.png' : Number(age) >= 16 ? 'c-16.png' : 'p.png'}`}
-              alt="Độ tuổi trên 15"
+              alt="Äá»™ tuá»•i trÃªn 15"
             />
           </span>
           <div className="group absolute left-0 top-0 h-full w-full transform rounded-2xl hover:bg-custom-transparent">
@@ -112,19 +114,19 @@ const CardItemFilm = ({
             </Link>
             <ul>
               <li className="w-full">
-                <span className="font-bold">Thể loại:</span>&nbsp;{' '}
-                <span className="truncate whitespace-normal lowercase">
+                <span className="font-bold">Thá»ƒ loáº¡i:</span>&nbsp;{' '}
+                <span className="truncate whitespace-nowrap lowercase">
                   {genres.map((genre) => genre.name).join(',\u200B ')}
                 </span>
               </li>
 
               <li className="flex flex-wrap">
-                <span className="font-bold">Thời lượng:</span>&nbsp; {duration}
-                <span> &nbsp;Phút</span>
+                <span className="font-bold">Thá»i lÆ°á»£ng:</span>&nbsp; {duration}
+                <span> &nbsp;PhÃºt</span>
               </li>
               {isUpcoming && (
                 <li className="flex flex-wrap">
-                  <span className="font-bold">Ngày khởi chiếu:</span>&nbsp;
+                  <span className="font-bold">NgÃ y khá»Ÿi chiáº¿u:</span>&nbsp;
                   <span className="font-bold text-primary">{releaseDate}</span>
                 </li>
               )}
@@ -132,7 +134,7 @@ const CardItemFilm = ({
           </div>
           {!isUpcoming && (
             <div onClick={() => openPopup(renderPopup())}>
-              <CustomButton title={'Mua vé'} />
+              <CustomButton title={'Mua vÃ©'} />
             </div>
           )}
         </div>

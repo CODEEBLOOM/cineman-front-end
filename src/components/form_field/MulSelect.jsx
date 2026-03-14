@@ -1,6 +1,6 @@
 import { Box, MenuItem, TextField } from '@mui/material';
 
-const CustomSelect = ({
+const MulSelect = ({
   onChange,
   value = '',
   name,
@@ -10,19 +10,25 @@ const CustomSelect = ({
   options,
   disabled,
 }) => {
+  const safeValue = Array.isArray(value) ? value : [];
   return (
-    <Box className="min-w-[150px]">
+    <Box className="min-w-[150px] !overflow-hidden">
       <TextField
         name={name}
         label=""
         fullWidth
         type={type}
-        value={value}
-        onChange={onChange}
+        value={safeValue}
+        onChange={(e) => {
+          // MUI trả về array khi multiple
+          const val = e.target.value;
+          const next = Array.isArray(val) ? val : (val ?? '').split(',');
+          onChange?.(next);
+        }}
         select
         size="small"
         error={!!error}
-        SelectProps={{ displayEmpty: true }}
+        SelectProps={{ multiple: true }}
         disabled={disabled}
       >
         <MenuItem disabled value="">
@@ -37,4 +43,4 @@ const CustomSelect = ({
     </Box>
   );
 };
-export default CustomSelect;
+export default MulSelect;

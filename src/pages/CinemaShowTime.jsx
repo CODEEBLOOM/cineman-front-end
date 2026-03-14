@@ -7,17 +7,24 @@ import EmptyList from '@component/cinema_showtime/EmptyList';
 
 const CinemaShowtime = () => {
   const { showDateActive } = useSelector((state) => state.cinemaShowTime);
-  const { movieTheater } = useSelector((state) => state.movieTheater);
+  const movieTheater = useSelector(
+    (state) => state.movieTheater?.movieTheater ?? { id: null }
+  );
   const [movies, setMovies] = useState([]);
 
   useEffect(() => {
-    document.title = 'Danh sách phim theo lịch chiếu - POLY CINEMAS';
+    document.title = 'Danh sÃ¡ch phim theo lá»‹ch chiáº¿u - POLY CINEMAS';
+    if (!movieTheater?.id || !showDateActive) {
+      setMovies([]);
+      return;
+    }
+
     findAllMovieByCinemaTheaterIdAndShowDate(movieTheater.id, showDateActive)
       .then((res) => setMovies(res.data))
       .catch((error) => {
         console.log(error);
       });
-  }, [showDateActive, movieTheater.id]);
+  }, [showDateActive, movieTheater?.id]);
 
   return (
     <div className="bg-white">

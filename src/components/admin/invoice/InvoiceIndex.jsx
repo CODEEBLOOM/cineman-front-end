@@ -5,33 +5,43 @@ import {
 import CustomBreadcrumb from '@component/CustomBreakcrumb';
 import ImageComponent from '@component/ImageComponent';
 import { currencyFormatter } from '@libs/Utils';
-import { Button, TextField } from '@mui/material';
+import { Button, Pagination, TextField } from '@mui/material';
 import DateFormatter from '@utils/DateFormatter';
 import { useEffect, useState } from 'react';
 import { IoEyeOutline, IoQrCodeOutline } from 'react-icons/io5';
 import { PiInvoiceBold } from 'react-icons/pi';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import ScanQRCode from './ScanQRCode';
 import { useModelContext } from '@context/ModalContext';
 import { useNavigate } from 'react-router-dom';
+import { setCreatedDate, setQuery } from '@redux/slices/invoiceASlide';
+import EmptyList from '@component/cinema_showtime/EmptyList';
 
 const InvoiceIndex = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user);
   const [invoices, setInvoices] = useState([]);
-  const [meta, setMeta] = useState({});
-  const { openPopup, closeTopModal } = useModelContext();
+  const [meta, setMeta] = useState({
+    totalElements: 0,
+    totalPages: 0,
+    pageSize: 0,
+    currentPage: 0,
+  });
+  const { openPopup } = useModelContext();
+  const { createdDate, query } = useSelector((state) => state.invoiceASlice);
 
   useEffect(() => {
     findAllByDateAndCinemaTheaterId({
-      date: new DateFormatter().format('YYYY-MM-DD'),
+      date:
+        new DateFormatter(createdDate).format('YYYY-MM-DD') ||
+        new DateFormatter().format('YYYY-MM-DD'),
       movieTheaterId: user?.movieTheater?.movieTheaterId || null,
       pageNo: 0,
       pageSize: 10,
     })
       .then((res) => {
-        console.log(res);
         setInvoices(res.data.invoiceDetailResponses);
         setMeta(res.data.meta);
       })
@@ -59,6 +69,7 @@ const InvoiceIndex = () => {
         }
         setInvoices([res.data]);
         toast.success('Lọc hóa đơn thành công !');
+        dispatch(setQuery({ qrCode: qrCode }));
       })
       .catch((error) => {
         if (error.response.status === 400) {
@@ -72,7 +83,7 @@ const InvoiceIndex = () => {
 
   const handleFindByDate = (event) => {
     event.preventDefault();
-    const date = event.currentTarget.createdAt.value.trim();
+    const date = event.target.value;
     findAllByDateAndCinemaTheaterId({
       date: new DateFormatter(date).format('YYYY-MM-DD'),
       movieTheaterId: user?.movieTheater?.movieTheaterId || null,
@@ -80,14 +91,19 @@ const InvoiceIndex = () => {
       pageSize: 10,
     })
       .then((res) => {
-        console.log(res);
+        dispatch(setCreatedDate(date));
+        dispatch(setQuery({ qrCode: '' }));
         setInvoices(res.data.invoiceDetailResponses);
         setMeta(res.data.meta);
+        setCreatedDate(date || new DateFormatter().format('YYYY-MM-DD'));
+        toast.success('Lọc hóa đơn thành công !');
       })
       .catch((error) => {
         console.log(error);
       });
   };
+
+  const handleChangePage = () => {};
 
   return (
     <>
@@ -113,20 +129,24 @@ const InvoiceIndex = () => {
                 onSubmit={handleFindByDate}
               >
                 <TextField
+                  onChange={handleFindByDate}
                   name="createdAt"
                   type="date"
-                  defaultValue={new DateFormatter().format('YYYY-MM-DD')}
+                  defaultValue={
+                    createdDate ||
+                    new DateFormatter(new Date()).format('YYYY-MM-DD')
+                  }
                   size="small"
                   fullWidth
                 />
                 <Button
-                  variant="contained"
+                  variant="outlined"
                   size="medium"
                   type="submit"
-                  color="info"
+                  color="warning"
                   className="w-[150px]"
                 >
-                  Lọc
+                  Làm mới
                 </Button>
               </form>
               <form
@@ -138,6 +158,7 @@ const InvoiceIndex = () => {
                   label="Nhập mã QRCode"
                   type="text"
                   size="small"
+                  defaultValue={query?.qrCode}
                   fullWidth
                 />
                 <Button
@@ -184,7 +205,14 @@ const InvoiceIndex = () => {
               {invoices.map((invoice, index) => (
                 <tr key={index}>
                   <td className="w-[5%]">{index + 1}</td>
-                  <td className="w-[15%]">{invoice.code}</td>
+                  <td className="w-[15%] text-center">
+                    <span>{invoice.code}</span>
+                    <p>
+                      {new DateFormatter(invoice.createdAt).format(
+                        'HH:mm DD/MM/YYYY'
+                      )}
+                    </p>
+                  </td>
                   <td className="w-[25%]">
                     <div>
                       <p>
@@ -254,6 +282,11 @@ const InvoiceIndex = () => {
                             Chưa xuất vé
                           </span>
                         )}
+                        {invoice.status === 'USED' && (
+                          <span className="rounded-lg bg-green-200 p-1 font-medium text-green-500">
+                            Đã xuất vé
+                          </span>
+                        )}
                       </p>
                       <p className="font-medium">
                         Tổng tiền thanh toán:{' '}
@@ -278,6 +311,19 @@ const InvoiceIndex = () => {
               ))}
             </tbody>
           </table>
+          {invoices.length === 0 && (
+            <EmptyList content="Danh sách hóa đơn trống" />
+          )}
+          <Pagination
+            onChange={handleChangePage}
+            sx={{ justifyContent: 'center', display: 'flex', marginTop: 2 }}
+            size="large"
+            count={meta.totalPages}
+            page={meta.currentPage + 1}
+            variant="outlined"
+            shape="rounded"
+            color="primary"
+          />
         </div>
       </div>
     </>

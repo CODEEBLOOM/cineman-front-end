@@ -19,7 +19,9 @@ import { clearSelectedSeats } from '@redux/slices/ticketSlice';
 import { createUserHistoryPoint } from '@apis/userPointHistoryService';
 
 const InfoBookingTicket = ({ showTime }) => {
-  const { movieTheater } = useSelector((state) => state.movieTheater);
+  const movieTheater = useSelector(
+    (state) => state.movieTheater?.movieTheater ?? { title: '' }
+  );
   const { selectedSeats } = useSelector((state) => state.ticket);
   const { invoices, savePointRedeem } = useSelector((state) => state.invoice);
   const { snackSelected } = useSelector((state) => state.snack);
@@ -30,19 +32,19 @@ const InfoBookingTicket = ({ showTime }) => {
   const inputRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  /* Xử lý chuyển sang trang thanh toán */
+  /* Xá»­ lÃ½ chuyá»ƒn sang trang thanh toÃ¡n */
   const handleBeforePayment = () => {
     if (selectedSeats.length <= 0) {
-      toast.info('Vui lòng chọn ghế trước khi thanh toán');
+      toast.info('Vui lÃ²ng chá»n gháº¿ trÆ°á»›c khi thanh toÃ¡n');
     } else {
       setIsLoading(true);
       const existingInvoice = invoices.find(
         (i) => i.showTimeId === showTime.id
       );
       if (!existingInvoice) {
-        return toast.error('Lỗi khi cập nhật hóa đơn !');
+        return toast.error('Lá»—i khi cáº­p nháº­t hÃ³a Ä‘Æ¡n !');
       }
-      // Cập nhật hóa đơn //
+      // Cáº­p nháº­t hÃ³a Ä‘Æ¡n //
       const totalMoneyTicket = selectedSeats.reduce(
         (total, item) => total + item.price,
         0
@@ -80,7 +82,7 @@ const InfoBookingTicket = ({ showTime }) => {
 
   const handleNavigatePayment = async () => {
     if (!inputRef.current.checked) {
-      return toast.info('Vui lòng chấp nhận điều khoản đặt vé.');
+      return toast.info('Vui lÃ²ng cháº¥p nháº­n Ä‘iá»u khoáº£n Ä‘áº·t vÃ©.');
     }
     const invoice = invoices.find((i) => i.showTimeId === showTime.id);
     if (invoice) {
@@ -96,23 +98,23 @@ const InfoBookingTicket = ({ showTime }) => {
           await createMultiple(newSnackSelected);
         }
 
-        // Nếu có điểm tích lũy nghĩa là người dùng muốn đổi điểm - cần phải tạo lịch sử đổi điểm cho người dùng //
+        // Náº¿u cÃ³ Ä‘iá»ƒm tÃ­ch lÅ©y nghÄ©a lÃ  ngÆ°á»i dÃ¹ng muá»‘n Ä‘á»•i Ä‘iá»ƒm - cáº§n pháº£i táº¡o lá»‹ch sá»­ Ä‘á»•i Ä‘iá»ƒm cho ngÆ°á»i dÃ¹ng //
         if (savePointRedeem > 0) {
-          // Chỉ cần biết là có điểm tích lũy hay không vì dù thành toán tại rạp hay thanh toán online thì đều có thể tích điểm cho người dùng //
+          // Chá»‰ cáº§n biáº¿t lÃ  cÃ³ Ä‘iá»ƒm tÃ­ch lÅ©y hay khÃ´ng vÃ¬ dÃ¹ thÃ nh toÃ¡n táº¡i ráº¡p hay thanh toÃ¡n online thÃ¬ Ä‘á»u cÃ³ thá»ƒ tÃ­ch Ä‘iá»ƒm cho ngÆ°á»i dÃ¹ng //
           try {
             await createUserHistoryPoint({
               userId: invoice.invoice.customerId,
               invoiceId: invoice.invoice.id,
               changePoint: savePointRedeem,
-              reason: `Đổi điểm tích lũy thanh toán hóa đơn`,
+              reason: `Äá»•i Ä‘iá»ƒm tÃ­ch lÅ©y thanh toÃ¡n hÃ³a Ä‘Æ¡n`,
             });
           } catch (error) {
             console.error('Error creating user history point:', error);
-            toast.error('Có lỗi xảy ra khi đổi điểm tích lũy!');
+            toast.error('CÃ³ lá»—i xáº£y ra khi Ä‘á»•i Ä‘iá»ƒm tÃ­ch lÅ©y!');
           }
         }
 
-        // Nếu thanh toán tại quầy //
+        // Náº¿u thanh toÃ¡n táº¡i quáº§y //
         if (invoice.invoice.paymentMethod === 'CASH') {
           try {
             const res = await update({
@@ -128,12 +130,12 @@ const InfoBookingTicket = ({ showTime }) => {
               invoiceStatus: 'PAID',
             });
             if (res && res.data) {
-              // Xóa sạch các thông tin liên quan //
+              // XÃ³a sáº¡ch cÃ¡c thÃ´ng tin liÃªn quan //
               dispatch(clearInvoice());
               dispatch(clearSnack());
               dispatch(clearSelectedSeats());
               closeTopModal();
-              toast.success('Thanh toán thành công !');
+              toast.success('Thanh toÃ¡n thÃ nh cÃ´ng !');
               return navigate('/', { replace: true });
             }
           } catch (err) {
@@ -147,7 +149,7 @@ const InfoBookingTicket = ({ showTime }) => {
           amount: invoice.invoice.totalMoney,
         });
 
-        // Lấy URL thanh toán - khi thanh toán qua VNPay //
+        // Láº¥y URL thanh toÃ¡n - khi thanh toÃ¡n qua VNPay //
         const paymentUrl = paymentRes.data;
         const vnp_TxnRef =
           new URL(paymentUrl).searchParams.get('vnp_TxnRef') || '';
@@ -169,7 +171,7 @@ const InfoBookingTicket = ({ showTime }) => {
         window.location.href = paymentUrl;
       } catch (error) {
         console.error(error);
-        toast.error('Có lỗi xảy ra khi thanh toán hoặc cập nhật thông tin!');
+        toast.error('CÃ³ lá»—i xáº£y ra khi thanh toÃ¡n hoáº·c cáº­p nháº­t thÃ´ng tin!');
       } finally {
         setIsLoading(false);
       }
@@ -186,71 +188,71 @@ const InfoBookingTicket = ({ showTime }) => {
           <IoClose size={25} />
         </span>
         <h2 className={'mb-3 border-b-2 px-2 text-[20px] font-bold uppercase'}>
-          Điều khoản thanh toán
+          Äiá»u khoáº£n thanh toÃ¡n
         </h2>
         <div className="max-h-[70vh] overflow-y-auto text-gray-500 scrollbar-thin scrollbar-track-gray-200 scrollbar-thumb-gray-500">
           <h2 className="font-medium text-black">
-            Chào mừng Quý khách hàng đến với Hệ thống Bán Vé Online của chuỗi
-            Rạp Chiếu Phim CINEMAN CINEMAS!
+            ChÃ o má»«ng QuÃ½ khÃ¡ch hÃ ng Ä‘áº¿n vá»›i Há»‡ thá»‘ng BÃ¡n VÃ© Online cá»§a chuá»—i
+            Ráº¡p Chiáº¿u Phim CINEMAN CINEMAS!
           </h2>
           <p>
-            Xin cảm ơn và chúc Quý khách hàng có những giây phút xem phim tuyệt
-            vời tại CINEMAN CINEMAS!
+            Xin cáº£m Æ¡n vÃ  chÃºc QuÃ½ khÃ¡ch hÃ ng cÃ³ nhá»¯ng giÃ¢y phÃºt xem phim tuyá»‡t
+            vá»i táº¡i CINEMAN CINEMAS!
           </p>
           <div className="mt-4">
             <h2 className="font-medium text-black">
-              Sau đây là một số lưu ý trước khi thanh toán trực tuyến:
+              Sau Ä‘Ã¢y lÃ  má»™t sá»‘ lÆ°u Ã½ trÆ°á»›c khi thanh toÃ¡n trá»±c tuyáº¿n:
             </h2>
             <ol className="list-decimal pl-5">
               <li className="whitespace-normal">
-                Thẻ phải được kích hoạt chức năng thanh toán trực tuyến, và có
-                đủ hạn mức/ số dư để thanh toán. Quý khách cần nhập chính xác
-                thông tin thẻ (tên chủ thẻ, số thẻ, ngày hết hạn, số CVC,
+                Tháº» pháº£i Ä‘Æ°á»£c kÃ­ch hoáº¡t chá»©c nÄƒng thanh toÃ¡n trá»±c tuyáº¿n, vÃ  cÃ³
+                Ä‘á»§ háº¡n má»©c/ sá»‘ dÆ° Ä‘á»ƒ thanh toÃ¡n. QuÃ½ khÃ¡ch cáº§n nháº­p chÃ­nh xÃ¡c
+                thÃ´ng tin tháº» (tÃªn chá»§ tháº», sá»‘ tháº», ngÃ y háº¿t háº¡n, sá»‘ CVC,
                 OTP,...).
               </li>
               <li className="whitespace-normal">
-                Vé và hàng hóa đã thanh toán thành công không thể hủy/đổi
-                trả/hoàn tiền vì bất kỳ lý do gì. Beta Cinemas chỉ thực hiện
-                hoàn tiền trong trường hợp thẻ của Quý khách đã bị trừ tiền
-                nhưng hệ thống của Beta không ghi nhận việc đặt vé/đơn hàng của
-                Quý khách, và Quý khách không nhận được xác nhận đặt vé/đơn hàng
-                thành công.
+                VÃ© vÃ  hÃ ng hÃ³a Ä‘Ã£ thanh toÃ¡n thÃ nh cÃ´ng khÃ´ng thá»ƒ há»§y/Ä‘á»•i
+                tráº£/hoÃ n tiá»n vÃ¬ báº¥t ká»³ lÃ½ do gÃ¬. Beta Cinemas chá»‰ thá»±c hiá»‡n
+                hoÃ n tiá»n trong trÆ°á»ng há»£p tháº» cá»§a QuÃ½ khÃ¡ch Ä‘Ã£ bá»‹ trá»« tiá»n
+                nhÆ°ng há»‡ thá»‘ng cá»§a Beta khÃ´ng ghi nháº­n viá»‡c Ä‘áº·t vÃ©/Ä‘Æ¡n hÃ ng cá»§a
+                QuÃ½ khÃ¡ch, vÃ  QuÃ½ khÃ¡ch khÃ´ng nháº­n Ä‘Æ°á»£c xÃ¡c nháº­n Ä‘áº·t vÃ©/Ä‘Æ¡n hÃ ng
+                thÃ nh cÃ´ng.
               </li>
               <li className="whitespace-normal">
-                Trong vòng 30 phút kể từ khi thanh toán thành công, Beta Cinemas
-                sẽ gửi Quý khách mã xác nhận thông tin vé/ đơn hàng qua email
-                của Quý khách. Nếu Quý khách cần hỗ trợ hay thắc mắc, khiếu nại
-                về xác nhận mã vé/đơn hàng thì vui lòng phản hồi về Fanpage
-                Facebook Beta Cinemas trong vòng 60 phút kể từ khi thanh toán vé
-                thành công. Sau khoảng thời gian trên, Beta Cinemas sẽ không
-                chấp nhận giải quyết bất kỳ khiếu nại nào.
+                Trong vÃ²ng 30 phÃºt ká»ƒ tá»« khi thanh toÃ¡n thÃ nh cÃ´ng, Beta Cinemas
+                sáº½ gá»­i QuÃ½ khÃ¡ch mÃ£ xÃ¡c nháº­n thÃ´ng tin vÃ©/ Ä‘Æ¡n hÃ ng qua email
+                cá»§a QuÃ½ khÃ¡ch. Náº¿u QuÃ½ khÃ¡ch cáº§n há»— trá»£ hay tháº¯c máº¯c, khiáº¿u náº¡i
+                vá» xÃ¡c nháº­n mÃ£ vÃ©/Ä‘Æ¡n hÃ ng thÃ¬ vui lÃ²ng pháº£n há»“i vá» Fanpage
+                Facebook Beta Cinemas trong vÃ²ng 60 phÃºt ká»ƒ tá»« khi thanh toÃ¡n vÃ©
+                thÃ nh cÃ´ng. Sau khoáº£ng thá»i gian trÃªn, Beta Cinemas sáº½ khÃ´ng
+                cháº¥p nháº­n giáº£i quyáº¿t báº¥t ká»³ khiáº¿u náº¡i nÃ o.
               </li>
               <li className="whitespace-normal">
-                Beta Cinemas không chịu trách nhiệm trong trường hợp thông tin
-                địa chỉ email, số điện thoại Quý khách nhập không chính xac dẫn
-                đen không nhan đưoc thu xac nhan. Vui lòng kiểm tra kỹ cac thông
-                tin nay truoc khi thực hiện thanh toán. Beta Cinemas không hỗ
-                trợ xử lý và không chịu trách nhiệm trong trường hợp đã gửi thư
-                xác nhận mã vé/đơn hàng đến địa chỉ email của Quý khách nhưng vì
-                một lý do nào đó mà Quý khách không thể đến xem phim.
+                Beta Cinemas khÃ´ng chá»‹u trÃ¡ch nhiá»‡m trong trÆ°á»ng há»£p thÃ´ng tin
+                Ä‘á»‹a chá»‰ email, sá»‘ Ä‘iá»‡n thoáº¡i QuÃ½ khÃ¡ch nháº­p khÃ´ng chÃ­nh xac dáº«n
+                Ä‘en khÃ´ng nhan Ä‘Æ°oc thu xac nhan. Vui lÃ²ng kiá»ƒm tra ká»¹ cac thÃ´ng
+                tin nay truoc khi thá»±c hiá»‡n thanh toÃ¡n. Beta Cinemas khÃ´ng há»—
+                trá»£ xá»­ lÃ½ vÃ  khÃ´ng chá»‹u trÃ¡ch nhiá»‡m trong trÆ°á»ng há»£p Ä‘Ã£ gá»­i thÆ°
+                xÃ¡c nháº­n mÃ£ vÃ©/Ä‘Æ¡n hÃ ng Ä‘áº¿n Ä‘á»‹a chá»‰ email cá»§a QuÃ½ khÃ¡ch nhÆ°ng vÃ¬
+                má»™t lÃ½ do nÃ o Ä‘Ã³ mÃ  QuÃ½ khÃ¡ch khÃ´ng thá»ƒ Ä‘áº¿n xem phim.
               </li>
               <li className="whitespace-normal">
-                Beta Cinemas không chịu trách nhiệm trong trường hợp thông tin
-                địa chỉ email, số điện thoại Quý khách nhập không chính xac dẫn
-                đen không nhan đưoc thu xac nhan. Vui lòng kiểm tra kỹ cac thông
-                tin nay truoc khi thực hiện thanh toán. Beta Cinemas không hỗ
-                trợ xử lý và không chịu trách nhiệm trong trường hợp đã gửi thư
-                xác nhận mã vé/đơn hàng đến địa chỉ email của Quý khách nhưng vì
-                một lý do nào đó mà Quý khách không thể đến xem phim.
+                Beta Cinemas khÃ´ng chá»‹u trÃ¡ch nhiá»‡m trong trÆ°á»ng há»£p thÃ´ng tin
+                Ä‘á»‹a chá»‰ email, sá»‘ Ä‘iá»‡n thoáº¡i QuÃ½ khÃ¡ch nháº­p khÃ´ng chÃ­nh xac dáº«n
+                Ä‘en khÃ´ng nhan Ä‘Æ°oc thu xac nhan. Vui lÃ²ng kiá»ƒm tra ká»¹ cac thÃ´ng
+                tin nay truoc khi thá»±c hiá»‡n thanh toÃ¡n. Beta Cinemas khÃ´ng há»—
+                trá»£ xá»­ lÃ½ vÃ  khÃ´ng chá»‹u trÃ¡ch nhiá»‡m trong trÆ°á»ng há»£p Ä‘Ã£ gá»­i thÆ°
+                xÃ¡c nháº­n mÃ£ vÃ©/Ä‘Æ¡n hÃ ng Ä‘áº¿n Ä‘á»‹a chá»‰ email cá»§a QuÃ½ khÃ¡ch nhÆ°ng vÃ¬
+                má»™t lÃ½ do nÃ o Ä‘Ã³ mÃ  QuÃ½ khÃ¡ch khÃ´ng thá»ƒ Ä‘áº¿n xem phim.
               </li>
               <li className="whitespace-normal">
-                Beta Cinemas không chịu trách nhiệm trong trường hợp thông tin
-                địa chỉ email, số điện thoại Quý khách nhập không chính xac dẫn
-                đen không nhan đưoc thu xac nhan. Vui lòng kiểm tra kỹ cac thông
-                tin nay truoc khi thực hiện thanh toán. Beta Cinemas không hỗ
-                trợ xử lý và không chịu trách nhiệm trong trường hợp đã gửi thư
-                xác nhận mã vé/đơn hàng đến địa chỉ email của Quý khách nhưng vì
-                một lý do nào đó mà Quý khách không thể đến xem phim.
+                Beta Cinemas khÃ´ng chá»‹u trÃ¡ch nhiá»‡m trong trÆ°á»ng há»£p thÃ´ng tin
+                Ä‘á»‹a chá»‰ email, sá»‘ Ä‘iá»‡n thoáº¡i QuÃ½ khÃ¡ch nháº­p khÃ´ng chÃ­nh xac dáº«n
+                Ä‘en khÃ´ng nhan Ä‘Æ°oc thu xac nhan. Vui lÃ²ng kiá»ƒm tra ká»¹ cac thÃ´ng
+                tin nay truoc khi thá»±c hiá»‡n thanh toÃ¡n. Beta Cinemas khÃ´ng há»—
+                trá»£ xá»­ lÃ½ vÃ  khÃ´ng chá»‹u trÃ¡ch nhiá»‡m trong trÆ°á»ng há»£p Ä‘Ã£ gá»­i thÆ°
+                xÃ¡c nháº­n mÃ£ vÃ©/Ä‘Æ¡n hÃ ng Ä‘áº¿n Ä‘á»‹a chá»‰ email cá»§a QuÃ½ khÃ¡ch nhÆ°ng vÃ¬
+                má»™t lÃ½ do nÃ o Ä‘Ã³ mÃ  QuÃ½ khÃ¡ch khÃ´ng thá»ƒ Ä‘áº¿n xem phim.
               </li>
             </ol>
           </div>
@@ -259,15 +261,15 @@ const InfoBookingTicket = ({ showTime }) => {
           <label htmlFor="term-payment">
             <input ref={inputRef} type="checkbox" id="term-payment" />
             <span className="font-bold">
-              Tôi đồng ý với điều khoản sử dụng và mua vé cho người có độ tuổi
-              phù hợp
+              TÃ´i Ä‘á»“ng Ã½ vá»›i Ä‘iá»u khoáº£n sá»­ dá»¥ng vÃ  mua vÃ© cho ngÆ°á»i cÃ³ Ä‘á»™ tuá»•i
+              phÃ¹ há»£p
             </span>
           </label>
           <div
             className="mx-auto max-w-[200px]"
             onClick={handleNavigatePayment}
           >
-            <CustomButton title={'Thanh toán'} isLoading={isLoading} />
+            <CustomButton title={'Thanh toÃ¡n'} isLoading={isLoading} />
           </div>
         </div>
       </div>
@@ -304,7 +306,7 @@ const InfoBookingTicket = ({ showTime }) => {
               <div className={'w-[150px] flex-none'}>
                 <p className={'flex items-center gap-1'}>
                   <FaTag fill={'gray'} />
-                  Thể loại
+                  Thá»ƒ loáº¡i
                 </p>
               </div>
               <div>
@@ -319,12 +321,12 @@ const InfoBookingTicket = ({ showTime }) => {
               <div className={'w-[150px] flex-none'}>
                 <p className={'flex items-center gap-1'}>
                   <CiClock2 fill={'gray'} />
-                  Thời lượng
+                  Thá»i lÆ°á»£ng
                 </p>
               </div>
               <div>
                 <span className="font-medium">{showTime?.movie?.duration}</span>{' '}
-                <span className="font-medium">Phút</span>
+                <span className="font-medium">PhÃºt</span>
               </div>
             </div>
           </li>
@@ -338,7 +340,7 @@ const InfoBookingTicket = ({ showTime }) => {
               <div className={'w-[150px] flex-none'}>
                 <p className={'flex items-center gap-1'}>
                   <FaEthernet fill={'gray'} />
-                  Rạp chiếu
+                  Ráº¡p chiáº¿u
                 </p>
               </div>
               <div>
@@ -353,7 +355,7 @@ const InfoBookingTicket = ({ showTime }) => {
               <div className={'w-[150px] flex-none'}>
                 <p className={'flex items-center gap-1'}>
                   <FaRegCalendarAlt fill={'gray'} />
-                  Ngày chiếu
+                  NgÃ y chiáº¿u
                 </p>
               </div>
               <div>
@@ -366,7 +368,7 @@ const InfoBookingTicket = ({ showTime }) => {
               <div className={'w-[150px] flex-none'}>
                 <p className={'flex items-center gap-1'}>
                   <CiClock2 fill={'gray'} />
-                  Giờ chiếu
+                  Giá» chiáº¿u
                 </p>
               </div>
               <div>
@@ -379,7 +381,7 @@ const InfoBookingTicket = ({ showTime }) => {
               <div className={'w-[150px] flex-none'}>
                 <p className={'flex items-center gap-1'}>
                   <GiTheater fill={'gray'} />
-                  Phòng chiếu
+                  PhÃ²ng chiáº¿u
                 </p>
               </div>
               <div>
@@ -394,7 +396,7 @@ const InfoBookingTicket = ({ showTime }) => {
               <div className={'w-[150px] flex-none'}>
                 <p className={'flex items-center gap-1'}>
                   <PiSeatFill fill={'gray'} />
-                  Ghế ngồi
+                  Gháº¿ ngá»“i
                 </p>
               </div>
               <div>
@@ -413,7 +415,7 @@ const InfoBookingTicket = ({ showTime }) => {
                     navigate(-1);
                   }}
                 >
-                  <CustomButton title={'Quay lại'} />
+                  <CustomButton title={'Quay láº¡i'} />
                 </div>
               )}
               {!pathname.includes('payment') ? (
@@ -423,7 +425,7 @@ const InfoBookingTicket = ({ showTime }) => {
                   }}
                   className="min-w-[100px]"
                 >
-                  <CustomButton title={'Tiếp tục'} isLoading={isLoading} />
+                  <CustomButton title={'Tiáº¿p tá»¥c'} isLoading={isLoading} />
                 </div>
               ) : (
                 <div
@@ -432,7 +434,7 @@ const InfoBookingTicket = ({ showTime }) => {
                   }}
                   className="min-w-[100px]"
                 >
-                  <CustomButton title={'Tiếp tục'} />
+                  <CustomButton title={'Tiáº¿p tá»¥c'} />
                 </div>
               )}
             </div>

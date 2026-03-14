@@ -2,9 +2,11 @@ import { changeStatusSeat, create, deleteSeat } from '@apis/seatService';
 import DoubleSeat from '@component/seat/DoubleSeat';
 import RegularSeat from '@component/seat/RegularSeat';
 import VIPSeat from '@component/seat/VIPSeat';
+import { buildSeatLabel, toApiSeatPosition } from '@utils/seatPosition';
 import { useEffect, useState } from 'react';
 import { FiPlusCircle } from 'react-icons/fi';
 import { RxCross1 } from 'react-icons/rx';
+import { toast } from 'react-toastify';
 const SeatComponent = ({
   seat,
   cinemaTheaterId,
@@ -59,17 +61,24 @@ const SeatComponent = ({
     /* Nếu ghế đã có và rạp chiếu đã được xuất bản */
     if (status === 'PUBLISHED') {
       if (idSeat) {
-        const res = await changeStatusSeat(idSeat);
-        if (res.status === 200) {
-          setStatusSeat(res.data.status);
-          return;
+        try {
+          const res = await changeStatusSeat(idSeat);
+          if (res.status === 200) {
+            setStatusSeat(res.data.status);
+            toast.success('Cập nhật trạng thái ghế thành công');
+            return;
+          }
+        } catch (res) {
+          if (res.response.status === 400) {
+            return toast.error(res.response.data.message);
+          }
+          toast.error('Cập nhật trạng thái ghế thất bại !');
         }
       } else {
         return;
       }
     }
-    const label =
-      String.fromCharCode(65 + seat.rowIndex) + (seat.columnIndex + 1);
+    const label = buildSeatLabel(seat.rowIndex, seat.columnIndex);
     // If a seat is already chosen, delete it
     if (idSeat) {
       deleteSeat(idSeat)
@@ -81,8 +90,7 @@ const SeatComponent = ({
                 typeof seat.seatType === 'string'
                   ? seat.seatType
                   : seat.seatType.id,
-              rowIndex: seat.rowIndex,
-              columnIndex: seat.columnIndex,
+              ...toApiSeatPosition(seat),
               label,
               cinemaTheaterId,
             });
@@ -104,7 +112,14 @@ const SeatComponent = ({
     }
 
     // Create a new seat if no seat is currently chosen
-    const data = currSeat ? currSeat : { ...seat, cinemaTheaterId, label };
+    const data = currSeat
+      ? currSeat
+      : {
+          ...seat,
+          ...toApiSeatPosition(seat),
+          cinemaTheaterId,
+          label,
+        };
     create(data)
       .then((res) => {
         if (res.data && res.status === 200) {

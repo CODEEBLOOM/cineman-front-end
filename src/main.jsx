@@ -42,6 +42,7 @@ import NotFoundPage from '@pages/NotFound';
 import CinemaShowtime from '@pages/CinemaShowTime';
 import InvoiceIndex from '@component/admin/invoice/InvoiceIndex';
 import TicketManagementPage from '@pages/admin/TicketManagementPage';
+import ShowTimePage from '@pages/admin/ShowTimePage';
 
 const router = createBrowserRouter([
   {
@@ -140,10 +141,6 @@ const router = createBrowserRouter([
             element: <p>Quản lý rạp</p>,
           },
           {
-            path: 'so-do-ghe',
-            element: <p>Quản lý sơ đồ ghế</p>,
-          },
-          {
             path: 'so-do-ghe/:id',
             element: <SeatMap />,
           },
@@ -157,7 +154,7 @@ const router = createBrowserRouter([
           },
           {
             path: 'xuat-chieu',
-            element: <p>Quản lý xuất chiếu</p>,
+            element: <ShowTimePage />,
           },
           {
             path: 'danh-sach-phim',

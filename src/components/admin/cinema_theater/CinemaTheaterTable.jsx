@@ -8,6 +8,7 @@ import { deleteCinemaTheater } from '@apis/cinemaTheaterService';
 import { openSnackbar } from '@redux/slices/snackbarSlice';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 const CinemaTheaterTable = ({
   tab,
   setTab,
@@ -59,14 +60,22 @@ const CinemaTheaterTable = ({
   const handleDelete = (id) => {
     const isDelete = confirm('Bạn muốn xóa phòng chiếu id: ' + id);
     if (!isDelete) return;
-    deleteCinemaTheater(id).then(() => {
-      dispatch(openSnackbar({ message: 'Xóa phòng chiếu thành công' }));
-      fetchCinemaTheaters({
-        page: paginationModel.page,
-        size: paginationModel.pageSize,
-        status: tab < 1 ? null : tab > 1 ? 'DRAFT' : 'PUBLISHED',
+    deleteCinemaTheater(id)
+      .then(() => {
+        dispatch(openSnackbar({ message: 'Xóa phòng chiếu thành công' }));
+        fetchCinemaTheaters({
+          page: paginationModel.page,
+          size: paginationModel.pageSize,
+          status: tab < 1 ? null : tab > 1 ? 'DRAFT' : 'PUBLISHED',
+        });
+      })
+      .catch((err) => {
+        if (err.response.status === 400) {
+          return toast.error(err.response.data.message);
+        } else {
+          toast.error('Xóa phòng chiếu thất bại !');
+        }
       });
-    });
   };
 
   /* Table */

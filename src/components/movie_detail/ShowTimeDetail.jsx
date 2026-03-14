@@ -7,30 +7,51 @@ import { useSelector } from 'react-redux';
 import { getShowTimeDetail } from '@apis/showTimeService';
 
 const ShowTimeDetail = ({ showTimeSelected, movieId }) => {
-  const { movieTheater } = useSelector((state) => state.movieTheater);
+  const movieTheater = useSelector(
+    (state) => state.movieTheater?.movieTheater ?? { id: null }
+  );
   const [showTimeDetails, setShowTimeDetails] = useState();
+
+  function isTodayFutureShowtime(dateTimeStr) {
+    const now = new Date();
+
+    // Parse chuá»—i thÃ nh Date
+    const [datePart, timePart] = dateTimeStr.split(' ');
+    const [y, M, d] = datePart.split('-').map(Number);
+    const [h, m, s] = timePart.split(':').map(Number);
+
+    const showDateTime = new Date(y, M - 1, d, h, m, s || 0);
+
+    // Check cÃ¹ng ngÃ y hÃ´m nay
+    const isToday =
+      y === now.getFullYear() &&
+      M === now.getMonth() + 1 &&
+      d === now.getDate();
+
+    // Tráº£ vá» true náº¿u hÃ´m nay & giá» chiáº¿u > hiá»‡n táº¡i
+    return isToday && showDateTime > now;
+  }
 
   const groupShowtimesByTheater = (list) => {
     return list.reduce((acc, item) => {
       const id = item.cinemaTheater.cinemaTheaterId;
 
-      // Nếu chưa có phòng này thì tạo mới
+      // Náº¿u chÆ°a cÃ³ phÃ²ng nÃ y thÃ¬ táº¡o má»›i
       if (!acc[id]) {
         acc[id] = {
-          theater: item.cinemaTheater, // thông tin phòng
-          items: [], // danh sách suất chiếu thuộc phòng đó
+          theater: item.cinemaTheater, // thÃ´ng tin phÃ²ng
+          items: [], // danh sÃ¡ch suáº¥t chiáº¿u thuá»™c phÃ²ng Ä‘Ã³
         };
       }
-
-      // Thêm lịch chiếu vào phòng tương ứng
+      // ThÃªm lá»‹ch chiáº¿u vÃ o phÃ²ng tÆ°Æ¡ng á»©ng
       acc[id].items.push(item);
       return acc;
     }, {});
   };
 
-  // Lấy danh sách tất cả các lịch chiếu theo showTimeSelected, movieId, movieTheaterId //
+  // Láº¥y danh sÃ¡ch táº¥t cáº£ cÃ¡c lá»‹ch chiáº¿u theo showTimeSelected, movieId, movieTheaterId //
   useEffect(() => {
-    if (!showTimeSelected) return;
+    if (!showTimeSelected || !movieId || !movieTheater?.id) return;
     getShowTimeDetail({
       movieId: movieId,
       movieTheaterId: movieTheater.id,
@@ -48,7 +69,7 @@ const ShowTimeDetail = ({ showTimeSelected, movieId }) => {
       .catch((err) => {
         console.log(err);
       });
-  }, [showTimeSelected, movieTheater.id, movieId]);
+  }, [showTimeSelected, movieTheater?.id, movieId]);
 
   // /* Get unique cinemas */
   // useEffect(() => {
@@ -63,7 +84,7 @@ const ShowTimeDetail = ({ showTimeSelected, movieId }) => {
   //     }
   //   });
   //   setCinemas(uniqueTheaters);
-  //   // Chỉ chạy lại khi showTimeDetails thay đổi //
+  //   // Chá»‰ cháº¡y láº¡i khi showTimeDetails thay Ä‘á»•i //
   // }, [showTimeDetails]);
 
   const { openPopup, closeTopModal, resetModal } = useModelContext();
@@ -83,7 +104,7 @@ const ShowTimeDetail = ({ showTimeSelected, movieId }) => {
         </span>
         <div className={'border-b-2 px-4'}>
           <p className={'font-bold uppercase lg:text-[25px]'}>
-            bạn đang đặt vé xem phim
+            báº¡n Ä‘ang Ä‘áº·t vÃ© xem phim
           </p>
         </div>
         <div className={'flex-grow border-b-2 px-4 text-center'}>
@@ -98,13 +119,13 @@ const ShowTimeDetail = ({ showTimeSelected, movieId }) => {
             <thead>
               <tr className={'h-[50px]'}>
                 <td className={'w-[30%]'}>
-                  <h4 className={'lg:text-[20px]'}>Rạp chiếu</h4>
+                  <h4 className={'lg:text-[20px]'}>Ráº¡p chiáº¿u</h4>
                 </td>
                 <td className={'w-[30%]'}>
-                  <h4 className={'lg:text-[20px]'}>Ngày chiếu</h4>
+                  <h4 className={'lg:text-[20px]'}>NgÃ y chiáº¿u</h4>
                 </td>
                 <td className={'w-[30%]'}>
-                  <h4 className={'lg:text-[20px]'}>Giờ Chiếu</h4>
+                  <h4 className={'lg:text-[20px]'}>Giá» Chiáº¿u</h4>
                 </td>
               </tr>
             </thead>
@@ -132,7 +153,7 @@ const ShowTimeDetail = ({ showTimeSelected, movieId }) => {
         <div className={'mx-auto p-2 px-4'} onClick={() => resetModal()}>
           <Link to={`/choose-seat?st=${showTime.showTime.id}`}>
             <div className="min-w-[150px] max-w-[150px]">
-              <CustomButton title={'Đồng ý'} />
+              <CustomButton title={'Äá»“ng Ã½'} />
             </div>
           </Link>
         </div>
@@ -148,9 +169,11 @@ const ShowTimeDetail = ({ showTimeSelected, movieId }) => {
             className="flex flex-col flex-wrap gap-2 md:gap-3"
             key={showTimeGroup.theater.id}
           >
-            <div>
-              <p className="font-semibold">{`${showTimeGroup.theater.name} - ${showTimeGroup.items[0].movieVariation.name}`}</p>
-            </div>
+            {showTimeGroup.items.length > 0 && (
+              <div>
+                <p className="font-semibold">{`${showTimeGroup.theater.name} - ${showTimeGroup.items[0]?.movieVariation?.name}`}</p>
+              </div>
+            )}
             <div className="flex flex-wrap gap-2 md:gap-3">
               {showTimeGroup.items.map((showTimeDetail) => (
                 <div
@@ -166,7 +189,7 @@ const ShowTimeDetail = ({ showTimeSelected, movieId }) => {
                     {showTimeDetail.showTime.startTime}
                   </p>
                   <small>
-                    <span>{showTimeDetail.totalSeatEmpty}</span> ghế trống
+                    <span>{showTimeDetail.totalSeatEmpty}</span> gháº¿ trá»‘ng
                   </small>
                 </div>
               ))}

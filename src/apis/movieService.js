@@ -41,3 +41,29 @@ export const findMovieById = async (id) => {
   const url = `/movie/${id}`;
   return await axios.get(url);
 };
+
+export const addMovie = async (data) => {
+  const url = `/admin/movie/add`;
+  return await axios.post(url, data);
+};
+
+export const updateMovie = async (data) => {
+  const url = `/admin/movie/update`;
+  return await axios.put(url, data);
+};
+
+export const deleteMovie = async (id) => {
+  const url = `/admin/movie/${id}/delete`;
+  return await axios.delete(url);
+};
+
+export const findAllByFilterAdmin = async ({ page = 0, size = 10, status }) => {
+  const url = '/admin/movie/all';
+  return await axios.get(url, {
+    params: {
+      page,
+      size,
+      status,
+    },
+  });
+};

@@ -6,8 +6,10 @@ import {
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 const DateStripPlaceholder = () => {
-  // TODO: lấy ra tất cả ngày chiếu của rạp hiện tại //
-  const { movieTheater } = useSelector((state) => state.movieTheater);
+  // TODO: láº¥y ra táº¥t cáº£ ngÃ y chiáº¿u cá»§a ráº¡p hiá»‡n táº¡i //
+  const movieTheater = useSelector(
+    (state) => state.movieTheater?.movieTheater ?? { id: null }
+  );
   const { showDates, showDateActive } = useSelector(
     (state) => state.cinemaShowTime
   );
@@ -16,13 +18,13 @@ const DateStripPlaceholder = () => {
 
   function formatDate(dateString) {
     const days = [
-      'Chủ Nhật',
-      'Thứ Hai',
-      'Thứ Ba',
-      'Thứ Tư',
-      'Thứ Năm',
-      'Thứ Sáu',
-      'Thứ Bảy',
+      'Chá»§ Nháº­t',
+      'Thá»© Hai',
+      'Thá»© Ba',
+      'Thá»© TÆ°',
+      'Thá»© NÄƒm',
+      'Thá»© SÃ¡u',
+      'Thá»© Báº£y',
     ];
     const date = new Date(dateString);
 
@@ -38,8 +40,9 @@ const DateStripPlaceholder = () => {
   };
 
   useEffect(() => {
+    if (!movieTheater?.id) return;
     dispatch(fetchShowDates(movieTheater.id)).unwrap();
-  }, [movieTheater.id, dispatch]);
+  }, [movieTheater?.id, dispatch]);
 
   return (
     <div className={`${showDates && 'border-b'} bg-white/80 backdrop-blur`}>

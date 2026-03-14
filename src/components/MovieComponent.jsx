@@ -10,11 +10,13 @@ import EmptyList from './cinema_showtime/EmptyList';
 
 const MovieComponent = () => {
   const { movieStatus } = useSelector((state) => state.movie);
-  const { movieTheater } = useSelector((state) => state.movieTheater);
+  const movieTheater = useSelector(
+    (state) => state.movieTheater?.movieTheater ?? { id: null }
+  );
   const [pageActive, setPageActive] = useState(1);
   const [meta, setMeta] = useState({
     currentPage: 0,
-    pageSize: 4,
+    pageSize: 8,
     totalPages: 0,
     totalElements: 0,
   });
@@ -42,7 +44,7 @@ const MovieComponent = () => {
     dispatch(setMovieStatus(status));
   };
 
-  /* Lấy tất cả thông tin phim theo status và movie theater id */
+  /* Láº¥y táº¥t cáº£ thÃ´ng tin phim theo status vÃ  movie theater id */
   useEffect(() => {
     if (movieTheater?.id) {
       setIsLoading(true);
@@ -85,19 +87,19 @@ const MovieComponent = () => {
             >
               <Tab
                 onClick={() => handleChangeMovieStatus('SC')}
-                label="Phim Sắp Chiếu"
+                label="Phim Sáº¯p Chiáº¿u"
                 className="lg:!text-[25px]"
                 {...a11yProps(0)}
               />
               <Tab
                 onClick={() => handleChangeMovieStatus('DC')}
-                label="Phim Đang Chiếu"
+                label="Phim Äang Chiáº¿u"
                 className="lg:!text-[25px]"
                 {...a11yProps(1)}
               />
               <Tab
                 onClick={() => handleChangeMovieStatus('DB')}
-                label="Xuất chiếu đặc biệt"
+                label="Xuáº¥t chiáº¿u Ä‘áº·c biá»‡t"
                 className="lg:!text-[25px]"
                 {...a11yProps(2)}
               />
@@ -105,7 +107,7 @@ const MovieComponent = () => {
           </Box>
           {listMovies.length === 0 && !isLoading && (
             <div className="col-span-full w-full">
-              <EmptyList content="Danh sách trống" />
+              <EmptyList content="Danh sÃ¡ch trá»‘ng" />
             </div>
           )}
           <TabPanel value={value} index={0}>
@@ -179,7 +181,6 @@ const MovieComponent = () => {
               )}
             </div>
           </TabPanel>
-          {console.log(meta.totalPage)}
           <Box className="py-3">
             {!isLoading && (
               <Pagination

@@ -6,5 +6,5 @@ import axios from '@apis/axiosClient';
  */
 export const findAllMovieTheater = async () => {
   const url = '/admin/movie-theater/all';
-  return await axios.get(url);
+  return await axios.get(url, { params: { page: 0, size: 1000 } });
 };

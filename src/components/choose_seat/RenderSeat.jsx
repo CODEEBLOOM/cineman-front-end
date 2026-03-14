@@ -37,7 +37,7 @@ const RenderSeat = ({
         </>
       );
     }
-    if (ticket.seat.rowIndex < cinemaTheater.regularSeatRow) {
+    if (ticket.seat.rowIndex <= cinemaTheater.regularSeatRow) {
       return (
         <>
           <RegularSeat size={'50px'} color={colorSeat()} />
@@ -47,7 +47,7 @@ const RenderSeat = ({
         </>
       );
     } else if (
-      ticket.seat.rowIndex <
+      ticket.seat.rowIndex <=
       cinemaTheater.regularSeatRow + cinemaTheater.vipSeatRow
     ) {
       return (

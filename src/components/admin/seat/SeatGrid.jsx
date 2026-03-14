@@ -10,41 +10,40 @@ const SeatGrid = ({ seats = [], cinemaTheater = {}, fetchSeatMap }) => {
     seatMap.set(key, seat);
   });
 
+  const totalSeatRows =
+    cinemaTheater.regularSeatRow +
+    cinemaTheater.vipSeatRow +
+    cinemaTheater.doubleSeatRow;
+  const maxSeatRows = Math.min(cinemaTheater.numberOfRows ?? 0, totalSeatRows);
+
   /**
    * Hàm dùng để lấy ra loại ghế theo rowIndex
    * @param {number} rowIndex chỉ số hàng
-   * @returns {string} The seat type (REGULAR (0 - (vip-1)), VIP(double - 1), DOUBLE)
+   * @returns {string} The seat type (REGULAR, VIP, DOUBLE)
    */
   const getSeatTypeByRow = (rowIndex) => {
-    if (rowIndex < cinemaTheater.regularSeatRow) {
+    if (rowIndex <= cinemaTheater.regularSeatRow) {
       return 'REGULAR';
     } else if (
-      rowIndex <
+      rowIndex <=
       cinemaTheater.regularSeatRow + cinemaTheater.vipSeatRow
     ) {
       return 'VIP';
-    } else {
-      return 'DOUBLE';
     }
+    return 'DOUBLE';
   };
 
   // Hàm render giao diện ghế theo hàng //
   const renderSeatRows = () => {
     const rows = [];
-    for (let row = 0; row < cinemaTheater.numberOfRows; row++) {
-      if (
-        row >=
-        cinemaTheater.regularSeatRow +
-          cinemaTheater.vipSeatRow +
-          cinemaTheater.doubleSeatRow
-      ) {
-        break;
-      }
+
+    for (let row = 1; row <= maxSeatRows; row++) {
       const cols = [];
       const isSeatDouble =
-        row >= cinemaTheater.regularSeatRow + cinemaTheater.vipSeatRow;
-      for (let col = 0; col < cinemaTheater.numberOfColumn; col++) {
-        if (isSeatDouble && col === cinemaTheater.numberOfColumn - 1) {
+        row > cinemaTheater.regularSeatRow + cinemaTheater.vipSeatRow;
+
+      for (let col = 1; col <= cinemaTheater.numberOfColumn; col++) {
+        if (isSeatDouble && col === cinemaTheater.numberOfColumn) {
           cols.push({
             seatType: null,
             rowIndex: row,
@@ -53,6 +52,7 @@ const SeatGrid = ({ seats = [], cinemaTheater = {}, fetchSeatMap }) => {
           });
           continue;
         }
+
         const seatKey = `${row}-${col}`;
         const seat = seatMap.get(seatKey);
         const seatData = seat ?? {
@@ -61,9 +61,11 @@ const SeatGrid = ({ seats = [], cinemaTheater = {}, fetchSeatMap }) => {
           columnIndex: col,
           id: null,
         };
+
         cols.push(seatData);
         if (isSeatDouble) col++;
       }
+
       rows.push(
         <SeatRow
           key={row}
@@ -74,24 +76,26 @@ const SeatGrid = ({ seats = [], cinemaTheater = {}, fetchSeatMap }) => {
         />
       );
     }
+
     return rows;
   };
 
-  // return render seat rows //
   return (
-    <div className="overflow-x-scroll">
-      <div className="mx-auto w-fit">
-        <div className="mx-auto mb-20 ml-[30px] w-full rounded-md bg-gray-400 py-3 text-center shadow-lg">
+    <div className="w-full overflow-x-auto">
+      <div className="min-w-fit w-full">
+        <div className="mb-20 w-full rounded-md bg-gray-400 py-3 text-center shadow-lg">
           <p className="font-medium uppercase">màn hình rạp chiếu</p>
         </div>
-        <div
-          className="mx-auto grid gap-1"
-          style={{
-            gridTemplateColumns: `repeat(${cinemaTheater.numberOfColumn + (cinemaTheater.status === 'PUBLISHED' ? 1 : 3)}, 60px)`,
-            width: 'fit-content',
-          }}
-        >
-          {renderSeatRows()}
+        <div className="flex w-full justify-center">
+          <div
+            className="grid gap-1"
+            style={{
+              gridTemplateColumns: `repeat(${cinemaTheater.numberOfColumn + (cinemaTheater.status === 'PUBLISHED' ? 1 : 3)}, minmax(60px, 1fr))`,
+              width: '100%',
+            }}
+          >
+            {renderSeatRows()}
+          </div>
         </div>
       </div>
     </div>

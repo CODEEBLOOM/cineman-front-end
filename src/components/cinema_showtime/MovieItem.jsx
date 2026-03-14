@@ -6,7 +6,6 @@ import {
   CardContent,
   CardHeader as MUICardHeader,
   Button as MUIButton,
-  Typography,
   Box,
 } from '@mui/material';
 import TimeBadge from './TimeBagde';
@@ -28,7 +27,7 @@ const MovieItem = ({ movie }) => {
 
   const renderPopup = (movie) => {
     return openPopup(
-      <div className={'relative bg-white p-5'}>
+      <div data-modal-placement="center" className={'relative bg-white p-5'}>
         <span
           className={'absolute right-3 top-3 hover:cursor-pointer'}
           onClick={() => closeTopModal()}
@@ -49,21 +48,21 @@ const MovieItem = ({ movie }) => {
     return list.reduce((acc, item) => {
       const id = item.cinemaTheater.cinemaTheaterId;
 
-      // Náº¿u chÆ°a cÃ³ phÃ²ng nÃ y thÃ¬ táº¡o má»›i
+      // Nếu chưa có phòng này thì tạo mới
       if (!acc[id]) {
         acc[id] = {
-          theater: item.cinemaTheater, // thÃ´ng tin phÃ²ng
-          items: [], // danh sÃ¡ch suáº¥t chiáº¿u thuá»™c phÃ²ng Ä‘Ã³
+          theater: item.cinemaTheater,
+          items: [],
         };
       }
 
-      // ThÃªm lá»‹ch chiáº¿u vÃ o phÃ²ng tÆ°Æ¡ng á»©ng
+      // Thêm lịch chiếu vào phòng tương ứng
       acc[id].items.push(item);
       return acc;
     }, {});
   };
 
-  // Láº¥y danh sÃ¡ch táº¥t cáº£ cÃ¡c lá»‹ch chiáº¿u theo showTimeSelected, movieId, movieTheaterId //
+  // Lấy danh sách tất cả các lịch chiếu theo showTimeSelected, movieId, movieTheaterId //
   useEffect(() => {
     if (!showDateActive || !movie?.movieId || !movieTheater?.id) return;
     getShowTimeDetail({
@@ -95,7 +94,6 @@ const MovieItem = ({ movie }) => {
     >
       <Card className="overflow-hidden border border-transparent shadow-sm transition hover:shadow-md">
         <div className="grid grid-cols-12 gap-4 p-4">
-          {/* Poster */}
           <div className="col-span-12 sm:col-span-3 md:col-span-2">
             <div className="aspect-[2/3] overflow-hidden rounded-xl bg-gray-100">
               <img
@@ -107,7 +105,6 @@ const MovieItem = ({ movie }) => {
             </div>
           </div>
 
-          {/* Content */}
           <div className="col-span-12 flex flex-col gap-3 sm:col-span-9 md:col-span-10">
             <MUICardHeader
               title={
@@ -129,7 +126,7 @@ const MovieItem = ({ movie }) => {
                   .join(',\u200B ')}
               </span>
               <span className="inline-flex items-center gap-1">
-                <Clock3 size={16} /> {movie.duration} phÃºt
+                <Clock3 size={16} /> {movie.duration} phút
               </span>
             </Box>
 

@@ -43,6 +43,8 @@ import CinemaShowtime from '@pages/CinemaShowTime';
 import InvoiceIndex from '@component/admin/invoice/InvoiceIndex';
 import TicketManagementPage from '@pages/admin/TicketManagementPage';
 import ShowTimePage from '@pages/admin/ShowTimePage';
+import MovieVariationPage from '@pages/admin/MovieVariationPage';
+import TicketTypePage from '@pages/admin/TicketTypePage';
 
 const router = createBrowserRouter([
   {
@@ -134,7 +136,7 @@ const router = createBrowserRouter([
           },
           {
             path: 'chi-nhanh',
-            element: <p>Chi nhanh</p>,
+            element: <p>Chi nhánh</p>,
           },
           {
             path: 'rap',
@@ -157,6 +159,10 @@ const router = createBrowserRouter([
             element: <ShowTimePage />,
           },
           {
+            path: 'bien-the-xuat-chieu',
+            element: <MovieVariationPage />,
+          },
+          {
             path: 'danh-sach-phim',
             element: <ListMovie />,
           },
@@ -174,9 +180,8 @@ const router = createBrowserRouter([
           },
           {
             path: 'gia-ve',
-            element: <p>Quản lý giá vé</p>,
+            element: <TicketTypePage />,
           },
-
           {
             path: 'nguoi-dung',
             element: <p>Quản lý người dùng</p>,

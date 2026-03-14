@@ -1,278 +1,381 @@
-import { findAllMovies } from '@apis/movieService';
+import { findByMovieTheaterId } from '@apis/cinemaTheaterService';
+import { findAllByFilterAdmin } from '@apis/movieService';
+import {
+  extractMovieVariationList,
+  findAllMovieVariationsAdmin,
+} from '@apis/movieVariationService';
 import { findAllMovieTheater } from '@apis/movieTheaterService';
-import { addShowTime } from '@apis/showTimeService';
+import {
+  addShowTime,
+  findAdminShowTimeById,
+  updateShowTime,
+} from '@apis/showTimeService';
+import AdminModal from '@component/admin/common/AdminModal';
+import Loading from '@component/Loading';
+import FormField from '@component/FormField';
 import CustomSelect from '@component/form_field/CustomSelect';
 import TextInput from '@component/form_field/TextInput';
-import FormField from '@component/FormField';
 import { useModelContext } from '@context/ModalContext';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
-import DateFormatter from '@utils/DateFormatter';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useCallback, useEffect, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import * as yup from 'yup';
+import {
+  extractCollection,
+  getTodayValue,
+  normalizeDateValue,
+  normalizeShowTimeItem,
+  normalizeTimeValue,
+  unwrapData,
+} from './showTimeUtils';
 
-const PopupShowTime = ({ showTime, movieId, cinemaTheaterId }) => {
-  console.log(showTime);
+const formSchema = yup.object({
+  movieTheaterId: yup.string().required('Vui long chon rap chieu!'),
+  cinemaTheaterId: yup.string().required('Vui long chon phong chieu!'),
+  showDate: yup.string().required('Ngay chieu khong duoc de trong!'),
+  startTime: yup
+    .string()
+    .required('Gio bat dau khong duoc de trong!')
+    .matches(/^([01]\d|2[0-3]):[0-5]\d$/, 'Gio bat dau phai theo dinh dang HH:mm'),
+  originPrice: yup
+    .number()
+    .typeError('Gia goc khong hop le!')
+    .required('Gia goc khong duoc de trong!')
+    .min(0, 'Gia goc phai lon hon hoac bang 0!'),
+  status: yup
+    .string()
+    .oneOf(['INVALID', 'VALID', 'DELETED'], 'Trang thai khong hop le!')
+    .required('Trang thai khong duoc de trong!'),
+  movieId: yup.string().required('Vui long chon phim!'),
+  movieVariationId: yup.string().required('Vui long chon bien the suat chieu!'),
+});
+
+const showTimeStatusOptions = [
+  { value: 'VALID', label: 'Dang ap dung' },
+  { value: 'INVALID', label: 'Tam an' },
+  { value: 'DELETED', label: 'Da xoa' },
+];
+
+const mapMovieTheaterOptions = (response) => {
+  return extractCollection(response, ['movieTheaters']).map((item) => ({
+    value: String(item?.movieTheaterId ?? item?.id ?? ''),
+    label: item?.name ?? `Rap ${item?.movieTheaterId ?? item?.id ?? ''}`,
+  }));
+};
+
+const mapCinemaTheaterOptions = (response) => {
+  return extractCollection(response, ['cinemaTheaters']).map((item) => ({
+    value: String(item?.cinemaTheaterId ?? item?.id ?? ''),
+    label: item?.name ?? `Phong ${item?.cinemaTheaterId ?? item?.id ?? ''}`,
+  }));
+};
+
+const mapMovieOptions = (response) => {
+  return extractCollection(response, ['movies']).map((item) => ({
+    value: String(item?.movieId ?? item?.id ?? ''),
+    label: item?.title ?? `Phim ${item?.movieId ?? item?.id ?? ''}`,
+  }));
+};
+
+const mapMovieVariationOptions = (response) => {
+  return extractMovieVariationList(response).map((item) => ({
+    value: String(item?.id ?? ''),
+    label: item?.name ?? `Bien the ${item?.id ?? ''}`,
+  }));
+};
+
+const buildDefaultValues = ({ showTimeDetail, defaults }) => {
+  const normalizedItem = showTimeDetail
+    ? normalizeShowTimeItem(showTimeDetail)
+    : null;
+  const rawShowTime = showTimeDetail?.showTime ?? showTimeDetail ?? {};
+
+  return {
+    movieTheaterId: String(
+      normalizedItem?.movieTheaterId ?? defaults?.movieTheaterId ?? ''
+    ),
+    cinemaTheaterId: String(
+      normalizedItem?.cinemaTheaterId ?? defaults?.cinemaTheaterId ?? ''
+    ),
+    showDate:
+      normalizedItem?.showDate || normalizeDateValue(defaults?.showDate) || getTodayValue(),
+    startTime: normalizedItem?.startTime || normalizeTimeValue(defaults?.startTime) || '',
+    originPrice: rawShowTime?.originPrice ?? defaults?.originPrice ?? 0,
+    status: rawShowTime?.status ?? defaults?.status ?? 'VALID',
+    movieId: String(normalizedItem?.movieId ?? defaults?.movieId ?? ''),
+    movieVariationId: String(
+      normalizedItem?.movieVariationId ?? defaults?.movieVariationId ?? ''
+    ),
+  };
+};
+
+const PopupShowTime = ({
+  showTimeId,
+  defaults,
+  onSuccess,
+  placement = 'top-center',
+}) => {
   const { closeTopModal } = useModelContext();
-  const [cinemaTheaters, setCinemaTheaters] = useState();
-  const [movies, setMovies] = useState();
-
-  const formSchema = yup.object({
-    showDate: yup
-      .date()
-      .typeError('Ngày chiếu không được để trống !')
-      .required('Ngày chiếu không được để trống !')
-      .min(
-        new Date(new Date().setHours(0, 0, 0, 0)),
-        'Ngày chiếu phải lớn hơn hoặc bằng ngày hiện tại !'
-      ),
-
-    startTime: yup
-      .string()
-      .required('Giờ bắt đầu không được để trống !')
-      .matches(
-        /^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/,
-        'Giờ bắt đầu phải có định dạng HH:mm:ss'
-      ),
-
-    originPrice: yup
-      .number()
-      .typeError('Giá gốc không được để trống !')
-      .required('Giá gốc không được để trống !')
-      .min(0, 'Giá gốc phải lớn hơn hoặc bằng 0 !'),
-
-    status: yup
-      .string()
-      .oneOf(['INVALID', 'VALID', 'CANCEL'], 'Trạng thái không hợp lệ')
-      .default('INVALID'),
-
-    movieId: yup
-      .number()
-      .typeError('Mã phim không được để trống !')
-      .required('Mã phim không được để trống !')
-      .min(1, 'Mã phim phải lớn hơn 0 !'),
-
-    cinemaTheaterId: yup
-      .number()
-      .typeError('Mã rạp chiếu không được để trống !')
-      .required('Mã rạp chiếu không được để trống !')
-      .min(1, 'Mã rạp chiếu phải lớn hơn 0 !'),
-  });
-
-  const showTimeStatus = [
-    { value: 'INVALID', label: 'Chưa áp dụng' },
-    { value: 'VALID', label: 'Áp dụng' },
-  ];
-
-  const variations = [
-    { value: '1', label: 'Lồng tiếng' },
-    { value: '2', label: 'Phụ đề' },
-    { value: '3', label: 'Thuyết minh' },
-  ];
+  const [movieTheaters, setMovieTheaters] = useState([]);
+  const [cinemaTheaters, setCinemaTheaters] = useState([]);
+  const [movies, setMovies] = useState([]);
+  const [movieVariations, setMovieVariations] = useState([]);
+  const [loadedShowTimeDetail, setLoadedShowTimeDetail] = useState(null);
+  const [isLoadingInitial, setIsLoadingInitial] = useState(false);
+  const [isLoadingCinemaTheaters, setIsLoadingCinemaTheaters] = useState(false);
+  const isEditing = Boolean(showTimeId);
+  const formId = 'showtime-form';
 
   const {
     control,
-    handleSubmit: handleSubmitForm,
-    reset: resetForm,
+    handleSubmit,
+    reset,
+    getValues,
     setValue,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(formSchema),
-    defaultValues: {
-      showDate: new DateFormatter().format('YYYY-MM-DD'),
-      startTime: new DateFormatter().format('HH:mm:ss'),
-      originPrice: 0,
-      status: 'VALID',
-      movieId: movieId,
-      cinemaTheaterId: 0,
-    },
+    defaultValues: buildDefaultValues({ showTimeDetail: null, defaults }),
   });
 
-  if (showTime) {
-    setValue(
-      'showDate',
-      new DateFormatter(showTime.showDate).format('YYYY-MM-DD')
-    );
-    setValue(
-      'startTime',
-      new DateFormatter(showTime.startTime).format('HH:mm:ss')
-    );
-    setValue('originPrice', showTime.originPrice);
-    setValue('status', showTime.status);
-    setValue('movieId', movieId);
-    setValue('cinemaTheaterId', cinemaTheaterId);
-  }
+  const selectedMovieTheaterId = useWatch({
+    control,
+    name: 'movieTheaterId',
+  });
+
+  const loadCinemaTheaters = useCallback(
+    async (movieTheaterId) => {
+      if (!movieTheaterId) {
+        setCinemaTheaters([]);
+        setValue('cinemaTheaterId', '');
+        return;
+      }
+
+      setIsLoadingCinemaTheaters(true);
+
+      try {
+        const response = await findByMovieTheaterId(movieTheaterId);
+        const options = mapCinemaTheaterOptions(response);
+        const currentCinemaTheaterId = String(getValues('cinemaTheaterId') || '');
+
+        setCinemaTheaters(options);
+
+        if (
+          currentCinemaTheaterId &&
+          !options.some((option) => option.value === currentCinemaTheaterId)
+        ) {
+          setValue('cinemaTheaterId', '');
+        }
+      } catch (error) {
+        setCinemaTheaters([]);
+        toast.error('Khong the tai danh sach phong chieu!');
+      } finally {
+        setIsLoadingCinemaTheaters(false);
+      }
+    },
+    [getValues, setValue]
+  );
 
   useEffect(() => {
-    if (showTime) {
-      resetForm(
-        {
-          showDate: new DateFormatter(showTime.showDate).format('YYYY-MM-DD'),
-          startTime: new DateFormatter(showTime.startTime).format('HH:mm:ss'),
-          originPrice: showTime.originPrice,
-          status: showTime.status ?? 'VALID',
-          movieId,
-          cinemaTheaterId,
-          movieVariationId: showTime.movieVariationId,
-        },
-        { keepDirty: false, keepTouched: false }
-      );
-    } else {
-      resetForm({
-        showDate: new DateFormatter(showTime.showDate).format('YYYY-MM-DD'),
-        startTime: new DateFormatter(showTime.startTime).format('HH:mm:ss'),
-        originPrice: 0,
-        status: 'VALID',
-        movieId: null,
-        cinemaTheaterId: null,
-        movieVariationId: 1,
-      });
-    }
-  }, []);
+    loadCinemaTheaters(selectedMovieTheaterId);
+  }, [loadCinemaTheaters, selectedMovieTheaterId]);
 
-  const onSubmit = (data) => {
-    console.log(data);
-    addShowTime(data)
-      .then((res) => {
-        console.log(res.data);
-        toast.success('Thêm lịch chiếu thành công !');
-        closeTopModal();
-      })
-      .catch((error) => {
-        console.log(error);
-        if (error.response.status === 400 || error.response.status === 404) {
-          return toast.error(error.response.data.message);
-        }
-        toast.error('Thêm lịch chiếu thất bại !');
-      });
+  useEffect(() => {
+    const loadInitialData = async () => {
+      setIsLoadingInitial(true);
+
+      try {
+        const [movieTheaterResponse, movieResponse, movieVariationResponse, showTimeResponse] =
+          await Promise.all([
+            findAllMovieTheater(),
+            findAllByFilterAdmin({ page: 0, size: 1000, status: 'ALL' }),
+            findAllMovieVariationsAdmin(),
+            isEditing ? findAdminShowTimeById(showTimeId) : Promise.resolve(null),
+          ]);
+
+        setMovieTheaters(mapMovieTheaterOptions(movieTheaterResponse));
+        setMovies(mapMovieOptions(movieResponse));
+        setMovieVariations(mapMovieVariationOptions(movieVariationResponse));
+
+        const showTimeDetail = unwrapData(showTimeResponse);
+
+        setLoadedShowTimeDetail(showTimeDetail);
+        reset(buildDefaultValues({ showTimeDetail, defaults }));
+      } catch (error) {
+        toast.error(
+          isEditing
+            ? 'Khong the tai chi tiet suat chieu!'
+            : 'Khong the tai du lieu tao suat chieu!'
+        );
+      } finally {
+        setIsLoadingInitial(false);
+      }
+    };
+
+    loadInitialData();
+  }, [defaults, isEditing, reset, showTimeId]);
+
+  const handleReset = useCallback(() => {
+    reset(buildDefaultValues({ showTimeDetail: loadedShowTimeDetail, defaults }));
+  }, [defaults, loadedShowTimeDetail, reset]);
+
+  const onSubmit = async (values) => {
+    const payload = {
+      cinemaTheaterId: Number(values.cinemaTheaterId),
+      movieId: Number(values.movieId),
+      movieVariationId: Number(values.movieVariationId),
+      showDate: values.showDate,
+      startTime: `${values.startTime}:00`,
+      originPrice: Number(values.originPrice),
+      status: values.status,
+    };
+
+    try {
+      if (isEditing) {
+        await updateShowTime(showTimeId, payload);
+        toast.success('Cap nhat suat chieu thanh cong!');
+      } else {
+        await addShowTime(payload);
+        toast.success('Tao suat chieu thanh cong!');
+      }
+
+      await onSuccess?.();
+      closeTopModal();
+    } catch (error) {
+      if (
+        error?.response?.status === 400 ||
+        error?.response?.status === 404 ||
+        error?.response?.status === 409
+      ) {
+        return toast.error(error?.response?.data?.message);
+      }
+
+      toast.error(
+        isEditing
+          ? 'Cap nhat suat chieu that bai!'
+          : 'Tao suat chieu that bai!'
+      );
+    }
   };
 
-  useEffect(() => {
-    findAllMovieTheater()
-      .then((res) => {
-        console.log(res.data);
-        const cinemaTheaters = res.data.movieTheaters.map((movieTheater) => ({
-          label: movieTheater.name,
-          value: movieTheater.movieTheaterId,
-        }));
-        setCinemaTheaters(cinemaTheaters);
-      })
-      .catch((error) => console.log(error));
-  }, []);
-
-  useEffect(() => {
-    findAllMovies({ page: 0, size: 1000, status: 'ALL' })
-      .then((res) => {
-        console.log(res.data);
-        const movies = res.data.movies.map((movie) => ({
-          label: movie.title,
-          value: movie.movieId,
-        }));
-        console.log(movies);
-        setMovies(movies);
-      })
-      .catch((error) => console.log(error));
-  }, []);
-
   return (
-    <div className="max-h-[80vh] w-[60vw] rounded-md bg-white px-3 py-5">
-      <form
-        onSubmit={handleSubmitForm(onSubmit)}
-        className="grid grid-cols-2 gap-2"
-      >
-        <FormField
-          name="showDate"
-          require={true}
-          label="Ngày chiếu"
-          control={control}
-          Component={TextInput}
-          type="date"
-          placeHolder="Chọn ngày chiếu"
-          error={errors['showDate']}
-        />
-        <FormField
-          name="startTime"
-          require={true}
-          label="Thời gian bắt đầu chiếu"
-          control={control}
-          Component={TextInput}
-          type="time"
-          placeHolder="Chọn thời gian bắt đầu chiếu"
-          error={errors['startTime']}
-        />
-        <FormField
-          name="originPrice"
-          require={true}
-          label="Giá cho suất chiếu"
-          control={control}
-          Component={TextInput}
-          type="number"
-          placeHolder={'Nhập giá cho suất chiếu'}
-          error={errors['originPrice']}
-        />
-        <FormField
-          name="status"
-          require={true}
-          label="Trạng thái"
-          control={control}
-          Component={CustomSelect}
-          options={showTimeStatus}
-          placeHolder={'Chọn trạng thái'}
-          error={errors['status']}
-        />
-        <FormField
-          name="movieId"
-          require={true}
-          label="Phim chiếu"
-          control={control}
-          Component={CustomSelect}
-          type="text"
-          options={movies}
-          placeHolder="Chọn phim"
-          error={errors['movieId']}
-        />
-        <FormField
-          name="cinemaTheaterId"
-          label="Phòng chiếu"
-          control={control}
-          Component={CustomSelect}
-          require={true}
-          options={cinemaTheaters}
-          type="text"
-          placeHolder="Chọn phòng chiếu"
-          error={errors['cinemaTheaterId']}
-        />
-        <FormField
-          name="movieVariationId"
-          label="Biến thể"
-          control={control}
-          Component={CustomSelect}
-          require={true}
-          options={variations}
-          type="text"
-          placeHolder="Chọn biến thể"
-          error={errors['movieVariationId']}
-        />
-        <div className="col-span-2 flex justify-end gap-2">
-          <Button type="submit" variant="contained" color="primary">
-            Thêm
+    <AdminModal
+      title={isEditing ? 'Cap nhat suat chieu' : 'Tao suat chieu'}
+      description="Form nay dung cho luong admin scheduler: chon rap, phong, phim, bien the va khung gio."
+      onClose={closeTopModal}
+      size="lg"
+      placement={placement}
+      actions={
+        <>
+          <Button type="button" variant="outlined" color="info" onClick={handleReset}>
+            Lam moi
           </Button>
-          <Button onClick={() => resetForm()} variant="outlined" color="info">
-            Làm mới
+          <Button type="button" variant="outlined" color="warning" onClick={closeTopModal}>
+            Huy bo
           </Button>
-          <Button
-            variant="outlined"
-            color="warning"
-            className="ml-2"
-            onClick={() => closeTopModal()}
-          >
-            Hủy bỏ
+          <Button type="submit" form={formId} variant="contained" disabled={isSubmitting}>
+            {isEditing ? 'Cap nhat' : 'Tao moi'}
           </Button>
-        </div>
-      </form>
-    </div>
+        </>
+      }
+    >
+      {isLoadingInitial ? (
+        <Loading content="Dang tai du lieu suat chieu..." />
+      ) : (
+        <form
+          id={formId}
+          onSubmit={handleSubmit(onSubmit)}
+          className="grid grid-cols-1 gap-3 md:grid-cols-2"
+        >
+          <FormField
+            name="movieTheaterId"
+            require={true}
+            label="Rap chieu"
+            control={control}
+            Component={CustomSelect}
+            options={movieTheaters}
+            placeHolder="Chon rap chieu"
+            error={errors.movieTheaterId}
+          />
+          <FormField
+            name="cinemaTheaterId"
+            require={true}
+            label="Phong chieu"
+            control={control}
+            Component={CustomSelect}
+            options={cinemaTheaters}
+            placeHolder={
+              isLoadingCinemaTheaters ? 'Dang tai phong chieu...' : 'Chon phong chieu'
+            }
+            disabled={isLoadingCinemaTheaters || !selectedMovieTheaterId}
+            error={errors.cinemaTheaterId}
+          />
+          <FormField
+            name="showDate"
+            require={true}
+            label="Ngay chieu"
+            control={control}
+            Component={TextInput}
+            type="date"
+            placeHolder="Chon ngay chieu"
+            error={errors.showDate}
+          />
+          <FormField
+            name="startTime"
+            require={true}
+            label="Gio bat dau"
+            control={control}
+            Component={TextInput}
+            type="time"
+            placeHolder="Chon gio bat dau"
+            error={errors.startTime}
+          />
+          <FormField
+            name="movieId"
+            require={true}
+            label="Phim"
+            control={control}
+            Component={CustomSelect}
+            options={movies}
+            placeHolder="Chon phim"
+            error={errors.movieId}
+          />
+          <FormField
+            name="movieVariationId"
+            require={true}
+            label="Bien the"
+            control={control}
+            Component={CustomSelect}
+            options={movieVariations}
+            placeHolder="Chon bien the"
+            error={errors.movieVariationId}
+          />
+          <FormField
+            name="originPrice"
+            require={true}
+            label="Gia goc"
+            control={control}
+            Component={TextInput}
+            type="number"
+            placeHolder="Nhap gia goc"
+            error={errors.originPrice}
+          />
+          <FormField
+            name="status"
+            require={true}
+            label="Trang thai"
+            control={control}
+            Component={CustomSelect}
+            options={showTimeStatusOptions}
+            placeHolder="Chon trang thai"
+            error={errors.status}
+          />
+        </form>
+      )}
+    </AdminModal>
   );
 };
+
 export default PopupShowTime;

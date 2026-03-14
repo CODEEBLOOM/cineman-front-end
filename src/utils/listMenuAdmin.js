@@ -68,6 +68,12 @@ export const listMenuAdmin = [
         role: ['CADMIN'],
       },
       {
+        name: 'Biến thể suất chiếu',
+        icon: BsDiagram3,
+        path: '/admin/bien-the-xuat-chieu',
+        role: ['CADMIN'],
+      },
+      {
         name: 'Quản lý hóa đơn',
         icon: PiInvoiceBold,
         path: '/admin/invoice',
@@ -103,12 +109,12 @@ export const listMenuAdmin = [
         path: '/admin/ma-giam-gia',
         role: ['CADMIN'],
       },
-      // {
-      //   name: 'Quản lý giá vé',
-      //   icon: MdOutlinePriceChange,
-      //   path: '/admin/gia-ve',
-      //   role: ['CADMIN'],
-      // },
+      {
+        name: 'Quản lý loại vé',
+        icon: MdOutlinePriceChange,
+        path: '/admin/gia-ve',
+        role: ['CADMIN'],
+      },
     ],
   },
   {

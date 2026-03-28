@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+﻿import { StrictMode } from 'react';
 
 /* Cấu hình react-toastify */
 import { ToastContainer } from 'react-toastify';
@@ -52,6 +52,8 @@ import MovieGenrePage from '@pages/admin/MovieGenrePage';
 import MovieRolePage from '@pages/admin/MovieRolePage';
 import MovieParticipantPage from '@pages/admin/MovieParticipantPage';
 import ParticipantPage from '@pages/admin/ParticipantPage';
+import SnackPage from '@pages/admin/SnackPage';
+import SnackTypePage from '@pages/admin/SnackTypePage';
 
 const router = createBrowserRouter([
   {
@@ -198,7 +200,11 @@ const router = createBrowserRouter([
           },
           {
             path: 'do-an',
-            element: <p>Quản lý đồ ăn</p>,
+            element: <SnackPage />,
+          },
+          {
+            path: 'loai-snack',
+            element: <SnackTypePage />,
           },
           {
             path: 'combo',

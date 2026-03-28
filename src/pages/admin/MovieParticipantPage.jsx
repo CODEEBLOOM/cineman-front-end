@@ -6,12 +6,11 @@
   resolveMovieParticipantEntityId,
 } from '@apis/movieParticipantService';
 import CustomBreadcrumb from '@component/CustomBreakcrumb';
+import DataGridTable from '@component/DataGridTable';
 import MovieParticipantFormModal from '@component/admin/movie_participant/MovieParticipantFormModal';
-import EmptyList from '@component/cinema_showtime/EmptyList';
-import Loading from '@component/Loading';
 import { useModelContext } from '@context/ModalContext';
 import { Button } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { MdOutlineDeleteSweep } from 'react-icons/md';
 import { toast } from 'react-toastify';
@@ -84,6 +83,77 @@ const MovieParticipantPage = () => {
     }
   };
 
+  const rows = useMemo(
+    () =>
+      movieParticipants.map((movieParticipant, index) => ({
+        ...movieParticipant,
+        gridIndex: index + 1,
+        gridId: `${movieParticipant.movieId}-${movieParticipant.participantId}-${movieParticipant.movieRoleId}-${index}`,
+      })),
+    [movieParticipants]
+  );
+
+  const columns = [
+    {
+      field: 'gridIndex',
+      headerName: 'STT',
+      width: 90,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'movieTitle',
+      headerName: 'Phim',
+      flex: 1.2,
+      minWidth: 260,
+      renderCell: (params) => (
+        <span className="font-medium">{params.value || 'Chưa có tên phim'}</span>
+      ),
+    },
+    {
+      field: 'participantName',
+      headerName: 'Người tham gia',
+      flex: 1,
+      minWidth: 220,
+      renderCell: (params) => params.value || 'Chưa có người tham gia',
+    },
+    {
+      field: 'movieRoleName',
+      headerName: 'Vai trò',
+      flex: 1,
+      minWidth: 180,
+      renderCell: (params) => params.value || 'Chưa có vai trò',
+    },
+    {
+      field: 'actions',
+      headerName: 'Thao tác',
+      width: 150,
+      sortable: false,
+      renderCell: (params) => {
+        const isEditable = Boolean(resolveMovieParticipantEntityId(params.row));
+
+        return (
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className={isEditable ? 'hover:cursor-pointer' : 'cursor-not-allowed opacity-40'}
+              onClick={() => handleOpenModal(params.row)}
+            >
+              <CiEdit size={24} fill="orange" />
+            </button>
+            <button
+              type="button"
+              className="hover:cursor-pointer"
+              onClick={() => handleDelete(params.row)}
+            >
+              <MdOutlineDeleteSweep size={24} fill="red" />
+            </button>
+          </div>
+        );
+      },
+    },
+  ];
+
   return (
     <div>
       <CustomBreadcrumb
@@ -109,68 +179,16 @@ const MovieParticipantPage = () => {
           </Button>
         </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th className="w-[8%]">STT</th>
-              <th className="w-[34%] min-w-[240px]">Phim</th>
-              <th className="w-[24%] min-w-[180px]">Người tham gia</th>
-              <th className="w-[22%] min-w-[160px]">Vai trò</th>
-              <th className="w-[12%] min-w-[120px]">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading && (
-              <tr>
-                <td colSpan={5}>
-                  <Loading content="Đang tải danh sách người tham gia phim..." />
-                </td>
-              </tr>
-            )}
-
-            {!isLoading && movieParticipants.length === 0 && (
-              <tr>
-                <td colSpan={5}>
-                  <EmptyList content="Chưa có người tham gia phim nào" />
-                </td>
-              </tr>
-            )}
-
-            {!isLoading &&
-              movieParticipants.map((movieParticipant, index) => (
-                <tr
-                  key={`${movieParticipant.movieId}-${movieParticipant.participantId}-${movieParticipant.movieRoleId}-${index}`}
-                >
-                  <td>{index + 1}</td>
-                  <td className="font-medium">{movieParticipant.movieTitle}</td>
-                  <td>{movieParticipant.participantName}</td>
-                  <td>{movieParticipant.movieRoleName}</td>
-                  <td>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        className={`${
-                          resolveMovieParticipantEntityId(movieParticipant)
-                            ? 'hover:cursor-pointer'
-                            : 'cursor-not-allowed opacity-40'
-                        }`}
-                        onClick={() => handleOpenModal(movieParticipant)}
-                      >
-                        <CiEdit size={24} fill="orange" />
-                      </button>
-                      <button
-                        type="button"
-                        className="hover:cursor-pointer"
-                        onClick={() => handleDelete(movieParticipant)}
-                      >
-                        <MdOutlineDeleteSweep size={24} fill="red" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        <DataGridTable
+          rows={rows}
+          columns={columns}
+          loading={isLoading}
+          hideFooter
+          minWidth={980}
+          getRowId={(row) => row.gridId}
+          loadingContent="Đang tải danh sách người tham gia phim..."
+          emptyContent="Chưa có người tham gia phim nào"
+        />
       </div>
     </div>
   );

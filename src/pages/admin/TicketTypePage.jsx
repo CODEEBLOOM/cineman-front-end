@@ -4,9 +4,8 @@
   findAllTicketTypesAdmin,
 } from '@apis/ticketTypeService';
 import CustomBreadcrumb from '@component/CustomBreakcrumb';
+import DataGridTable from '@component/DataGridTable';
 import TicketTypeFormModal from '@component/admin/ticket_type/TicketTypeFormModal';
-import EmptyList from '@component/cinema_showtime/EmptyList';
-import Loading from '@component/Loading';
 import { useModelContext } from '@context/ModalContext';
 import { Button } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -42,7 +41,7 @@ const TicketTypePage = () => {
     try {
       const response = await findAllTicketTypesAdmin();
       setTicketTypes(extractTicketTypeList(response));
-    } catch (error) {
+    } catch {
       toast.error('Không thể tải danh sách loại vé!');
     } finally {
       setIsLoading(false);
@@ -87,6 +86,89 @@ const TicketTypePage = () => {
     }
   };
 
+  const rows = useMemo(
+    () =>
+      ticketTypes.map((ticketType, index) => ({
+        ...ticketType,
+        gridIndex: index + 1,
+      })),
+    [ticketTypes]
+  );
+
+  const columns = [
+    {
+      field: 'gridIndex',
+      headerName: 'STT',
+      width: 90,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'name',
+      headerName: 'Loại vé',
+      flex: 1,
+      minWidth: 200,
+      renderCell: (params) => (
+        <span className="font-medium">
+          {TICKET_TYPE_LABELS[params.value] ?? params.value}
+        </span>
+      ),
+    },
+    {
+      field: 'price',
+      headerName: 'Giá vé',
+      width: 180,
+      renderCell: (params) => currencyFormatter.format(Number(params.value) || 0),
+    },
+    {
+      field: 'description',
+      headerName: 'Mô tả',
+      flex: 1.2,
+      minWidth: 280,
+      renderCell: (params) => params.value?.trim() || 'Chưa có mô tả',
+    },
+    {
+      field: 'status',
+      headerName: 'Trạng thái',
+      width: 180,
+      renderCell: (params) => (
+        <span
+          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+            params.value !== false
+              ? 'bg-green-100 text-green-600'
+              : 'bg-slate-200 text-slate-600'
+          }`}
+        >
+          {params.value !== false ? 'Đang áp dụng' : 'Ngừng áp dụng'}
+        </span>
+      ),
+    },
+    {
+      field: 'actions',
+      headerName: 'Thao tác',
+      width: 140,
+      sortable: false,
+      renderCell: (params) => (
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="hover:cursor-pointer"
+            onClick={() => handleOpenModal(params.row)}
+          >
+            <CiEdit size={24} fill="orange" />
+          </button>
+          <button
+            type="button"
+            className="hover:cursor-pointer"
+            onClick={() => handleDelete(params.row)}
+          >
+            <MdOutlineDeleteSweep size={24} fill="red" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div>
       <CustomBreadcrumb
@@ -112,78 +194,16 @@ const TicketTypePage = () => {
           </Button>
         </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th className="w-[8%]">STT</th>
-              <th className="w-[18%] min-w-[160px]">Loại vé</th>
-              <th className="w-[18%] min-w-[160px]">Giá vé</th>
-              <th className="w-[28%] min-w-[220px]">Mô tả</th>
-              <th className="w-[16%] min-w-[140px]">Trạng thái</th>
-              <th className="w-[12%] min-w-[120px]">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading && (
-              <tr>
-                <td colSpan={6}>
-                  <Loading content="Đang tải danh sách loại vé..." />
-                </td>
-              </tr>
-            )}
-
-            {!isLoading && ticketTypes.length === 0 && (
-              <tr>
-                <td colSpan={6}>
-                  <EmptyList content="Chưa có loại vé nào" />
-                </td>
-              </tr>
-            )}
-
-            {!isLoading &&
-              ticketTypes.map((ticketType, index) => (
-                <tr key={ticketType.id}>
-                  <td>{index + 1}</td>
-                  <td className="font-medium">
-                    {TICKET_TYPE_LABELS[ticketType.name] ?? ticketType.name}
-                  </td>
-                  <td>{currencyFormatter.format(Number(ticketType.price) || 0)}</td>
-                  <td className="text-slate-600">
-                    {ticketType.description?.trim() || 'Chưa có mô tả'}
-                  </td>
-                  <td>
-                    <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                        ticketType.status !== false
-                          ? 'bg-green-100 text-green-600'
-                          : 'bg-slate-200 text-slate-600'
-                      }`}
-                    >
-                      {ticketType.status !== false ? 'Đang áp dụng' : 'Ngừng áp dụng'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        className="hover:cursor-pointer"
-                        onClick={() => handleOpenModal(ticketType)}
-                      >
-                        <CiEdit size={24} fill="orange" />
-                      </button>
-                      <button
-                        type="button"
-                        className="hover:cursor-pointer"
-                        onClick={() => handleDelete(ticketType)}
-                      >
-                        <MdOutlineDeleteSweep size={24} fill="red" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        <DataGridTable
+          rows={rows}
+          columns={columns}
+          loading={isLoading}
+          hideFooter
+          minWidth={960}
+          getRowId={(row) => row.id}
+          loadingContent="Đang tải danh sách loại vé..."
+          emptyContent="Chưa có loại vé nào"
+        />
       </div>
     </div>
   );

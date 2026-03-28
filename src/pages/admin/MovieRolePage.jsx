@@ -4,12 +4,11 @@
   findAllMovieRolesAdmin,
 } from '@apis/movieRoleService';
 import CustomBreadcrumb from '@component/CustomBreakcrumb';
+import DataGridTable from '@component/DataGridTable';
 import MovieRoleFormModal from '@component/admin/movie_role/MovieRoleFormModal';
-import EmptyList from '@component/cinema_showtime/EmptyList';
-import Loading from '@component/Loading';
 import { useModelContext } from '@context/ModalContext';
 import { Button } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { MdOutlineDeleteSweep } from 'react-icons/md';
 import { toast } from 'react-toastify';
@@ -68,6 +67,79 @@ const MovieRolePage = () => {
     }
   };
 
+  const rows = useMemo(
+    () =>
+      movieRoles.map((movieRole, index) => ({
+        ...movieRole,
+        gridIndex: index + 1,
+      })),
+    [movieRoles]
+  );
+
+  const columns = [
+    {
+      field: 'gridIndex',
+      headerName: 'STT',
+      width: 90,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'name',
+      headerName: 'Tên vai trò',
+      flex: 1,
+      minWidth: 220,
+      renderCell: (params) => <span className="font-medium">{params.value}</span>,
+    },
+    {
+      field: 'description',
+      headerName: 'Mô tả',
+      flex: 1.4,
+      minWidth: 320,
+      renderCell: (params) => params.value?.trim() || 'Chưa có mô tả',
+    },
+    {
+      field: 'active',
+      headerName: 'Trạng thái',
+      width: 180,
+      renderCell: (params) => (
+        <span
+          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+            params.value !== false
+              ? 'bg-green-100 text-green-600'
+              : 'bg-slate-200 text-slate-600'
+          }`}
+        >
+          {params.value !== false ? 'Đang áp dụng' : 'Ngừng áp dụng'}
+        </span>
+      ),
+    },
+    {
+      field: 'actions',
+      headerName: 'Thao tác',
+      width: 140,
+      sortable: false,
+      renderCell: (params) => (
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="hover:cursor-pointer"
+            onClick={() => handleOpenModal(params.row)}
+          >
+            <CiEdit size={24} fill="orange" />
+          </button>
+          <button
+            type="button"
+            className="hover:cursor-pointer"
+            onClick={() => handleDelete(params.row)}
+          >
+            <MdOutlineDeleteSweep size={24} fill="red" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div>
       <CustomBreadcrumb
@@ -93,74 +165,16 @@ const MovieRolePage = () => {
           </Button>
         </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th className="w-[8%]">STT</th>
-              <th className="w-[24%] min-w-[180px]">Tên vai trò</th>
-              <th className="w-[40%] min-w-[280px]">Mô tả</th>
-              <th className="w-[16%] min-w-[140px]">Trạng thái</th>
-              <th className="w-[12%] min-w-[120px]">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading && (
-              <tr>
-                <td colSpan={5}>
-                  <Loading content="Đang tải danh sách vai trò phim..." />
-                </td>
-              </tr>
-            )}
-
-            {!isLoading && movieRoles.length === 0 && (
-              <tr>
-                <td colSpan={5}>
-                  <EmptyList content="Chưa có vai trò phim nào" />
-                </td>
-              </tr>
-            )}
-
-            {!isLoading &&
-              movieRoles.map((movieRole, index) => (
-                <tr key={movieRole.movieRoleId ?? movieRole.id}>
-                  <td>{index + 1}</td>
-                  <td className="font-medium">{movieRole.name}</td>
-                  <td className="text-slate-600">
-                    {movieRole.description?.trim() || 'Chưa có mô tả'}
-                  </td>
-                  <td>
-                    <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                        movieRole.active !== false
-                          ? 'bg-green-100 text-green-600'
-                          : 'bg-slate-200 text-slate-600'
-                      }`}
-                    >
-                      {movieRole.active !== false ? 'Đang áp dụng' : 'Ngừng áp dụng'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        className="hover:cursor-pointer"
-                        onClick={() => handleOpenModal(movieRole)}
-                      >
-                        <CiEdit size={24} fill="orange" />
-                      </button>
-                      <button
-                        type="button"
-                        className="hover:cursor-pointer"
-                        onClick={() => handleDelete(movieRole)}
-                      >
-                        <MdOutlineDeleteSweep size={24} fill="red" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        <DataGridTable
+          rows={rows}
+          columns={columns}
+          loading={isLoading}
+          hideFooter
+          minWidth={940}
+          getRowId={(row) => row?.movieRoleId ?? row?.id}
+          loadingContent="Đang tải danh sách vai trò phim..."
+          emptyContent="Chưa có vai trò phim nào"
+        />
       </div>
     </div>
   );

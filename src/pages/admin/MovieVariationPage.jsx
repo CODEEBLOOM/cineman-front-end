@@ -4,12 +4,11 @@
   findAllMovieVariationsAdmin,
 } from '@apis/movieVariationService';
 import CustomBreadcrumb from '@component/CustomBreakcrumb';
+import DataGridTable from '@component/DataGridTable';
 import MovieVariationFormModal from '@component/admin/movie_variation/MovieVariationFormModal';
-import EmptyList from '@component/cinema_showtime/EmptyList';
-import Loading from '@component/Loading';
 import { useModelContext } from '@context/ModalContext';
 import { Button } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { MdOutlineDeleteSweep } from 'react-icons/md';
 import { toast } from 'react-toastify';
@@ -25,7 +24,7 @@ const MovieVariationPage = () => {
     try {
       const response = await findAllMovieVariationsAdmin();
       setMovieVariations(extractMovieVariationList(response));
-    } catch (error) {
+    } catch {
       toast.error('Không thể tải danh sách biến thể suất chiếu!');
     } finally {
       setIsLoading(false);
@@ -72,6 +71,74 @@ const MovieVariationPage = () => {
     }
   };
 
+  const rows = useMemo(
+    () =>
+      movieVariations.map((movieVariation, index) => ({
+        ...movieVariation,
+        gridIndex: index + 1,
+      })),
+    [movieVariations]
+  );
+
+  const columns = [
+    {
+      field: 'gridIndex',
+      headerName: 'STT',
+      width: 90,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'name',
+      headerName: 'Tên biến thể',
+      flex: 1,
+      minWidth: 260,
+      renderCell: (params) => (
+        <span className="font-medium">{params.value || 'Chưa có tên biến thể'}</span>
+      ),
+    },
+    {
+      field: 'status',
+      headerName: 'Trạng thái',
+      width: 180,
+      renderCell: (params) => (
+        <span
+          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+            params.value !== false
+              ? 'bg-green-100 text-green-600'
+              : 'bg-slate-200 text-slate-600'
+          }`}
+        >
+          {params.value !== false ? 'Đang áp dụng' : 'Ngừng áp dụng'}
+        </span>
+      ),
+    },
+    {
+      field: 'actions',
+      headerName: 'Thao tác',
+      width: 140,
+      sortable: false,
+      renderCell: (params) => (
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="hover:cursor-pointer"
+            onClick={() => handleOpenModal(params.row)}
+          >
+            <CiEdit size={24} fill="orange" />
+          </button>
+          <button
+            type="button"
+            className="hover:cursor-pointer"
+            onClick={() => handleDelete(params.row)}
+          >
+            <MdOutlineDeleteSweep size={24} fill="red" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div>
       <CustomBreadcrumb
@@ -97,70 +164,16 @@ const MovieVariationPage = () => {
           </Button>
         </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th className="w-[10%]">STT</th>
-              <th className="w-[50%] min-w-[220px]">Tên biến thể</th>
-              <th className="w-[20%] min-w-[140px]">Trạng thái</th>
-              <th className="w-[20%] min-w-[120px]">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading && (
-              <tr>
-                <td colSpan={4}>
-                  <Loading content="Đang tải danh sách biến thể..." />
-                </td>
-              </tr>
-            )}
-
-            {!isLoading && movieVariations.length === 0 && (
-              <tr>
-                <td colSpan={4}>
-                  <EmptyList content="Chưa có biến thể suất chiếu nào" />
-                </td>
-              </tr>
-            )}
-
-            {!isLoading &&
-              movieVariations.map((movieVariation, index) => (
-                <tr key={movieVariation.id}>
-                  <td>{index + 1}</td>
-                  <td className="font-medium">{movieVariation.name}</td>
-                  <td>
-                    <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                        movieVariation.status !== false
-                          ? 'bg-green-100 text-green-600'
-                          : 'bg-slate-200 text-slate-600'
-                      }`}
-                    >
-                      {movieVariation.status !== false ? 'Đang áp dụng' : 'Ngừng áp dụng'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        className="hover:cursor-pointer"
-                        onClick={() => handleOpenModal(movieVariation)}
-                      >
-                        <CiEdit size={24} fill="orange" />
-                      </button>
-                      <button
-                        type="button"
-                        className="hover:cursor-pointer"
-                        onClick={() => handleDelete(movieVariation)}
-                      >
-                        <MdOutlineDeleteSweep size={24} fill="red" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        <DataGridTable
+          rows={rows}
+          columns={columns}
+          loading={isLoading}
+          hideFooter
+          minWidth={720}
+          getRowId={(row) => row.id}
+          loadingContent="Đang tải danh sách biến thể..."
+          emptyContent="Chưa có biến thể suất chiếu nào"
+        />
       </div>
     </div>
   );

@@ -1,10 +1,10 @@
 import { getAllTicketByShowTime } from '@apis/ticketService';
-import React, { useEffect, useRef, useState } from 'react';
 import { Client } from '@stomp/stompjs';
-import { useDispatch, useSelector } from 'react-redux';
-import SeatMapRenderer from './SeatMapRenderer';
-import { toast } from 'react-toastify';
 import { setSelectedSeats } from '@redux/slices/ticketSlice';
+import React, { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import SeatMapRenderer from './SeatMapRenderer';
 
 const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
   const dispatch = useDispatch();
@@ -15,9 +15,10 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
   useEffect(() => {
     selectedSeatsRef.current = selectedSeats;
   }, [selectedSeats]);
-  const { user } = useSelector((state) => state.user);
 
+  const { user } = useSelector((state) => state.user);
   const [ticketMap, setTicketMap] = useState(new Map());
+
   const message = {
     type: 'TICKET_CREATE',
     content: {
@@ -30,16 +31,18 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
     userId: user.userId,
   };
 
-  /* Call api lấy toàn bộ thông tin vé của một lịch chiếu: chạy khi lịch chiếu thay đổi */
   useEffect(() => {
     if (!showTime.id) return;
+
     getAllTicketByShowTime({ userId: user.userId, showTimeId: showTime.id })
       .then((res) => {
         const newMap = new Map();
         const seatSelected = [];
+
         res.data.forEach((ticket) => {
           const key = `${ticket.seat.rowIndex}-${ticket.seat.columnIndex}`;
           newMap.set(key, ticket);
+
           if (ticket.status === 'SELECTED') {
             seatSelected.push({
               ticketId: ticket.id,
@@ -48,6 +51,7 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
             });
           }
         });
+
         setTicketMap(newMap);
         dispatch(setSelectedSeats(seatSelected));
       })
@@ -56,16 +60,14 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
       });
   }, [showTime.id, user.userId, dispatch]);
 
-  /* Xử lý realtime */
   const clientRef = useRef();
-  // Tạo STOMP client một lần
   useEffect(() => {
     if (!showTime.id) return;
+
     const client = new Client({
       brokerURL: import.meta.env.VITE_REALTIME,
       reconnectDelay: 0,
 
-      /* Chạy khi kết nối với server thành công */
       onConnect: (frame) => {
         console.log('Connected:', frame);
 
@@ -78,24 +80,28 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
           `/cineman/topic/seat-map/show-time/${showTime.id}`,
           (response) => {
             const msg = JSON.parse(response.body);
+
             if (msg.type === 'TICKET_DELETED') {
               const seatKey = `${msg.rowIndex}-${msg.columnIndex}`;
               setTotalMoneyTicket(msg.totalMoney);
+
               setTicketMap((prevMap) => {
                 const newMap = new Map(prevMap);
-                let updatedTicket = newMap.get(seatKey);
+                const updatedTicket = newMap.get(seatKey);
+
                 if (updatedTicket) {
                   updatedTicket.status = 'EMPTY';
                   updatedTicket.id = null;
                 }
+
                 newMap.set(seatKey, updatedTicket);
                 return newMap;
               });
 
-              /* Xử lý xóa cập nhật state ghế đã chọn */
               const index = selectedSeatsRef.current.findIndex(
                 (ticketSelected) => ticketSelected.ticketId === msg.ticketId
               );
+
               if (index !== -1) {
                 const updatedSelectedSeats = [...selectedSeatsRef.current];
                 updatedSelectedSeats.splice(index, 1);
@@ -103,11 +109,11 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
               }
             }
 
-            // Xử lý sau khi tạo vé thành công //
             if (msg.type === 'TICKET_CREATED' && msg.content) {
               const seatKey = `${msg.content.seat.rowIndex}-${msg.content.seat.columnIndex}`;
               const isCurrentUser = msg.userId === user.userId;
               setTotalMoneyTicket(msg.totalMoney);
+
               setTicketMap((prevMap) => {
                 const newMap = new Map(prevMap);
                 const updatedTicket = {
@@ -117,6 +123,7 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
                 newMap.set(seatKey, updatedTicket);
                 return newMap;
               });
+
               if (isCurrentUser) {
                 const newSelectedSeats = [
                   ...selectedSeatsRef.current,
@@ -144,11 +151,9 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
       },
     });
 
-    /* Khởi chạy client */
     clientRef.current = client;
     client.activate();
 
-    /* Optional cleanup */
     return () => {
       if (client.connected) {
         clientRef.current.deactivate();
@@ -156,16 +161,13 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
     };
   }, [showTime.id]);
 
-  /* Gửi thống báo cho server: chọn ghế ( Đặt vé ) */
   const sendMessageChooseSeat = (data) => {
     if (selectedSeats.length > 0) {
       const seatFound = selectedSeats.find(
         (ticketSelected) => ticketSelected.ticketId === data.ticketId
       );
 
-      /* Nếu ghế đã được chọn thì hủy chọn */
       if (seatFound) {
-        /* Gửi thống báo cho server: cancel ghế ( Đặt vé ) */
         clientRef.current.publish({
           destination: `/cineman/app/seat/cancel-seat`,
           body: JSON.stringify(data),
@@ -173,10 +175,10 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
         return;
       }
     }
-    if (!clientRef.current?.connected) return;
 
-    /* Gửi thống báo cho server: chọn ghế ( Đặt vé ) */
+    if (!clientRef.current?.connected) return;
     if (selectedSeats.length + 1 > 8) return alert('bạn chỉ có thể đặt 8 ghế');
+
     clientRef.current.publish({
       destination: `/cineman/app/seat/choose-seat`,
       body: JSON.stringify(data),
@@ -184,22 +186,25 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
   };
 
   return (
-    <div
-      className="mx-auto grid gap-1"
-      style={{
-        gridTemplateColumns: `repeat(${showTime?.cinemaTheater?.numberOfColumns + 1}, 60px)`,
-        width: 'fit-content',
-      }}
-    >
-      {showTime.id && (
-        <SeatMapRenderer
-          ticketMap={ticketMap}
-          showTime={showTime}
-          message={message}
-          sendMessageChooseSeat={sendMessageChooseSeat}
-        />
-      )}
+    <div className="mx-auto w-full overflow-x-auto">
+      <div
+        className="mx-auto grid min-w-max items-center gap-[10px] px-1 pb-1"
+        style={{
+          gridTemplateColumns: `44px repeat(${showTime?.cinemaTheater?.numberOfColumns ?? 0}, minmax(58px, 1fr))`,
+          width: 'fit-content',
+        }}
+      >
+        {showTime.id && (
+          <SeatMapRenderer
+            ticketMap={ticketMap}
+            showTime={showTime}
+            message={message}
+            sendMessageChooseSeat={sendMessageChooseSeat}
+          />
+        )}
+      </div>
     </div>
   );
 };
+
 export default TicketGrid;

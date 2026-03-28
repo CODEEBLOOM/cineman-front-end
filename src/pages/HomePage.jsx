@@ -8,10 +8,12 @@ const HomePage = () => {
   const isIpad = useMediaQuery(theme.breakpoints.up('lg'));
 
   const slides = [
-    'img-banner-01.png',
-    'img-banner-02.png',
+    'img-banner-07.png',
+    'img-banner-08.png',
     'img-banner-03.png',
-    // 'img-banner-04.png',
+    'img-banner-04.png',
+    'img-banner-05.png',
+    'img-banner-06.png',
   ];
 
   // Set document title

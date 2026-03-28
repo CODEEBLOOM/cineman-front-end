@@ -1,23 +1,24 @@
-import FormMovie from './FormMovie';
-import { useState } from 'react';
+import CustomBreadcrumb from '@component/CustomBreakcrumb';
 import TabPanel from '@component/Tabpanel';
 import { Box, Tab, Tabs } from '@mui/material';
-import CustomBreadcrumb from '@component/CustomBreakcrumb';
+import { adminTabSx, adminTabsSx } from '@utils/adminTabStyles';
+import { useState } from 'react';
+import FormMovie from './FormMovie';
 import MovieTable from './MovieTable';
 
 const ListMovie = () => {
   const [value, setValue] = useState(1);
   const [isEdit, setIsEdit] = useState(false);
   const [editingMovie, setEditingMovie] = useState(null);
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-  function a11yProps(index) {
-    return {
-      id: `simple-tab-${index}`,
-      'aria-controls': `simple-tabpanel-${index}`,
-    };
-  }
+
+  const a11yProps = (index) => ({
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  });
 
   return (
     <div>
@@ -27,30 +28,15 @@ const ListMovie = () => {
       />
       <div className="mx-5 mt-3 grid overflow-auto">
         <div className="rounded-sm bg-white px-4 py-3">
-          <Box sx={{ borderBottom: '2px solid lightGray' }}>
+          <Box>
             <Tabs
               value={value}
               onChange={handleChange}
-              aria-label="basic tabs example"
+              aria-label="Quản lý bộ phim"
+              sx={adminTabsSx}
             >
-              <Tab
-                sx={{
-                  '&.MuiButtonBase-root': {
-                    padding: '16px',
-                  },
-                }}
-                label="Thêm bộ phim"
-                {...a11yProps(0)}
-              />
-              <Tab
-                sx={{
-                  '&.MuiButtonBase-root': {
-                    padding: '16px',
-                  },
-                }}
-                label="Danh sách"
-                {...a11yProps(1)}
-              />
+              <Tab sx={adminTabSx} label="Thêm bộ phim" {...a11yProps(0)} />
+              <Tab sx={adminTabSx} label="Danh sách" {...a11yProps(1)} />
             </Tabs>
           </Box>
           <TabPanel value={value} index={0}>
@@ -74,4 +60,5 @@ const ListMovie = () => {
     </div>
   );
 };
+
 export default ListMovie;

@@ -68,12 +68,6 @@ export const listMenuAdmin = [
         role: ['ADMIN'],
       },
       {
-        name: 'Loại Phim',
-        path: '/admin/movie-type',
-        icon: BsTags,
-        role: ['ADMIN'],
-      },
-      {
         name: 'Thể loại phim',
         path: '/admin/the-loai-phim',
         icon: BsTags,
@@ -146,10 +140,10 @@ export const listMenuAdmin = [
         role: ['CADMIN'],
       },
       {
-        name: 'Quản lý mã giảm giá',
+        name: 'Quản lý khuyến mãi',
         icon: MdOutlineDiscount,
-        path: '/admin/ma-giam-gia',
-        role: ['CADMIN'],
+        path: '/admin/khuyen-mai',
+        role: ['ADMIN', 'CADMIN'],
       },
       {
         name: 'Quản lý loại vé',

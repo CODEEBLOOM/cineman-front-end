@@ -19,8 +19,13 @@ const SeatMapRenderer = React.memo(
         row > theater.regularSeatRow + theater.vipSeatRow;
 
       allSeats.push(
-        <div className="flex items-center justify-center" key={getSeatRowLabel(row)}>
-          {getSeatRowLabel(row)}
+        <div
+          className="flex min-h-[64px] items-center justify-center"
+          key={getSeatRowLabel(row)}
+        >
+          <span className="text-sm font-bold tracking-[0.08em] text-slate-500">
+            {getSeatRowLabel(row)}
+          </span>
         </div>
       );
 
@@ -31,10 +36,11 @@ const SeatMapRenderer = React.memo(
         if (!ticket) {
           allSeats.push(
             <div
-              className={`h-[60px] w-[60px] bg-white ${isDoubleRow ? 'col-span-2' : ''}`}
+              className={`min-h-[64px] min-w-[58px] ${isDoubleRow ? 'col-span-2' : 'col-span-1'}`}
               key={seatKey}
             />
           );
+
           if (isDoubleRow) {
             col++;
           }

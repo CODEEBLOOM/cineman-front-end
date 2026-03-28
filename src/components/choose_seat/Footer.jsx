@@ -4,62 +4,58 @@ import VIPSeat from '@component/seat/VIPSeat';
 import Timer from '@component/Timer';
 import { COLOR_SEAT } from '@utils/colorSeatConstant';
 
+const currencyFormatter = new Intl.NumberFormat('vi-VN');
+
 const Footer = ({ isPayment = false, totalMoneyTicket }) => {
   return (
-    <>
-      <div
-        className={'mt-10 flex flex-col flex-wrap justify-between md:flex-row'}
-      >
-        {!isPayment && (
-          <>
-            <div className={'flex flex-wrap items-center gap-2'}>
-              <RegularSeat size={`40px`} color={COLOR_SEAT.SEAT_EMPTY} />
-              <span className={'whitespace-normal font-medium md:text-[18px]'}>
-                Ghế <br /> thường
-              </span>
-            </div>
-            <div className={'flex items-center gap-2'}>
-              <DoubleSeat size={`60px`} color={COLOR_SEAT.SEAT_EMPTY} />
-              <span className={'whitespace-normal font-medium md:text-[18px]'}>
-                Ghế <br /> đôi
-              </span>
-            </div>
-            <div className={'flex items-center gap-2 border-r-2 pr-2'}>
-              <VIPSeat size={`40px`} color={COLOR_SEAT.SEAT_EMPTY} />
-              <span className={'whitespace-normal font-medium md:text-[18px]'}>
-                Ghế <br /> <span className="uppercase">vip</span>
-              </span>
-            </div>
+    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      {!isPayment ? (
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-3 rounded-[18px] border border-slate-200 bg-slate-50 px-3 py-2">
+            <RegularSeat size="34px" color={COLOR_SEAT.SEAT_EMPTY} />
+            <p className="text-sm font-semibold text-slate-700">Ghế thường</p>
+          </div>
 
-            <div className={'flex items-center gap-2 border-r-2 pr-2'}>
-              <p className={'whitespace-normal font-medium md:text-[18px]'}>
-                Tổng tiền
-              </p>
-              <p className={'font-medium text-primary md:text-[18px]'}>
-                <span>{totalMoneyTicket}</span> VNĐ
-              </p>
-            </div>
-          </>
-        )}
-        {isPayment && (
-          <div>
-            <p className="italic">
-              Vui lòng kiểm tra thông tin đầy đủ trước khi qua bước tiếp theo.
+          <div className="flex items-center gap-3 rounded-[18px] border border-slate-200 bg-slate-50 px-3 py-2">
+            <DoubleSeat size="52px" color={COLOR_SEAT.SEAT_EMPTY} />
+            <p className="text-sm font-semibold text-slate-700">Ghế đôi</p>
+          </div>
+
+          <div className="flex items-center gap-3 rounded-[18px] border border-slate-200 bg-slate-50 px-3 py-2">
+            <VIPSeat size="34px" color={COLOR_SEAT.SEAT_EMPTY} />
+            <p className="text-sm font-semibold text-slate-700">Ghế VIP</p>
+          </div>
+
+          <div className="rounded-[18px] border border-slate-200 bg-white px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Tổng tiền
             </p>
-            <p className="italic">
-              <span className="text-red-500">*</span>Vé mua rồi không hoàn trả
-              lại dưới mọi hình thức.
+            <p className="text-lg font-extrabold text-[#23486c]">
+              {currencyFormatter.format(totalMoneyTicket || 0)} đ
             </p>
           </div>
-        )}
-        <div className={'flex items-center gap-2'}>
-          <p className="whitespace-pre-line font-medium md:text-[18px]">
-            Thời gian còn lại
-          </p>
-          <Timer deadlineTime={10} />
         </div>
+      ) : (
+        <div className="space-y-1 text-sm text-slate-600">
+          <p>Vui lòng kiểm tra kỹ thông tin trước khi chuyển sang bước tiếp theo.</p>
+          <p>
+            <span className="font-bold text-red-500">*</span> Vé đã mua sẽ
+            không được hoàn trả dưới mọi hình thức.
+          </p>
+        </div>
+      )}
+
+      <div className="rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+          Thời gian còn lại
+        </p>
+        <Timer
+          deadlineTime={10}
+          className="text-[1.35rem] font-extrabold text-[#23486c]"
+        />
       </div>
-    </>
+    </div>
   );
 };
+
 export default Footer;

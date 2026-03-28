@@ -2,6 +2,7 @@ import ShowTimeListPanel from '@component/admin/showtimes/ShowTimeListPanel';
 import ShowTimeSchedulerPanel from '@component/admin/showtimes/ShowTimeSchedulerPanel';
 import CustomBreadcrumb from '@component/CustomBreakcrumb';
 import { Box, Tab, Tabs } from '@mui/material';
+import { adminTabSx, adminTabsSx } from '@utils/adminTabStyles';
 import { useEffect, useState } from 'react';
 
 const tabProps = (index) => ({
@@ -40,13 +41,14 @@ const ShowTimePage = () => {
             </div>
           </div>
 
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mt: 2 }}>
+          <Box sx={{ mt: 2 }}>
             <Tabs
               value={activeTab}
               onChange={(_, value) => setActiveTab(value)}
+              sx={adminTabsSx}
             >
-              <Tab label="Lập lịch" {...tabProps(0)} />
-              <Tab label="Danh sách / Bộ lọc" {...tabProps(1)} />
+              <Tab label="Lập lịch" sx={adminTabSx} {...tabProps(0)} />
+              <Tab label="Danh sách / Bộ lọc" sx={adminTabSx} {...tabProps(1)} />
             </Tabs>
           </Box>
         </div>

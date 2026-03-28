@@ -70,6 +70,11 @@ export const findAllMovieTheater = async ({
   });
 };
 
+export const findAllClientMovieTheater = async () => {
+  // axiosClient already uses VITE_HOST as baseURL, which includes /api/v01.
+  return await axios.get('/movie-theater/all');
+};
+
 export const findAllMovieTheaterByProvinceId = async (provinceId) => {
   return await axios.get(`/admin/movie-theater/province/${provinceId}/all`);
 };

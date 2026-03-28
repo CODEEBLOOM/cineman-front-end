@@ -1,11 +1,11 @@
-import { FaCirclePlay } from 'react-icons/fa6';
+import CustomButton from '@component/CustomButton.jsx';
+import { useModelContext } from '@context/ModalContext.jsx';
+import PlayCircleFilledWhiteRounded from '@mui/icons-material/PlayCircleFilledWhiteRounded';
+import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { IoClose } from 'react-icons/io5';
 import ImageComponent from './ImageComponent';
-import { Link } from 'react-router-dom';
-import { useModelContext } from '@context/ModalContext.jsx';
-import CustomButton from '@component/CustomButton.jsx';
 import ShowTimeComponent from './movie_detail/ShowTimeComponent';
-import { useSelector } from 'react-redux';
 
 const CardItemFilm = ({
   id,
@@ -50,78 +50,90 @@ const CardItemFilm = ({
     );
   };
 
+  const handleOpenTrailer = () => {
+    openPopup(
+      <div data-modal-placement="center" className="relative rounded-md bg-white p-5">
+        <span
+          className="absolute right-3 top-3 hover:cursor-pointer"
+          onClick={() => closeTopModal()}
+        >
+          <IoClose size={25} />
+        </span>
+        <p className="mb-3 border-b-2 px-2 text-[20px]">{title}</p>
+        <iframe
+          title="Trailer"
+          src={trailerLink}
+          className="aspect-video w-[80vw] md:w-[50vw]"
+        />
+      </div>
+    );
+  };
+
   return (
     <div className="mb-3 flex w-full gap-5 px-4 pb-4 sm:block">
-      <div className="relative">
-        <div className="h-auto w-full min-w-[100px] max-w-[150px] overflow-hidden rounded-2xl sm:max-w-[300px] md:min-h-[300px] xl:min-h-[370px]">
+      <div className="w-full min-w-[120px] max-w-[150px] sm:max-w-[300px]">
+        <div className="relative aspect-[235/372] overflow-hidden rounded-[26px]">
           <ImageComponent
-            className="h-full w-full min-w-[150px] animate-fade-in rounded-lg object-cover opacity-0"
+            className="h-full w-full animate-fade-in object-cover opacity-0"
             width={235}
             height={372}
             src={img}
           />
-        </div>
-        <span className="absolute left-2 top-2">
-          <img
-            src={`${Number(age) >= 18 ? 'c-18.png' : Number(age) >= 16 ? 'c-16.png' : 'p.png'}`}
-            alt="Độ tuổi phim"
-          />
-        </span>
-        <div className="group absolute left-0 top-0 h-full w-full transform rounded-2xl hover:bg-custom-transparent">
-          <a
-            className="hidden cursor-pointer group-hover:block"
-            onClick={() =>
-              openPopup(
-                <div
-                  data-modal-placement="center"
-                  className="relative bg-white p-5"
-                >
-                  <span
-                    className="absolute right-3 top-3 hover:cursor-pointer"
-                    onClick={() => closeTopModal()}
-                  >
-                    <IoClose size={25} />
-                  </span>
-                  <p className="mb-3 border-b-2 px-2 text-[20px]">{title}</p>
-                  <iframe
-                    title="Trailer"
-                    src={trailerLink}
-                    className="aspect-video w-[80vw] md:w-[50vw]"
-                  />
-                </div>
-              )
-            }
-          >
-            <FaCirclePlay
-              size={50}
-              style={{
-                backgroundColor: 'transparent',
-                borderRadius: '100rem',
-              }}
-              fill="white"
-              className="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%]"
+
+          <span className="absolute left-2 top-2 z-10">
+            <img
+              src={`${
+                Number(age) >= 18
+                  ? 'c-18.png'
+                  : Number(age) >= 16
+                    ? 'c-16.png'
+                    : 'p.png'
+              }`}
+              alt="Độ tuổi phim"
             />
-          </a>
+          </span>
+
+          <button
+            type="button"
+            className="group absolute inset-0 flex items-center justify-center bg-black/0 transition duration-300 hover:bg-black/30"
+            onClick={handleOpenTrailer}
+          >
+            <PlayCircleFilledWhiteRounded
+              sx={{
+                fontSize: 62,
+                color: '#ffffff',
+                filter: 'drop-shadow(0 10px 24px rgba(0,0,0,0.25))',
+                opacity: 0,
+                transform: 'scale(0.88)',
+                transition: 'opacity 0.25s ease, transform 0.25s ease',
+                '.group:hover &': {
+                  opacity: 1,
+                  transform: 'scale(1)',
+                },
+              }}
+            />
+          </button>
         </div>
       </div>
+
       <div className="flex-1">
         <div className="truncate text-left">
           <Link
             to={`/detail-movie/${id}`}
-            className="mb-2 mt-2 max-h-[30px] min-h-[30px] cursor-pointer flex-wrap text-[18px] font-bold text-primary hover:underline lg:truncate lg:text-[20px]"
+            className="mb-2 mt-2 flex max-h-[30px] min-h-[30px] cursor-pointer flex-wrap text-[18px] font-bold text-primary hover:underline lg:truncate lg:text-[20px]"
           >
             {title}
           </Link>
           <ul>
             <li className="w-full">
-              <span className="font-bold">Thể loại:</span>&nbsp;{' '}
+              <span className="font-bold">Thể loại:</span>&nbsp;
               <span className="truncate whitespace-nowrap lowercase">
                 {genres.map((genre) => genre.name).join(',\u200B ')}
               </span>
             </li>
             <li className="flex flex-wrap">
               <span className="font-bold">Thời lượng:</span>&nbsp; {duration}
-              <span> &nbsp;Phút</span>
+              <span>&nbsp;Phút</span>
             </li>
             {isUpcoming && (
               <li className="flex flex-wrap">
@@ -131,6 +143,7 @@ const CardItemFilm = ({
             )}
           </ul>
         </div>
+
         {!isUpcoming && (
           <div onClick={() => openPopup(renderPopup())}>
             <CustomButton title="Mua vé" />

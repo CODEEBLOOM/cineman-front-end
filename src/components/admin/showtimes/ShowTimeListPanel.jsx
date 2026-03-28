@@ -1,8 +1,9 @@
-import { findAllMovieTheater } from '@apis/movieTheaterService';
+﻿import { findAllMovieTheater } from '@apis/movieTheaterService';
 import {
   deleteShowTime,
   findAllAdminShowTimes,
 } from '@apis/showTimeService';
+import DataGridTable from '@component/DataGridTable';
 import EmptyList from '@component/cinema_showtime/EmptyList';
 import Loading from '@component/Loading';
 import { useModelContext } from '@context/ModalContext';
@@ -10,11 +11,7 @@ import AddRounded from '@mui/icons-material/AddRounded';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import FilterAltRounded from '@mui/icons-material/FilterAltRounded';
-import {
-  Button,
-  MenuItem,
-  TextField,
-} from '@mui/material';
+import { Button, MenuItem, TextField } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -67,10 +64,9 @@ const ShowTimeListPanel = () => {
       setFilters((currentValue) => ({
         ...currentValue,
         movieTheaterId:
-          currentValue.movieTheaterId ||
-          String(user?.movieTheater?.movieTheaterId ?? ''),
+          currentValue.movieTheaterId || String(user?.movieTheater?.movieTheaterId ?? ''),
       }));
-    } catch (error) {
+    } catch {
       toast.error('Không thể tải danh sách rạp chiếu!');
     } finally {
       setIsLoadingMovieTheaters(false);
@@ -92,7 +88,7 @@ const ShowTimeListPanel = () => {
       });
 
       setShowTimes(sortedItems);
-    } catch (error) {
+    } catch {
       setShowTimes([]);
       toast.error('Không thể tải danh sách suất chiếu!');
     } finally {
@@ -156,8 +152,100 @@ const ShowTimeListPanel = () => {
       groups.set(dateKey, currentGroup);
     });
 
-    return Array.from(groups.entries());
+    return Array.from(groups.entries()).map(([dateKey, items]) => ({
+      dateKey,
+      rows: items.map((item, index) => ({
+        ...item,
+        gridIndex: index + 1,
+      })),
+    }));
   }, [showTimes]);
+
+  const columns = [
+    {
+      field: 'movieTitle',
+      headerName: 'Phim',
+      flex: 1,
+      minWidth: 240,
+      renderCell: (params) => (
+        <div className="py-2">
+          <p className="font-semibold text-slate-900">{params.value}</p>
+          <p className="mt-1 text-sm text-slate-500">ID: {params.row.id}</p>
+        </div>
+      ),
+    },
+    {
+      field: 'movieTheaterName',
+      headerName: 'Rạp / Phòng',
+      flex: 1,
+      minWidth: 220,
+      renderCell: (params) => (
+        <div className="py-2 text-sm text-slate-600">
+          <p>{params.row.movieTheaterName}</p>
+          <p className="mt-1 font-medium text-slate-900">{params.row.cinemaTheaterName}</p>
+        </div>
+      ),
+    },
+    {
+      field: 'startTime',
+      headerName: 'Giờ chiếu',
+      width: 160,
+      renderCell: (params) => `${params.row.startTime} - ${params.row.endTime}`,
+    },
+    {
+      field: 'movieVariationName',
+      headerName: 'Biến thể',
+      flex: 1,
+      minWidth: 180,
+    },
+    {
+      field: 'originPrice',
+      headerName: 'Giá',
+      width: 150,
+      renderCell: (params) => formatCurrency(params.value),
+    },
+    {
+      field: 'status',
+      headerName: 'Trạng thái',
+      width: 160,
+      renderCell: (params) => {
+        const statusMeta = getStatusMeta(params.value);
+
+        return (
+          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusMeta.className}`}>
+            {statusMeta.label}
+          </span>
+        );
+      },
+    },
+    {
+      field: 'actions',
+      headerName: 'Thao tác',
+      width: 180,
+      sortable: false,
+      renderCell: (params) => (
+        <div className="flex justify-end gap-2 py-2">
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<EditOutlined />}
+            onClick={() => handleOpenModal(params.row.id)}
+          >
+            Sửa
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            size="small"
+            startIcon={<DeleteOutlineRounded />}
+            onClick={() => handleDeleteShowTime(params.row.id)}
+          >
+            Xóa
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -238,11 +326,7 @@ const ShowTimeListPanel = () => {
           ))}
         </TextField>
 
-        <Button
-          variant="outlined"
-          startIcon={<FilterAltRounded />}
-          onClick={loadShowTimes}
-        >
+        <Button variant="outlined" startIcon={<FilterAltRounded />} onClick={loadShowTimes}>
           Tải lại
         </Button>
       </div>
@@ -264,87 +348,25 @@ const ShowTimeListPanel = () => {
         <EmptyList content="Không tìm thấy suất chiếu nào với bộ lọc hiện tại" />
       ) : (
         <div className="space-y-4">
-          {groupedByDate.map(([dateKey, items]) => (
+          {groupedByDate.map(({ dateKey, rows }) => (
             <div key={dateKey} className="overflow-hidden rounded-2xl border border-slate-200">
               <div className="flex items-center justify-between gap-3 bg-slate-900 px-4 py-3 text-white">
                 <div>
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-300">Ngày chiếu</p>
                   <p className="text-lg font-semibold">{dateKey}</p>
                 </div>
-                <p className="text-sm text-slate-200">{items.length} suất chiếu</p>
+                <p className="text-sm text-slate-200">{rows.length} suất chiếu</p>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="min-w-full border-collapse">
-                  <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                    <tr>
-                      <th className="px-4 py-3">Phim</th>
-                      <th className="px-4 py-3">Rạp / Phòng</th>
-                      <th className="px-4 py-3">Giờ chiếu</th>
-                      <th className="px-4 py-3">Biến thể</th>
-                      <th className="px-4 py-3">Giá</th>
-                      <th className="px-4 py-3">Trạng thái</th>
-                      <th className="px-4 py-3 text-right">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((item) => {
-                      const statusMeta = getStatusMeta(item.status);
-
-                      return (
-                        <tr key={item.id} className="border-t border-slate-200 bg-white align-top">
-                          <td className="px-4 py-4">
-                            <p className="font-semibold text-slate-900">{item.movieTitle}</p>
-                            <p className="mt-1 text-sm text-slate-500">ID: {item.id}</p>
-                          </td>
-                          <td className="px-4 py-4 text-sm text-slate-600">
-                            <p>{item.movieTheaterName}</p>
-                            <p className="mt-1 font-medium text-slate-900">
-                              {item.cinemaTheaterName}
-                            </p>
-                          </td>
-                          <td className="px-4 py-4 text-sm font-medium text-slate-900">
-                            {item.startTime} - {item.endTime}
-                          </td>
-                          <td className="px-4 py-4 text-sm text-slate-600">
-                            {item.movieVariationName}
-                          </td>
-                          <td className="px-4 py-4 text-sm text-slate-600">
-                            {formatCurrency(item.originPrice)}
-                          </td>
-                          <td className="px-4 py-4">
-                            <span
-                              className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusMeta.className}`}
-                            >
-                              {statusMeta.label}
-                            </span>
-                          </td>
-                          <td className="px-4 py-4">
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                startIcon={<EditOutlined />}
-                                onClick={() => handleOpenModal(item.id)}
-                              >
-                                Sửa
-                              </Button>
-                              <Button
-                                variant="outlined"
-                                color="error"
-                                size="small"
-                                startIcon={<DeleteOutlineRounded />}
-                                onClick={() => handleDeleteShowTime(item.id)}
-                              >
-                                Xóa
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div className="bg-white px-2 py-2">
+                <DataGridTable
+                  rows={rows}
+                  columns={columns}
+                  hideFooter
+                  minWidth={1160}
+                  getRowId={(row) => row.id}
+                  emptyContent="Không có suất chiếu cho ngày này"
+                />
               </div>
             </div>
           ))}

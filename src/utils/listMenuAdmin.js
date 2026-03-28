@@ -1,4 +1,4 @@
-import { FaBuildingColumns, FaUserGear, FaUsersGear } from 'react-icons/fa6';
+﻿import { FaBuildingColumns, FaUserGear, FaUsersGear } from 'react-icons/fa6';
 import { GrMap } from 'react-icons/gr';
 import {
   MdMovieEdit,
@@ -131,6 +131,12 @@ export const listMenuAdmin = [
         name: 'Quản lý đồ ăn',
         path: '/admin/do-an',
         icon: GiPopcorn,
+        role: ['CADMIN'],
+      },
+      {
+        name: 'Loại đồ ăn vặt',
+        path: '/admin/loai-snack',
+        icon: BsTags,
         role: ['CADMIN'],
       },
       {

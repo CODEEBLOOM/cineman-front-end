@@ -1,11 +1,12 @@
-import { clearMultiple, createMultiple } from '@apis/detailBookingSnack';
+﻿import { clearMultiple, createMultiple } from '@apis/detailBookingSnack';
 import { findAllSnacks } from '@apis/snackService';
 import { getAllSnackType } from '@apis/snackType';
+import DataGridTable from '@component/DataGridTable';
 import CustomSelect from '@component/form_field/CustomSelect';
 import { currencyFormatter } from '@libs/Utils';
 import { Button } from '@mui/material';
 import { setSnacks } from '@redux/slices/invoiceASlide';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -13,9 +14,7 @@ import { toast } from 'react-toastify';
 const BookingSnack = ({ invoiceId, status = 'SOLD' }) => {
   const dispatch = useDispatch();
   const [combos, setCombos] = useState([]);
-  const { snacks, snacksSelected } = useSelector(
-    (state) => state.invoiceASlice
-  );
+  const { snacks } = useSelector((state) => state.invoiceASlice);
   const [snackSelect, setSnackSelect] = useState([]);
   const [snackSelected, setSnackSelected] = useState(null);
 
@@ -27,7 +26,6 @@ const BookingSnack = ({ invoiceId, status = 'SOLD' }) => {
     return 0;
   };
 
-  /* Fetch danh sách combo */
   useEffect(() => {
     if (!snackSelected) return;
     findAllSnacks(snackSelected)
@@ -42,37 +40,26 @@ const BookingSnack = ({ invoiceId, status = 'SOLD' }) => {
   const handleSelectCombo = (combo) => {
     const foundSnackSelected = snacks.find((item) => item.id === combo.id);
     if (!foundSnackSelected) {
-      const createSnackSelected = {
-        ...combo,
-        quantity: 1,
-      };
-      dispatch(setSnacks([...snacks, createSnackSelected]));
+      dispatch(
+        setSnacks([
+          ...snacks,
+          {
+            ...combo,
+            quantity: 1,
+          },
+        ])
+      );
     } else {
-      const findIndex = snacks.findIndex((item) => item.id === combo.id);
-      if (findIndex !== -1) {
-        const updatedSnacks = snacks.map((item) =>
-          item.id === combo.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-        dispatch(setSnacks(updatedSnacks));
-      }
+      const updatedSnacks = snacks.map((item) =>
+        item.id === combo.id ? { ...item, quantity: item.quantity + 1 } : item
+      );
+      dispatch(setSnacks(updatedSnacks));
     }
   };
 
-  /**
-   * Handle remove combo
-   * @param {object} combo - Combo info
-   * @description
-   * If the quantity of the combo is 1, remove the combo from the snackSelected array.
-   * Otherwise, minus the quantity of the combo by 1.
-   */
   const handleRemoveCombo = (combo) => {
     const findIndex = snacks.findIndex((item) => item.id === combo.id);
     if (findIndex !== -1) {
-      // if (snacks[findIndex].quantity === 0) {
-      //   const updatedSnacks = snacks.filter((item) => item.id !== combo.id);
-      //   dispatch(setSnacks(updatedSnacks));
-      //   return;
-      // }
       if (snacks[findIndex].quantity === 0) {
         return;
       }
@@ -86,12 +73,12 @@ const BookingSnack = ({ invoiceId, status = 'SOLD' }) => {
   useEffect(() => {
     getAllSnackType()
       .then((res) => {
-        const snackSelect = res.data.map((item) => ({
+        const nextSnackSelect = res.data.map((item) => ({
           value: item.id,
           label: item.name,
         }));
-        setSnackSelect(snackSelect);
-        setSnackSelected(snackSelect[0].value);
+        setSnackSelect(nextSnackSelect);
+        setSnackSelected(nextSnackSelect[0]?.value ?? null);
       })
       .catch((err) => {
         console.log(err);
@@ -107,14 +94,14 @@ const BookingSnack = ({ invoiceId, status = 'SOLD' }) => {
     const newComboSelected = snacks.map((item) => ({
       snackId: item.id,
       totalSnack: item.quantity,
-      invoiceId: invoiceId,
+      invoiceId,
     }));
     const res = await createMultiple(newComboSelected);
     if (res && res.status === 201) {
-      toast.success('Thêm snack thành công !');
+      toast.success('Thêm đồ ăn vặt thành công !');
       window.location.reload();
     } else {
-      toast.error('Thêm snack thất bại !');
+      toast.error('Thêm đồ ăn vặt thất bại !');
     }
   };
 
@@ -131,6 +118,73 @@ const BookingSnack = ({ invoiceId, status = 'SOLD' }) => {
       console.log(error);
     }
   };
+
+  const rows = useMemo(() => combos.map((item) => ({ ...item })), [combos]);
+
+  const columns = [
+    {
+      field: 'image',
+      headerName: 'Hình ảnh',
+      width: 120,
+      sortable: false,
+      renderCell: () => (
+        <img
+          src="/combo-online-03.png"
+          className="h-[80px] w-[80px] rounded-full"
+        />
+      ),
+    },
+    {
+      field: 'snackName',
+      headerName: 'Tên',
+      width: 240,
+      renderCell: (params) => (
+        <div className="py-2">
+          <span className="font-medium">{params.value}</span>
+          <div className="text-[18px] font-medium text-pink-400">
+            {currencyFormatter(params.row.unitPrice)}
+          </div>
+        </div>
+      ),
+    },
+    {
+      field: 'description',
+      headerName: 'Mô tả',
+      flex: 1,
+      minWidth: 280,
+      renderCell: (params) => (
+        <p className="whitespace-normal break-words text-justify">
+          {params.value}
+        </p>
+      ),
+    },
+    {
+      field: 'quantity',
+      headerName: 'Số lượng',
+      width: 180,
+      sortable: false,
+      renderCell: (params) => (
+        <div className="flex select-none items-center justify-between gap-2 py-2">
+          <span className="text-[18px] font-medium">
+            {checkQuantity(params.row)}
+          </span>
+          <span
+            className="cursor-pointer bg-primary p-1"
+            onClick={() => handleSelectCombo(params.row)}
+          >
+            <FaPlus fill={'white'} />
+          </span>
+          <span
+            className="cursor-pointer bg-gray-400 p-1"
+            onClick={() => handleRemoveCombo(params.row)}
+          >
+            <FaMinus />
+          </span>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="mt-5">
       <div className="mb-2 flex flex-wrap items-center justify-between">
@@ -142,7 +196,7 @@ const BookingSnack = ({ invoiceId, status = 'SOLD' }) => {
             options={snackSelect}
             value={snackSelected || ''}
             name="snackType"
-            placeHolder="Chọn loại snack"
+            placeHolder="Chọn loại đồ ăn vặt"
           />
           <Button
             variant="outlined"
@@ -162,71 +216,14 @@ const BookingSnack = ({ invoiceId, status = 'SOLD' }) => {
           </Button>
         </div>
       </div>
-      <div className="overflow-auto">
-        <table className="w-full">
-          <thead>
-            <tr>
-              <th className="w-[10%] font-semibold">Hình ảnh</th>
-              <th className="w-[15%] font-semibold">Tên</th>
-              <th className="w-[65%] min-w-[200px] font-semibold">Mô tả</th>
-              <th className="w-[10%] min-w-[60px] font-semibold">Số lượng</th>
-            </tr>
-          </thead>
-          <tbody>
-            {combos.map((item, index) => {
-              return (
-                <tr key={`combo-${index}-${item.id}`}>
-                  <td className={'flex w-[100px] justify-center px-3 py-5'}>
-                    <img
-                      src="/combo-online-03.png"
-                      className="h-[80px] w-[80px] rounded-full"
-                    />
-                  </td>
-                  <td className={'px-3 py-5'}>
-                    <div>
-                      <span className={'font-medium'}> {item.snackName}</span>
-                      <span className="text-[18px] font-medium text-pink-400">
-                        <FaMinus />
-                        {currencyFormatter(item.unitPrice)}
-                      </span>
-                    </div>
-                  </td>
-                  <td className={'px-3 py-5'}>
-                    <div>
-                      <p className="whitespace-normal break-words text-justify">
-                        {item.description}
-                      </p>
-                    </div>
-                  </td>
-                  <td className={'px-3 py-5'}>
-                    <div
-                      className={
-                        'flex select-none items-center justify-between gap-2'
-                      }
-                    >
-                      <span className="text-[18px] font-medium">
-                        {checkQuantity(item)}
-                      </span>
-                      <span
-                        className={'cursor-pointer bg-primary p-1'}
-                        onClick={() => handleSelectCombo(item)}
-                      >
-                        <FaPlus fill={'white'} />
-                      </span>
-                      <span
-                        className={'cursor-pointer bg-gray-400 p-1'}
-                        onClick={() => handleRemoveCombo(item)}
-                      >
-                        <FaMinus />
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <DataGridTable
+        rows={rows}
+        columns={columns}
+        hideFooter
+        minWidth={860}
+        getRowId={(row) => row.id}
+        emptyContent="Chưa có đồ ăn vặt nào cho nhóm đang chọn"
+      />
     </div>
   );
 };

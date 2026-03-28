@@ -1,79 +1,65 @@
 ﻿import {
-  deleteParticipant,
-  extractParticipantList,
-  findAll,
-} from '@apis/participantService';
+  deleteSnack,
+  extractSnackList,
+  findAllSnacksAdmin,
+  normalizeSnack,
+} from '@apis/snackAdminService';
 import CustomBreadcrumb from '@component/CustomBreakcrumb';
 import DataGridTable from '@component/DataGridTable';
-import ParticipantFormModal from '@component/admin/participant/ParticipantFormModal';
+import SnackFormModal from '@component/admin/snack/SnackFormModal';
 import ImageComponent from '@component/ImageComponent';
 import { useModelContext } from '@context/ModalContext';
+import { currencyFormatter } from '@libs/Utils';
 import { Button } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { MdOutlineDeleteSweep } from 'react-icons/md';
 import { toast } from 'react-toastify';
 
-const resolveAvatarSrc = (avatar) => {
-  if (!avatar) {
+const resolveImageSrc = (image) => {
+  if (!image) {
     return '';
   }
 
-  if (/^https?:\/\//i.test(avatar)) {
-    return avatar;
+  if (/^https?:\/\//i.test(image)) {
+    return image;
   }
 
-  return `${import.meta.env.VITE_STORAGES}/${avatar}`;
+  return `${import.meta.env.VITE_STORAGES}/${image}`;
 };
 
-const resolveGenderLabel = (gender) => {
-  switch (gender) {
-    case 'MALE':
-      return 'Nam';
-    case 'FEMALE':
-      return 'Nữ';
-    case 'OTHER':
-      return 'Khác';
-    default:
-      return gender || 'Chưa cập nhật';
-  }
-};
-
-const ParticipantPage = () => {
+const SnackPage = () => {
   const { openPopup } = useModelContext();
-  const [participants, setParticipants] = useState([]);
+  const [snacks, setSnacks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchParticipants = useCallback(async () => {
+  const fetchSnacks = useCallback(async () => {
     setIsLoading(true);
 
     try {
-      const response = await findAll();
-      setParticipants(extractParticipantList(response));
+      const response = await findAllSnacksAdmin();
+      setSnacks(extractSnackList(response).map(normalizeSnack));
     } catch {
-      toast.error('Không thể tải danh sách người tham gia!');
+      toast.error('Không thể tải danh sách snack!');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    document.title = 'Quản lý người tham gia - POLY CINEMAS';
-    fetchParticipants();
-  }, [fetchParticipants]);
+    document.title = 'Quản lý đồ ăn vặt - POLY CINEMAS';
+    fetchSnacks();
+  }, [fetchSnacks]);
 
-  const handleOpenModal = (participant = null) => {
-    openPopup(
-      <ParticipantFormModal participant={participant} onSuccess={fetchParticipants} />
-    );
+  const handleOpenModal = (snack = null) => {
+    openPopup(<SnackFormModal snack={snack} onSuccess={fetchSnacks} />);
   };
 
-  const handleDelete = async (participant) => {
-    const participantId = participant?.participantId ?? participant?.id;
-    const participantName =
-      participant?.nickname || participant?.birthName || `#${participantId}`;
+  const handleDelete = async (snack) => {
+    const snackId = snack?.snackId ?? snack?.id;
+    const snackName = snack?.snackName ?? snack?.name ?? `#${snackId}`;
     const confirmed = window.confirm(
-      `Bạn có chắc muốn xóa người tham gia "${participantName}" không?`
+      `Bạn có chắc muốn xóa đồ ăn vặt "${snackName}" không?`
     );
 
     if (!confirmed) {
@@ -81,9 +67,9 @@ const ParticipantPage = () => {
     }
 
     try {
-      await deleteParticipant(participantId);
-      toast.success('Xóa người tham gia thành công!');
-      await fetchParticipants();
+      await deleteSnack(snackId);
+      toast.success('Xóa đồ ăn vặt thành công!');
+      await fetchSnacks();
     } catch (error) {
       if (
         error?.response?.status === 400 ||
@@ -93,17 +79,17 @@ const ParticipantPage = () => {
         return toast.error(error?.response?.data?.message);
       }
 
-      toast.error('Xóa người tham gia thất bại!');
+      toast.error('Xóa đồ ăn vặt thất bại!');
     }
   };
 
   const rows = useMemo(
     () =>
-      participants.map((participant, index) => ({
-        ...participant,
+      snacks.map((snack, index) => ({
+        ...snack,
         gridIndex: index + 1,
       })),
-    [participants]
+    [snacks]
   );
 
   const columns = useMemo(
@@ -116,24 +102,24 @@ const ParticipantPage = () => {
         headerAlign: 'center',
       },
       {
-        field: 'avatar',
+        field: 'image',
         headerName: 'Ảnh',
         width: 120,
         sortable: false,
         renderCell: (params) => (
           <div className="py-2">
             <ImageComponent
-              src={resolveAvatarSrc(params.row?.avatar)}
+              src={resolveImageSrc(params.row?.image)}
               width={72}
-              height={96}
-              className="h-24 w-[72px] rounded object-cover"
+              height={72}
+              className="h-[72px] w-[72px] rounded object-cover"
             />
           </div>
         ),
       },
       {
-        field: 'birthName',
-        headerName: 'Tên thật',
+        field: 'snackName',
+        headerName: 'Tên đồ ăn vặt',
         flex: 1,
         minWidth: 220,
         renderCell: (params) => (
@@ -141,24 +127,27 @@ const ParticipantPage = () => {
         ),
       },
       {
-        field: 'nickname',
-        headerName: 'Nghệ danh',
-        flex: 1,
-        minWidth: 200,
-        renderCell: (params) => params.value || 'Chưa có nghệ danh',
+        field: 'snackTypeName',
+        headerName: 'Loại đồ ăn vặt',
+        width: 180,
+        renderCell: (params) => (
+          <span className="inline-flex rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
+            {params.value}
+          </span>
+        ),
       },
       {
-        field: 'gender',
-        headerName: 'Giới tính',
-        width: 140,
-        renderCell: (params) => resolveGenderLabel(params.value),
+        field: 'unitPrice',
+        headerName: 'Giá bán',
+        width: 160,
+        renderCell: (params) => currencyFormatter(Number(params.value) || 0),
       },
       {
-        field: 'nationality',
-        headerName: 'Quốc tịch',
-        flex: 1,
-        minWidth: 180,
-        renderCell: (params) => params.value || 'Chưa cập nhật',
+        field: 'description',
+        headerName: 'Mô tả',
+        flex: 1.2,
+        minWidth: 300,
+        renderCell: (params) => params.value?.trim() || 'Chưa có mô tả',
       },
       {
         field: 'actions',
@@ -191,20 +180,17 @@ const ParticipantPage = () => {
   return (
     <div>
       <CustomBreadcrumb
-        items={[
-          {
-            label: 'Quản lý người tham gia',
-          },
-        ]}
-        title="Quản lý người tham gia"
+        items={[{ label: 'Quản lý snack' }]}
+        title="Quản lý snack"
       />
 
       <div className="mx-5 mt-3 overflow-auto rounded-sm bg-white px-4 py-3">
         <div className="mb-4 flex items-center justify-between border-b pb-3">
           <div>
-            <h2 className="text-lg font-semibold">Danh sách người tham gia</h2>
+            <h2 className="text-lg font-semibold">Danh sách đồ ăn vặt</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Tạo danh mục diễn viên, đạo diễn hoặc nhân sự để gán vào từng bộ phim.
+              Quản lý các sản phẩm bán kèm như bắp rang, nước uống và combo phục
+              vụ tại rạp.
             </p>
           </div>
 
@@ -218,14 +204,14 @@ const ParticipantPage = () => {
           columns={columns}
           loading={isLoading}
           hideFooter
-          minWidth={1080}
-          getRowId={(row) => row?.participantId ?? row?.id}
-          loadingContent="Đang tải danh sách người tham gia..."
-          emptyContent="Chưa có người tham gia nào"
+          minWidth={1220}
+          getRowId={(row) => row?.snackId ?? row?.id}
+          loadingContent="Đang tải danh sách snack..."
+          emptyContent="Chưa có đồ ăn vặt nào"
         />
       </div>
     </div>
   );
 };
 
-export default ParticipantPage;
+export default SnackPage;

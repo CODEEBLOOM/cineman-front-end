@@ -1,15 +1,14 @@
-import {
+﻿import {
   deleteCinemaType,
   extractCinemaTypeList,
   findAll,
 } from '@apis/cinemaTypeService';
 import CustomBreadcrumb from '@component/CustomBreakcrumb';
+import DataGridTable from '@component/DataGridTable';
 import CinemaTypeFormModal from '@component/admin/cinema_type/CinemaTypeFormModal';
-import EmptyList from '@component/cinema_showtime/EmptyList';
-import Loading from '@component/Loading';
 import { useModelContext } from '@context/ModalContext';
 import { Button } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { MdOutlineDeleteSweep } from 'react-icons/md';
 import { toast } from 'react-toastify';
@@ -73,6 +72,69 @@ const CinemaTypePage = () => {
     }
   };
 
+  const rows = useMemo(
+    () =>
+      cinemaTypes.map((cinemaType, index) => ({
+        ...cinemaType,
+        gridIndex: index + 1,
+      })),
+    [cinemaTypes]
+  );
+
+  const columns = [
+    {
+      field: 'gridIndex',
+      headerName: 'STT',
+      width: 90,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'code',
+      headerName: 'Mã',
+      width: 160,
+      renderCell: (params) => params.value || 'Chưa có mã',
+    },
+    {
+      field: 'name',
+      headerName: 'Tên loại phòng chiếu',
+      flex: 1,
+      minWidth: 240,
+      renderCell: (params) => <span className="font-medium">{params.value}</span>,
+    },
+    {
+      field: 'description',
+      headerName: 'Mô tả',
+      flex: 1.3,
+      minWidth: 320,
+      renderCell: (params) => params.value?.trim() || 'Chưa có mô tả',
+    },
+    {
+      field: 'actions',
+      headerName: 'Thao tác',
+      width: 140,
+      sortable: false,
+      renderCell: (params) => (
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="hover:cursor-pointer"
+            onClick={() => handleOpenModal(params.row)}
+          >
+            <CiEdit size={24} fill="orange" />
+          </button>
+          <button
+            type="button"
+            className="hover:cursor-pointer"
+            onClick={() => handleDelete(params.row)}
+          >
+            <MdOutlineDeleteSweep size={24} fill="red" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div>
       <CustomBreadcrumb
@@ -83,12 +145,9 @@ const CinemaTypePage = () => {
       <div className="mx-5 mt-3 overflow-auto rounded-sm bg-white px-4 py-3">
         <div className="mb-4 flex items-center justify-between border-b pb-3">
           <div>
-            <h2 className="text-lg font-semibold">
-              Danh sách loại phòng chiếu
-            </h2>
+            <h2 className="text-lg font-semibold">Danh sách loại phòng chiếu</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Quản lý danh mục loại phòng chiếu để dùng khi cấu hình phòng trong
-              hệ thống rạp.
+              Quản lý danh mục loại phòng chiếu để dùng khi cấu hình phòng trong hệ thống rạp.
             </p>
           </div>
 
@@ -97,64 +156,16 @@ const CinemaTypePage = () => {
           </Button>
         </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th className="w-[8%]">STT</th>
-              <th className="w-[18%] min-w-[160px]">Mã</th>
-              <th className="w-[22%] min-w-[180px]">Tên loại phòng chiếu</th>
-              <th className="w-[40%] min-w-[260px]">Mô tả</th>
-              <th className="w-[12%] min-w-[120px]">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading && (
-              <tr>
-                <td colSpan={5}>
-                  <Loading content="Đang tải danh sách loại phòng chiếu..." />
-                </td>
-              </tr>
-            )}
-
-            {!isLoading && cinemaTypes.length === 0 && (
-              <tr>
-                <td colSpan={5}>
-                  <EmptyList content="Chưa có loại phòng chiếu nào" />
-                </td>
-              </tr>
-            )}
-
-            {!isLoading &&
-              cinemaTypes.map((cinemaType, index) => (
-                <tr key={cinemaType.cinemaTypeId ?? cinemaType.id}>
-                  <td>{index + 1}</td>
-                  <td>{cinemaType.code}</td>
-                  <td className="font-medium">{cinemaType.name}</td>
-                  <td className="text-slate-600">
-                    {cinemaType.description?.trim() || 'Chưa có mô tả'}
-                  </td>
-                  <td>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        className="hover:cursor-pointer"
-                        onClick={() => handleOpenModal(cinemaType)}
-                      >
-                        <CiEdit size={24} fill="orange" />
-                      </button>
-                      <button
-                        type="button"
-                        className="hover:cursor-pointer"
-                        onClick={() => handleDelete(cinemaType)}
-                      >
-                        <MdOutlineDeleteSweep size={24} fill="red" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        <DataGridTable
+          rows={rows}
+          columns={columns}
+          loading={isLoading}
+          hideFooter
+          minWidth={940}
+          getRowId={(row) => row?.cinemaTypeId ?? row?.id}
+          loadingContent="Đang tải danh sách loại phòng chiếu..."
+          emptyContent="Chưa có loại phòng chiếu nào"
+        />
       </div>
     </div>
   );

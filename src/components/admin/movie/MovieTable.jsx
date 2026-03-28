@@ -1,14 +1,12 @@
-import {
+﻿import {
   extractMovieTheaterMappingList,
   findAllMovieTheaterMappingsByMovieId,
   normalizeMovieTheaterMapping,
 } from '@apis/movieTheaterMappingService';
 import { deleteMovie, findAllByFilterAdmin } from '@apis/movieService';
-import EmptyList from '@component/cinema_showtime/EmptyList';
+import DataGridTable from '@component/DataGridTable';
 import ImageComponent from '@component/ImageComponent';
-import Loading from '@component/Loading';
-import { Pagination } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { MdOutlineDeleteSweep } from 'react-icons/md';
 import { toast } from 'react-toastify';
@@ -22,12 +20,11 @@ const MovieTable = ({ setIsEdit, setValue, setEditingMovie }) => {
     totalPages: 0,
     totalElements: 0,
   });
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
   const [isLoading, setIsLoading] = useState(false);
-  const [pageActive, setPageActive] = useState(0);
-
-  const handleChangePage = (_, newPage) => {
-    setPageActive(newPage);
-  };
 
   const handleEdit = (movie) => {
     setEditingMovie(movie);
@@ -66,24 +63,29 @@ const MovieTable = ({ setIsEdit, setValue, setEditingMovie }) => {
 
     try {
       const response = await findAllByFilterAdmin({
-        page: pageActive > 0 ? pageActive - 1 : 0,
-        size: meta.pageSize,
+        page: paginationModel.page,
+        size: paginationModel.pageSize,
         status: 'ALL',
       });
       const nextMovies = response?.movies ?? response?.data?.movies ?? [];
-      const nextMeta = response?.meta ?? response?.data?.meta ?? meta;
+      const nextMeta = response?.meta ?? response?.data?.meta ?? {
+        currentPage: paginationModel.page,
+        pageSize: paginationModel.pageSize,
+        totalPages: 0,
+        totalElements: 0,
+      };
 
       setMovies(nextMovies);
       setMeta(nextMeta);
       setMovieTheaterMap(await loadMovieTheaterMap(nextMovies));
-    } catch (error) {
+    } catch {
       setMovies([]);
       setMovieTheaterMap({});
       toast.error('Không thể tải danh sách phim!');
     } finally {
       setIsLoading(false);
     }
-  }, [loadMovieTheaterMap, meta.pageSize, pageActive]);
+  }, [loadMovieTheaterMap, paginationModel.page, paginationModel.pageSize]);
 
   useEffect(() => {
     loadMovies();
@@ -103,130 +105,163 @@ const MovieTable = ({ setIsEdit, setValue, setEditingMovie }) => {
     }
   };
 
+  const rows = useMemo(
+    () =>
+      movies.map((movie, index) => {
+        const movieId = movie?.movieId ?? movie?.id;
+
+        return {
+          ...movie,
+          gridIndex: index + 1 + paginationModel.page * paginationModel.pageSize,
+          movieTheatersDisplay:
+            movieTheaterMap[String(movieId)]?.length > 0
+              ? movieTheaterMap[String(movieId)].join(', ')
+              : 'Chưa gán rạp',
+          castsDisplay: (movie.casts || []).map((cast) => cast.nickname).join(', '),
+          directorsDisplay: (movie.directors || []).map((director) => director.nickname).join(', '),
+          genresDisplay: (movie.genres || []).map((genre) => genre.name).join(', '),
+        };
+      }),
+    [movieTheaterMap, movies, paginationModel.page, paginationModel.pageSize]
+  );
+
+  const columns = [
+    {
+      field: 'gridIndex',
+      headerName: 'STT',
+      width: 90,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'posterImage',
+      headerName: 'Hình ảnh',
+      width: 180,
+      sortable: false,
+      renderCell: (params) => (
+        <div className="py-3">
+          <ImageComponent
+            src={params.value}
+            alt="Film Image"
+            className="h-[200px] min-w-[150px] object-cover"
+            width={150}
+            height={200}
+          />
+        </div>
+      ),
+    },
+    {
+      field: 'synopsis',
+      headerName: 'Tóm tắt',
+      flex: 1.2,
+      minWidth: 280,
+      renderCell: (params) => (
+        <p className="whitespace-normal text-justify">{params.value || 'Chưa có tóm tắt'}</p>
+      ),
+    },
+    {
+      field: 'participants',
+      headerName: 'Người tham gia',
+      flex: 1.1,
+      minWidth: 260,
+      sortable: false,
+      renderCell: (params) => (
+        <div className="py-2">
+          <p className="whitespace-normal">
+            <span className="font-semibold">Diễn viên: </span>
+            <span>{params.row.castsDisplay || 'Chưa cập nhật'}</span>
+          </p>
+          <p className="whitespace-normal">
+            <span className="font-semibold">Đạo diễn: </span>
+            <span>{params.row.directorsDisplay || 'Chưa cập nhật'}</span>
+          </p>
+        </div>
+      ),
+    },
+    {
+      field: 'movieTheatersDisplay',
+      headerName: 'Rạp áp dụng',
+      flex: 1,
+      minWidth: 220,
+    },
+    {
+      field: 'duration',
+      headerName: 'Thời lượng',
+      width: 120,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'language',
+      headerName: 'Ngôn ngữ',
+      width: 140,
+    },
+    {
+      field: 'genresDisplay',
+      headerName: 'Thể loại',
+      flex: 1,
+      minWidth: 180,
+    },
+    {
+      field: 'age',
+      headerName: 'Giới hạn tuổi',
+      width: 130,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'releaseDate',
+      headerName: 'Ngày phát hành',
+      width: 160,
+    },
+    {
+      field: 'actions',
+      headerName: 'Thao tác',
+      width: 140,
+      sortable: false,
+      renderCell: (params) => (
+        <div className="flex gap-3">
+          <button
+            type="button"
+            className="hover:cursor-pointer"
+            onClick={() => handleEdit(params.row)}
+          >
+            <CiEdit size={25} fill="orange" />
+          </button>
+          <button
+            type="button"
+            className="hover:cursor-pointer"
+            onClick={() => handleDelete(params.row)}
+          >
+            <MdOutlineDeleteSweep size={25} fill="red" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="overflow-auto">
       <div>
         <h2 className="mb-2 text-[18px] font-semibold">Danh sách phim</h2>
       </div>
-      <table className="mb-3">
-        <thead>
-          <tr>
-            <th className="w-[5%]">STT</th>
-            <th className="w-[20%] min-w-[100px]">Hình ảnh</th>
-            <th className="w-[20%] min-w-[200px]">Tóm tắt</th>
-            <th className="w-[20%] min-w-[200px]">Người tham gia</th>
-            <th className="w-[5%]">Rạp áp dụng</th>
-            <th className="w-[5%]">Thời lượng</th>
-            <th className="w-[5%]">Ngôn ngữ</th>
-            <th className="w-[5%]">Thể loại</th>
-            <th className="w-[5%]">Giới hạn tuổi</th>
-            <th className="w-[5%]">Ngày phát hành</th>
-            <th className="w-[10%]">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          {isLoading && (
-            <tr>
-              <td colSpan={11}>
-                <Loading content="Đang tải danh sách phim..." />
-              </td>
-            </tr>
-          )}
-          {movies.length === 0 && !isLoading && (
-            <tr>
-              <td colSpan={11}>
-                <EmptyList content="Danh sách phim trống" />
-              </td>
-            </tr>
-          )}
-          {movies?.map((movie, index) => {
-            const movieId = movie?.movieId ?? movie?.id;
-            const movieTheaters = movieTheaterMap[String(movieId)] ?? [];
 
-            return (
-              <tr key={movieId}>
-                <td>
-                  {index + 1 + (meta.currentPage ?? 0) * (meta.pageSize ?? 10)}
-                </td>
-                <td>
-                  <div>
-                    <ImageComponent
-                      src={movie.posterImage}
-                      alt="Film Image"
-                      className="h-[200px] min-w-[150px] object-cover"
-                      width={170}
-                      height={200}
-                    />
-                  </div>
-                </td>
-                <td className="overflow-hidden">
-                  <p className="whitespace-normal text-justify">
-                    {movie.synopsis}
-                  </p>
-                </td>
-                <td className="overflow-hidden">
-                  <p className="whitespace-normal">
-                    <span className="font-semibold">Diễn viên: </span>
-                    <span>
-                      {(movie.casts || [])
-                        .map((cast) => cast.nickname)
-                        .join(', ')}
-                    </span>
-                  </p>
-                  <p className="whitespace-normal">
-                    <span className="font-semibold">Đạo diễn: </span>
-                    <span>
-                      {(movie.directors || [])
-                        .map((director) => director.nickname)
-                        .join(', ')}
-                    </span>
-                  </p>
-                </td>
-                <td>
-                  {movieTheaters.length > 0
-                    ? movieTheaters.join(', ')
-                    : 'Chưa gán rạp'}
-                </td>
-                <td>{movie.duration}</td>
-                <td>{movie.language}</td>
-                <td>{movie.genres.map((genre) => genre.name).join(', ')}</td>
-                <td>{movie.age}</td>
-                <td>{movie.releaseDate}</td>
-                <td>
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      className="hover:cursor-pointer"
-                      onClick={() => handleEdit(movie)}
-                    >
-                      <CiEdit size={25} fill="orange" />
-                    </button>
-                    <button
-                      type="button"
-                      className="hover:cursor-pointer"
-                      onClick={() => handleDelete(movie)}
-                    >
-                      <MdOutlineDeleteSweep size={25} fill="red" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      <Pagination
-        onChange={handleChangePage}
-        sx={{ justifyContent: 'center', display: 'flex' }}
-        size="large"
-        count={meta.totalPages || 0}
-        page={meta.currentPage + 1}
-        variant="outlined"
-        shape="rounded"
-        color="primary"
+      <DataGridTable
+        rows={rows}
+        columns={columns}
+        loading={isLoading}
+        minWidth={1900}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        paginationMode="server"
+        rowCount={meta.totalElements || 0}
+        getRowId={(row) => row?.movieId ?? row?.id}
+        loadingContent="Đang tải danh sách phim..."
+        emptyContent="Danh sách phim trống"
       />
     </div>
   );
 };
 
 export default MovieTable;
+

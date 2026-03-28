@@ -1,11 +1,10 @@
-import { deleteGenre, extractGenreList, getAllGenre } from '@apis/genreService';
+﻿import { deleteGenre, extractGenreList, getAllGenre } from '@apis/genreService';
 import CustomBreadcrumb from '@component/CustomBreakcrumb';
+import DataGridTable from '@component/DataGridTable';
 import MovieGenreFormModal from '@component/admin/movie_genre/MovieGenreFormModal';
-import EmptyList from '@component/cinema_showtime/EmptyList';
-import Loading from '@component/Loading';
 import { useModelContext } from '@context/ModalContext';
 import { Button } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { MdOutlineDeleteSweep } from 'react-icons/md';
 import { toast } from 'react-toastify';
@@ -66,6 +65,79 @@ const MovieTypePage = () => {
     }
   };
 
+  const rows = useMemo(
+    () =>
+      movieTypes.map((movieType, index) => ({
+        ...movieType,
+        gridIndex: index + 1,
+      })),
+    [movieTypes]
+  );
+
+  const columns = [
+    {
+      field: 'gridIndex',
+      headerName: 'STT',
+      width: 90,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'name',
+      headerName: 'Tên thể loại phim',
+      flex: 1,
+      minWidth: 240,
+      renderCell: (params) => <span className="font-medium">{params.value}</span>,
+    },
+    {
+      field: 'description',
+      headerName: 'Mô tả',
+      flex: 1.3,
+      minWidth: 320,
+      renderCell: (params) => params.value?.trim() || 'Chưa có mô tả',
+    },
+    {
+      field: 'active',
+      headerName: 'Trạng thái',
+      width: 180,
+      renderCell: (params) => (
+        <span
+          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+            params.value !== false
+              ? 'bg-green-100 text-green-600'
+              : 'bg-slate-200 text-slate-600'
+          }`}
+        >
+          {params.value !== false ? 'Đang áp dụng' : 'Ngừng áp dụng'}
+        </span>
+      ),
+    },
+    {
+      field: 'actions',
+      headerName: 'Thao tác',
+      width: 140,
+      sortable: false,
+      renderCell: (params) => (
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="hover:cursor-pointer"
+            onClick={() => handleOpenModal(params.row)}
+          >
+            <CiEdit size={24} fill="orange" />
+          </button>
+          <button
+            type="button"
+            className="hover:cursor-pointer"
+            onClick={() => handleDelete(params.row)}
+          >
+            <MdOutlineDeleteSweep size={24} fill="red" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div>
       <CustomBreadcrumb
@@ -78,8 +150,7 @@ const MovieTypePage = () => {
           <div>
             <h2 className="text-lg font-semibold">Danh sách thể loại phim</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Thể loại phim đang dùng chung dữ liệu với thể loại phim để hỗ trợ
-              tên màn hình cũ.
+              Thể loại phim đang dùng chung dữ liệu với thể loại phim để hỗ trợ tên màn hình cũ.
             </p>
           </div>
 
@@ -88,76 +159,16 @@ const MovieTypePage = () => {
           </Button>
         </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th className="w-[8%]">STT</th>
-              <th className="w-[22%] min-w-[180px]">Tên thể loại phim</th>
-              <th className="w-[42%] min-w-[280px]">Mô tả</th>
-              <th className="w-[16%] min-w-[140px]">Trạng thái</th>
-              <th className="w-[12%] min-w-[120px]">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading && (
-              <tr>
-                <td colSpan={5}>
-                  <Loading content="Đang tải danh sách loại phim..." />
-                </td>
-              </tr>
-            )}
-
-            {!isLoading && movieTypes.length === 0 && (
-              <tr>
-                <td colSpan={5}>
-                  <EmptyList content="Chưa có loại phim nào" />
-                </td>
-              </tr>
-            )}
-
-            {!isLoading &&
-              movieTypes.map((movieType, index) => (
-                <tr key={movieType.genresId ?? movieType.id}>
-                  <td>{index + 1}</td>
-                  <td className="font-medium">{movieType.name}</td>
-                  <td className="text-slate-600">
-                    {movieType.description?.trim() || 'Chưa có mô tả'}
-                  </td>
-                  <td>
-                    <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                        movieType.active !== false
-                          ? 'bg-green-100 text-green-600'
-                          : 'bg-slate-200 text-slate-600'
-                      }`}
-                    >
-                      {movieType.active !== false
-                        ? 'Đang áp dụng'
-                        : 'Ngừng áp dụng'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        className="hover:cursor-pointer"
-                        onClick={() => handleOpenModal(movieType)}
-                      >
-                        <CiEdit size={24} fill="orange" />
-                      </button>
-                      <button
-                        type="button"
-                        className="hover:cursor-pointer"
-                        onClick={() => handleDelete(movieType)}
-                      >
-                        <MdOutlineDeleteSweep size={24} fill="red" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        <DataGridTable
+          rows={rows}
+          columns={columns}
+          loading={isLoading}
+          hideFooter
+          minWidth={960}
+          getRowId={(row) => row?.genresId ?? row?.id}
+          loadingContent="Đang tải danh sách loại phim..."
+          emptyContent="Chưa có loại phim nào"
+        />
       </div>
     </div>
   );

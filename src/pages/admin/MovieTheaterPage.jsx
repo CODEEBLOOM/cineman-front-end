@@ -1,15 +1,14 @@
-import {
+﻿import {
   deleteMovieTheater,
   extractMovieTheaterList,
   findAllMovieTheater,
 } from '@apis/movieTheaterService';
 import CustomBreadcrumb from '@component/CustomBreakcrumb';
+import DataGridTable from '@component/DataGridTable';
 import MovieTheaterFormModal from '@component/admin/movie_theater/MovieTheaterFormModal';
-import EmptyList from '@component/cinema_showtime/EmptyList';
-import Loading from '@component/Loading';
 import { useModelContext } from '@context/ModalContext';
 import { Button } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { MdOutlineDeleteSweep } from 'react-icons/md';
 import { toast } from 'react-toastify';
@@ -70,6 +69,87 @@ const MovieTheaterPage = () => {
     }
   };
 
+  const rows = useMemo(
+    () =>
+      movieTheaters.map((movieTheater, index) => ({
+        ...movieTheater,
+        gridIndex: index + 1,
+      })),
+    [movieTheaters]
+  );
+
+  const columns = [
+    {
+      field: 'gridIndex',
+      headerName: 'STT',
+      width: 90,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'name',
+      headerName: 'Tên rạp',
+      flex: 1,
+      minWidth: 220,
+      renderCell: (params) => (
+        <span className="font-medium">{params.value || 'Chưa có tên'}</span>
+      ),
+    },
+    {
+      field: 'province',
+      headerName: 'Chi nhánh',
+      flex: 1,
+      minWidth: 200,
+      renderCell: (params) => params.value?.name || 'Chưa gắn chi nhánh',
+    },
+    {
+      field: 'address',
+      headerName: 'Địa chỉ',
+      flex: 1.2,
+      minWidth: 260,
+      renderCell: (params) => params.value || 'Chưa có địa chỉ',
+    },
+    {
+      field: 'hotline',
+      headerName: 'Hotline',
+      width: 160,
+      renderCell: (params) => params.value || 'Chưa có hotline',
+    },
+    {
+      field: 'numbersOfCinemaTheater',
+      headerName: 'Phòng',
+      width: 100,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: (params) =>
+        params.row?.numbersOfCinemaTheater ?? params.row?.cinemaTheaters?.length ?? 0,
+    },
+    {
+      field: 'actions',
+      headerName: 'Thao tác',
+      width: 140,
+      sortable: false,
+      renderCell: (params) => (
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="hover:cursor-pointer"
+            onClick={() => handleOpenModal(params.row)}
+          >
+            <CiEdit size={24} fill="orange" />
+          </button>
+          <button
+            type="button"
+            className="hover:cursor-pointer"
+            onClick={() => handleDelete(params.row)}
+          >
+            <MdOutlineDeleteSweep size={24} fill="red" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div>
       <CustomBreadcrumb items={[{ label: 'Quản lý rạp' }]} title="Quản lý rạp" />
@@ -88,70 +168,16 @@ const MovieTheaterPage = () => {
           </Button>
         </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th className="w-[8%]">STT</th>
-              <th className="w-[18%] min-w-[180px]">Tên rạp</th>
-              <th className="w-[24%] min-w-[220px]">Chi nhánh</th>
-              <th className="w-[24%] min-w-[240px]">Địa chỉ</th>
-              <th className="w-[12%] min-w-[140px]">Hotline</th>
-              <th className="w-[8%] min-w-[100px]">Phòng</th>
-              <th className="w-[14%] min-w-[120px]">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading && (
-              <tr>
-                <td colSpan={7}>
-                  <Loading content="Đang tải danh sách rạp..." />
-                </td>
-              </tr>
-            )}
-
-            {!isLoading && movieTheaters.length === 0 && (
-              <tr>
-                <td colSpan={7}>
-                  <EmptyList content="Chưa có rạp nào" />
-                </td>
-              </tr>
-            )}
-
-            {!isLoading &&
-              movieTheaters.map((movieTheater, index) => {
-                const movieTheaterId = movieTheater?.movieTheaterId ?? movieTheater?.id;
-
-                return (
-                  <tr key={movieTheaterId}>
-                    <td>{index + 1}</td>
-                    <td className="font-medium">{movieTheater?.name || 'Chưa có tên'}</td>
-                    <td>{movieTheater?.province?.name || 'Chưa gắn chi nhánh'}</td>
-                    <td className="text-slate-600">{movieTheater?.address || 'Chưa có địa chỉ'}</td>
-                    <td>{movieTheater?.hotline || 'Chưa có hotline'}</td>
-                    <td>{movieTheater?.numbersOfCinemaTheater ?? movieTheater?.cinemaTheaters?.length ?? 0}</td>
-                    <td>
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          className="hover:cursor-pointer"
-                          onClick={() => handleOpenModal(movieTheater)}
-                        >
-                          <CiEdit size={24} fill="orange" />
-                        </button>
-                        <button
-                          type="button"
-                          className="hover:cursor-pointer"
-                          onClick={() => handleDelete(movieTheater)}
-                        >
-                          <MdOutlineDeleteSweep size={24} fill="red" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-          </tbody>
-        </table>
+        <DataGridTable
+          rows={rows}
+          columns={columns}
+          loading={isLoading}
+          hideFooter
+          minWidth={1200}
+          getRowId={(row) => row?.movieTheaterId ?? row?.id}
+          loadingContent="Đang tải danh sách rạp..."
+          emptyContent="Chưa có rạp nào"
+        />
       </div>
     </div>
   );

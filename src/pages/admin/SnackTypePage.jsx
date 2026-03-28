@@ -1,11 +1,12 @@
 ﻿import {
-  deleteProvince,
-  extractProvinceList,
-  findAll,
-} from '@apis/provinceService';
+  deleteSnackType,
+  extractSnackTypeList,
+  findAllSnackTypesAdmin,
+  normalizeSnackType,
+} from '@apis/snackTypeAdminService';
 import CustomBreadcrumb from '@component/CustomBreakcrumb';
 import DataGridTable from '@component/DataGridTable';
-import ProvinceFormModal from '@component/admin/province/ProvinceFormModal';
+import SnackTypeFormModal from '@component/admin/snack_type/SnackTypeFormModal';
 import { useModelContext } from '@context/ModalContext';
 import { Button } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -13,42 +14,39 @@ import { CiEdit } from 'react-icons/ci';
 import { MdOutlineDeleteSweep } from 'react-icons/md';
 import { toast } from 'react-toastify';
 
-const ProvincePage = () => {
+const SnackTypePage = () => {
   const { openPopup } = useModelContext();
-  const [provinces, setProvinces] = useState([]);
+  const [snackTypes, setSnackTypes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const sortedProvinces = useMemo(() => {
-    return [...provinces].sort(
-      (left, right) => Number(left?.code ?? 0) - Number(right?.code ?? 0)
-    );
-  }, [provinces]);
-
-  const fetchProvinces = useCallback(async () => {
+  const fetchSnackTypes = useCallback(async () => {
     setIsLoading(true);
 
     try {
-      const response = await findAll();
-      setProvinces(extractProvinceList(response));
+      const response = await findAllSnackTypesAdmin();
+      setSnackTypes(extractSnackTypeList(response).map(normalizeSnackType));
     } catch {
-      toast.error('Không thể tải danh sách chi nhánh!');
+      toast.error('Không thể tải danh sách loại đồ ăn vặt!');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    document.title = 'Quản lý chi nhánh - POLY CINEMAS';
-    fetchProvinces();
-  }, [fetchProvinces]);
+    document.title = 'Quản lý loại đồ ăn vặt - POLY CINEMAS';
+    fetchSnackTypes();
+  }, [fetchSnackTypes]);
 
-  const handleOpenModal = (province = null) => {
-    openPopup(<ProvinceFormModal province={province} onSuccess={fetchProvinces} />);
+  const handleOpenModal = (snackType = null) => {
+    openPopup(
+      <SnackTypeFormModal snackType={snackType} onSuccess={fetchSnackTypes} />
+    );
   };
 
-  const handleDelete = async (province) => {
+  const handleDelete = async (snackType) => {
+    const snackTypeId = snackType?.snackTypeId ?? snackType?.id;
     const confirmed = window.confirm(
-      `Bạn có chắc muốn xóa chi nhánh "${province?.name ?? ''}" không?`
+      `Bạn có chắc muốn xóa loại đồ ăn vặt "${snackType?.name}" không?`
     );
 
     if (!confirmed) {
@@ -56,9 +54,9 @@ const ProvincePage = () => {
     }
 
     try {
-      await deleteProvince(province.id);
-      toast.success('Xóa chi nhánh thành công!');
-      await fetchProvinces();
+      await deleteSnackType(snackTypeId);
+      toast.success('Xóa loại đồ ăn vặt thành công!');
+      await fetchSnackTypes();
     } catch (error) {
       if (
         error?.response?.status === 400 ||
@@ -68,17 +66,17 @@ const ProvincePage = () => {
         return toast.error(error?.response?.data?.message);
       }
 
-      toast.error('Xóa chi nhánh thất bại!');
+      toast.error('Xóa loại đồ ăn vặt thất bại!');
     }
   };
 
   const rows = useMemo(
     () =>
-      sortedProvinces.map((province, index) => ({
-        ...province,
+      snackTypes.map((snackType, index) => ({
+        ...snackType,
         gridIndex: index + 1,
       })),
-    [sortedProvinces]
+    [snackTypes]
   );
 
   const columns = [
@@ -90,39 +88,20 @@ const ProvincePage = () => {
       headerAlign: 'center',
     },
     {
-      field: 'code',
-      headerName: 'Mã',
-      width: 140,
-      renderCell: (params) => params.value || 'Chưa có mã',
-    },
-    {
       field: 'name',
-      headerName: 'Tên chi nhánh',
+      headerName: 'Tên loại đồ ăn vặt',
       flex: 1,
       minWidth: 260,
-      renderCell: (params) => <span className="font-medium">{params.value}</span>,
-    },
-    {
-      field: 'active',
-      headerName: 'Trạng thái',
-      width: 190,
       renderCell: (params) => (
-        <span
-          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-            params.value !== false
-              ? 'bg-green-100 text-green-600'
-              : 'bg-slate-200 text-slate-600'
-          }`}
-        >
-          {params.value !== false ? 'Đang hoạt động' : 'Ngừng hoạt động'}
-        </span>
+        <span className="font-medium">{params.value}</span>
       ),
     },
     {
-      field: 'movieTheaterCount',
-      headerName: 'Số rạp',
-      width: 120,
-      renderCell: (params) => params.row?.movieTheaters?.length ?? 0,
+      field: 'description',
+      headerName: 'Mô tả',
+      flex: 1.4,
+      minWidth: 360,
+      renderCell: (params) => params.value?.trim() || 'Chưa có mô tả',
     },
     {
       field: 'actions',
@@ -152,14 +131,18 @@ const ProvincePage = () => {
 
   return (
     <div>
-      <CustomBreadcrumb items={[{ label: 'Quản lý chi nhánh' }]} title="Quản lý chi nhánh" />
+      <CustomBreadcrumb
+        items={[{ label: 'Quản lý loại đồ ăn vặt' }]}
+        title="Quản lý loại đồ ăn vặt"
+      />
 
       <div className="mx-5 mt-3 overflow-auto rounded-sm bg-white px-4 py-3">
         <div className="mb-4 flex items-center justify-between border-b pb-3">
           <div>
-            <h2 className="text-lg font-semibold">Danh sách chi nhánh</h2>
+            <h2 className="text-lg font-semibold">Danh sách loại đồ ăn vặt</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Quản lý tỉnh/thành đang vận hành hệ thống rạp và dùng để gắn địa điểm chiếu.
+              Quản lý danh mục nhóm sản phẩm để phân loại đồ ăn và nước uống bán
+              tại rạp.
             </p>
           </div>
 
@@ -173,14 +156,14 @@ const ProvincePage = () => {
           columns={columns}
           loading={isLoading}
           hideFooter
-          minWidth={900}
-          getRowId={(row) => row.id}
-          loadingContent="Đang tải danh sách chi nhánh..."
-          emptyContent="Chưa có chi nhánh nào"
+          minWidth={940}
+          getRowId={(row) => row?.snackTypeId ?? row?.id}
+          loadingContent="Đang tải danh sách loại đồ ăn vặt..."
+          emptyContent="Chưa có loại đồ ăn vặt nào"
         />
       </div>
     </div>
   );
 };
 
-export default ProvincePage;
+export default SnackTypePage;

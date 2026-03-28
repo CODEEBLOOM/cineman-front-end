@@ -47,13 +47,14 @@ import TicketManagementPage from '@pages/admin/TicketManagementPage';
 import ShowTimePage from '@pages/admin/ShowTimePage';
 import MovieVariationPage from '@pages/admin/MovieVariationPage';
 import TicketTypePage from '@pages/admin/TicketTypePage';
-import MovieTypePage from '@pages/admin/MovieTypePage.jsx';
 import MovieGenrePage from '@pages/admin/MovieGenrePage';
 import MovieRolePage from '@pages/admin/MovieRolePage';
 import MovieParticipantPage from '@pages/admin/MovieParticipantPage';
 import ParticipantPage from '@pages/admin/ParticipantPage';
 import SnackPage from '@pages/admin/SnackPage';
 import SnackTypePage from '@pages/admin/SnackTypePage';
+import MembershipRankPage from '@pages/admin/MembershipRankPage';
+import PromotionPage from '@pages/admin/PromotionPage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -164,7 +165,7 @@ const router = createBrowserRouter([
           },
           {
             path: 'the-thanh-vien',
-            element: <p>Quản lý thẻ thành viên</p>,
+            element: <MembershipRankPage />,
           },
           {
             path: 'xuat-chieu',
@@ -177,10 +178,6 @@ const router = createBrowserRouter([
           {
             path: 'danh-sach-phim',
             element: <ListMovie />,
-          },
-          {
-            path: 'movie-type',
-            element: <MovieTypePage />,
           },
           {
             path: 'the-loai-phim',
@@ -211,8 +208,8 @@ const router = createBrowserRouter([
             element: <p>Quản lý combo</p>,
           },
           {
-            path: 'ma-giam-gia',
-            element: <p>Quản lý mã giảm giá</p>,
+            path: 'khuyen-mai',
+            element: <PromotionPage />,
           },
           {
             path: 'gia-ve',

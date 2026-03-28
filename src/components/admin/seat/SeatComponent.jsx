@@ -3,10 +3,34 @@ import DoubleSeat from '@component/seat/DoubleSeat';
 import RegularSeat from '@component/seat/RegularSeat';
 import VIPSeat from '@component/seat/VIPSeat';
 import { buildSeatLabel, toApiSeatPosition } from '@utils/seatPosition';
-import { useEffect, useState } from 'react';
-import { FiPlusCircle } from 'react-icons/fi';
-import { RxCross1 } from 'react-icons/rx';
+import AddCircleOutlineRounded from '@mui/icons-material/AddCircleOutlineRounded';
+import CloseRounded from '@mui/icons-material/CloseRounded';
+import { Box, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
+
+const seatAppearance = {
+  REGULAR: {
+    icon: RegularSeat,
+    color: '#b8c1cc',
+    surface: '#f7f4ec',
+    border: '#e7dbc2',
+  },
+  VIP: {
+    icon: VIPSeat,
+    color: '#aab6c7',
+    surface: '#f4f8fd',
+    border: '#d7e2ef',
+  },
+  DOUBLE: {
+    icon: DoubleSeat,
+    color: '#b8bcb5',
+    surface: '#f9f1f3',
+    border: '#ebd4da',
+  },
+};
+
 const SeatComponent = ({
   seat,
   cinemaTheaterId,
@@ -19,16 +43,29 @@ const SeatComponent = ({
   const [currSeat, setCurrSeat] = useState(null);
 
   useEffect(() => {
-    const id = seat.id ? seat.id : null;
-    setIdSeat(id);
+    setIdSeat(seat.id ?? null);
+    setStatusSeat(seat.status);
+    setCurrSeat(null);
   }, [seat]);
 
-  /* Hàm xử lý cập nhật danh sách ghế trống theo hàng  */
+  const seatType =
+    typeof seat.seatType === 'string' ? seat.seatType : seat.seatType.id;
+  const appearance = seatAppearance[seatType] ?? seatAppearance.REGULAR;
+  const isPublished = status === 'PUBLISHED';
+  const hasSeat = Boolean(idSeat);
+  const isLocked = isPublished && !hasSeat;
+  const isDoubleSeat = seatType === 'DOUBLE';
+
+  const seatLabel = useMemo(
+    () => seat.label ?? buildSeatLabel(seat.rowIndex, seat.columnIndex),
+    [seat]
+  );
+
   const handleUpdateEmptySeats = (isPush) => {
     if (isPush) {
-      setEmptySeats((prev) => {
-        // Xoá phần tử cũ
-        const seatEmpty = {
+      setEmptySeats((prev) => [
+        ...prev,
+        {
           seatType:
             typeof seat.seatType === 'string'
               ? seat.seatType
@@ -36,179 +73,193 @@ const SeatComponent = ({
           rowIndex: seat.rowIndex,
           columnIndex: seat.columnIndex,
           id: null,
-        };
-        return [...prev, seatEmpty];
-      });
-    } else {
-      setEmptySeats((prev) => {
-        // Xoá phần tử cũ
-        const filtered = prev.filter(
-          (s) =>
-            !(
-              s.rowIndex === seat.rowIndex && s.columnIndex === seat.columnIndex
-            )
-        );
-        return filtered;
-      });
+        },
+      ]);
+      return;
     }
+
+    setEmptySeats((prev) =>
+      prev.filter(
+        (s) =>
+          !(
+            s.rowIndex === seat.rowIndex && s.columnIndex === seat.columnIndex
+          )
+      )
+    );
   };
 
-  /**
-   * Hàm xử lý chọn ghế: Có ghế thì -> xóa đi; không có thì tạo mới
-   * @param {Object} seat thông tin ghế cần tạo
-   */
   const handleChooseSeat = async () => {
-    /* Nếu ghế đã có và rạp chiếu đã được xuất bản */
-    if (status === 'PUBLISHED') {
-      if (idSeat) {
-        try {
-          const res = await changeStatusSeat(idSeat);
-          if (res.status === 200) {
-            setStatusSeat(res.data.status);
-            toast.success('Cập nhật trạng thái ghế thành công');
-            return;
-          }
-        } catch (res) {
-          if (res.response.status === 400) {
-            return toast.error(res.response.data.message);
-          }
-          toast.error('Cập nhật trạng thái ghế thất bại !');
+    if (isPublished) {
+      if (!idSeat) return;
+
+      try {
+        const res = await changeStatusSeat(idSeat);
+        if (res.status === 200) {
+          setStatusSeat(res.data.status);
+          toast.success('Cập nhật trạng thái ghế thành công');
+          return;
         }
-      } else {
-        return;
+      } catch (res) {
+        if (res.response?.status === 400) {
+          toast.error(res.response.data.message);
+          return;
+        }
+        toast.error('Cập nhật trạng thái ghế thất bại');
       }
+      return;
     }
-    const label = buildSeatLabel(seat.rowIndex, seat.columnIndex);
-    // If a seat is already chosen, delete it
+
     if (idSeat) {
       deleteSeat(idSeat)
         .then((res) => {
           if (res.status === 200) {
             setIdSeat(null);
             setCurrSeat({
-              seatType:
-                typeof seat.seatType === 'string'
-                  ? seat.seatType
-                  : seat.seatType.id,
+              seatType,
               ...toApiSeatPosition(seat),
-              label,
+              label: seatLabel,
               cinemaTheaterId,
             });
             handleUpdateEmptySeats(true);
-            setValidSeats((prev) => {
-              const filtered = prev.filter(
+            setValidSeats((prev) =>
+              prev.filter(
                 (s) =>
                   !(
                     s.rowIndex === seat.rowIndex &&
                     s.columnIndex === seat.columnIndex
                   )
-              );
-              return [...filtered];
-            });
+              )
+            );
           }
         })
         .catch((err) => console.error('Error deleting seat:', err));
       return;
     }
 
-    // Create a new seat if no seat is currently chosen
     const data = currSeat
       ? currSeat
       : {
           ...seat,
           ...toApiSeatPosition(seat),
           cinemaTheaterId,
-          label,
+          label: seatLabel,
         };
+
     create(data)
       .then((res) => {
         if (res.data && res.status === 200) {
           setIdSeat(res.data.id);
           handleUpdateEmptySeats(false);
-          setValidSeats((prev) => {
-            const filtered = prev.filter(
+          setValidSeats((prev) => [
+            ...prev.filter(
               (s) =>
                 !(
                   s.rowIndex === seat.rowIndex &&
                   s.columnIndex === seat.columnIndex
                 )
-            );
-            return [...filtered, res.data];
-          });
+            ),
+            res.data,
+          ]);
         }
       })
       .catch((err) => console.error('Error creating seat:', err));
   };
 
-  const seatType =
-    typeof seat.seatType === 'string' ? seat.seatType : seat.seatType.id;
-  const renderIcon = () => {
-    if (!idSeat) {
-      if (status === 'PUBLISHED') {
+  const renderSeatVisual = () => {
+    const SeatIcon = appearance.icon;
+    const iconSize = isDoubleSeat ? '48px' : '42px';
+
+    if (!hasSeat) {
+      if (isPublished) {
         return null;
-      } else {
-        return <FiPlusCircle size={20} color="gray" />;
       }
+
+      return (
+        <AddCircleOutlineRounded
+          sx={{
+            fontSize: 22,
+            color: 'text.disabled',
+          }}
+        />
+      );
     }
 
-    switch (seatType) {
-      case 'REGULAR':
-        return (
-          <div className="relative">
-            <RegularSeat />
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-950">
-              <p>{seat.label}</p>
-            </div>
-            {statusSeat === 'INACTIVE' && (
-              <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-                <RxCross1 size={35} color="red" />
-              </div>
-            )}
-          </div>
-        );
-      case 'DOUBLE':
-        return (
-          <div className="relative">
-            <div className="flex">
-              <DoubleSeat />
-            </div>
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-950">
-              <p>{seat.label}</p>
-            </div>
-            {statusSeat === 'INACTIVE' && (
-              <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-                <RxCross1 size={35} color="red" />
-              </div>
-            )}
-          </div>
-        );
-      default:
-        return (
-          <div className="relative">
-            <VIPSeat />
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-950">
-              <p>{seat.label}</p>
-            </div>
-            {statusSeat === 'INACTIVE' && (
-              <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-                <RxCross1 size={35} color="red" />
-              </div>
-            )}
-          </div>
-        );
-    }
+    return (
+      <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+        <SeatIcon size={iconSize} color={appearance.color} />
+        <Typography
+          variant="caption"
+          sx={{
+            position: 'absolute',
+            top: '48%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: 'text.primary',
+            fontWeight: 600,
+            fontSize: 11,
+            letterSpacing: '0.02em',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {seatLabel}
+        </Typography>
+        {statusSeat === 'INACTIVE' && (
+          <CloseRounded
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              fontSize: 28,
+              color: 'error.main',
+            }}
+          />
+        )}
+      </Box>
+    );
   };
 
   return (
-    <>
-      <div
-        key={seat.label}
-        onClick={() => handleChooseSeat()}
-        className={`flex h-[60px] w-full ${status === 'PUBLISHED' && idSeat !== null ? 'cursor-pointer' : status === 'PUBLISHED' ? 'cursor-not-allowed' : 'cursor-pointer'} items-center justify-center border p-3 ${seatType === 'REGULAR' ? 'bg-[#fbf5e7]' : seatType === 'DOUBLE' ? 'col-span-2 bg-red-200' : 'bg-[#fbfdfc]'} ${status === 'PUBLISHED' ? '!border-none !bg-white !p-0' : ''}`}
-      >
-        {renderIcon()}
-      </div>
-    </>
+    <Box
+      onClick={isLocked ? undefined : handleChooseSeat}
+      sx={{
+        minHeight: 64,
+        minWidth: 58,
+        px: isDoubleSeat ? 1.25 : 0.75,
+        py: 0.5,
+        gridColumn: isDoubleSeat ? 'span 2' : 'span 1',
+        borderRadius: 2.5,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: isLocked ? 'not-allowed' : 'pointer',
+        border: isPublished
+          ? '1px solid transparent'
+          : `1px ${hasSeat ? 'solid' : 'dashed'} ${appearance.border}`,
+        backgroundColor: isPublished
+          ? 'transparent'
+          : hasSeat
+            ? appearance.surface
+            : alpha(appearance.border, 0.18),
+        transition:
+          'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease',
+        '&:hover': isLocked
+          ? undefined
+          : {
+              transform: 'translateY(-1px)',
+              boxShadow: isPublished
+                ? '0 10px 20px rgba(148, 163, 184, 0.12)'
+                : '0 10px 24px rgba(15, 23, 42, 0.08)',
+              borderColor: isPublished ? 'transparent' : appearance.color,
+              backgroundColor: isPublished
+                ? alpha('#94a3b8', 0.08)
+                : alpha(appearance.surface, 0.92),
+            },
+      }}
+    >
+      {renderSeatVisual()}
+    </Box>
   );
 };
+
 export default SeatComponent;

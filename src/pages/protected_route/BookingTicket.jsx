@@ -1,16 +1,9 @@
-// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
-
 import { create, findInvoiceByUserIdAndShowTimeId } from '@apis/invoiceService';
 import { findById } from '@apis/showTimeService';
-import InfoBookingTicket from '@component/choose_seat/InfoBookingTicket';
-import { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import ChooseSeatPage from './ChooseSeatsPage';
-import Header from '@component/choose_seat/Header';
-import PaymentPage from './PaymentPage';
 import Footer from '@component/choose_seat/Footer';
+import Header from '@component/choose_seat/Header';
+import InfoBookingTicket from '@component/choose_seat/InfoBookingTicket';
 import {
   removeInvoice,
   setInvoice,
@@ -18,6 +11,14 @@ import {
   setVoucher,
   updateInvoice,
 } from '@redux/slices/invoiceSlice';
+import { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import ChooseSeatPage from './ChooseSeatsPage';
+import PaymentPage from './PaymentPage';
+
+const surfaceClassName =
+  'overflow-hidden rounded-[28px] border border-white/60 bg-white/95 shadow-[0_20px_60px_rgba(15,23,42,0.14)] backdrop-blur';
 
 const BookingTicket = () => {
   const { pathname } = useLocation();
@@ -31,7 +32,6 @@ const BookingTicket = () => {
 
   const [totalMoneyTicket, setTotalMoneyTicket] = useState(0);
 
-  // Cuộn thành Scroll về đầu trang
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
     document.title = 'Chọn Ghế - Poly Cinemas';
@@ -53,8 +53,9 @@ const BookingTicket = () => {
 
         if (invoiceData) {
           const alreadyExists = invoices.some(
-            (i) => i.invoice.id === invoiceData.id
+            (item) => item.invoice.id === invoiceData.id
           );
+
           if (alreadyExists) {
             if (invoiceData.showTimeId !== Number(showTimeId)) {
               dispatch(removeInvoice(invoiceData.id));
@@ -75,9 +76,12 @@ const BookingTicket = () => {
               })
             );
           }
+
           setTotalMoneyTicket(invoiceData.totalMoneyTicket);
         } else {
-          const isReceptionist = user.roles.some((r) => r.roleId === 'RCP');
+          const isReceptionist = user.roles.some(
+            (role) => role.roleId === 'RCP'
+          );
           const data = isReceptionist
             ? {
                 email: user.email,
@@ -105,9 +109,8 @@ const BookingTicket = () => {
     };
 
     loadInvoice();
-  }, [dispatch, user, showTimeId, invoices]);
+  }, [dispatch, invoices, showTimeId, user]);
 
-  /* Lấy thông tin của rạp chiếu */
   const [showTime, setShowTime] = useState({});
   useEffect(() => {
     findById(showTimeId)
@@ -118,60 +121,70 @@ const BookingTicket = () => {
         console.log(error);
         navigate('/', { replace: true });
       });
-  }, [showTimeId, navigate]);
+  }, [navigate, showTimeId]);
 
-  // Clear Timer //
   useEffect(() => {
     return () => {
-      sessionStorage.removeItem('bookingDeadline'); // Xóa khi unmount
+      sessionStorage.removeItem('bookingDeadline');
       dispatch(setVoucher(null));
       dispatch(setSavePointRedeem(0));
     };
   }, [dispatch]);
 
   return (
-    <>
-      <div className={'container pb-6'}>
-        <div
-          className={
-            'mt-5 grid grid-cols-1 gap-6 lg:grid-flow-row-dense lg:grid-cols-3'
-          }
-        >
-          <div className={'lg:col-span-2'}>
-            {/*Phần heder*/}
-            <Header showTime={showTime} />
-            {/* Phần sơ đồ ghế */}
-            {pathname.includes('payment') ? (
-              <PaymentPage showTime={showTime} />
-            ) : (
-              showTime?.id && (
-                <ChooseSeatPage
+    <div className="relative overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_55%,#e8edf5_100%)] py-5 md:py-8">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),transparent_62%)]" />
+      <div className="pointer-events-none absolute left-[-120px] top-28 h-72 w-72 rounded-full bg-[rgba(148,163,184,0.12)] blur-3xl" />
+      <div className="pointer-events-none absolute bottom-10 right-[-100px] h-64 w-64 rounded-full bg-[rgba(148,163,184,0.14)] blur-3xl" />
+
+      <div className="container relative">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="space-y-4">
+            <section className={surfaceClassName}>
+              <div className="border-b border-slate-200/90 px-5 pt-4 md:px-8 md:pt-5">
+                <Header showTime={showTime} />
+              </div>
+
+              <div className="px-5 pb-5 pt-5 md:px-8 md:pb-7 md:pt-6">
+                {pathname.includes('payment') ? (
+                  <PaymentPage showTime={showTime} />
+                ) : (
+                  showTime?.id && (
+                    <ChooseSeatPage
+                      isPayment={pathname.includes('payment')}
+                      showTime={showTime}
+                      setTotalMoneyTicket={setTotalMoneyTicket}
+                      totalMoneyTicket={totalMoneyTicket}
+                    />
+                  )
+                )}
+              </div>
+            </section>
+
+            <section className={surfaceClassName}>
+              <div className="px-5 py-5 md:px-8 md:py-6">
+                <Footer
                   isPayment={pathname.includes('payment')}
-                  showTime={showTime}
-                  setTotalMoneyTicket={setTotalMoneyTicket}
                   totalMoneyTicket={totalMoneyTicket}
                 />
-              )
-            )}
-            <Footer
-              isPayment={pathname.includes('payment')}
-              totalMoneyTicket={totalMoneyTicket}
-            />
+              </div>
+            </section>
           </div>
 
-          <div className={'lg:col-span-1'}>
+          <div className="xl:pl-0">
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="sticky top-[100px] self-start"
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+              className="self-start xl:sticky xl:top-0"
             >
               {showTime?.id && <InfoBookingTicket showTime={showTime} />}
             </motion.div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
+
 export default BookingTicket;

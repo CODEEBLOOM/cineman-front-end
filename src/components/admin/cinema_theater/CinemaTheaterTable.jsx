@@ -1,14 +1,15 @@
-import { Box, Button, Tab, Tabs } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { deleteCinemaTheater } from '@apis/cinemaTheaterService';
 import TabPanel from '@component/Tabpanel.jsx';
 import { useModelContext } from '@context/ModalContext';
-import ModalCreateCinemaTheater from './ModalCreateCinemaTheater';
-import { deleteCinemaTheater } from '@apis/cinemaTheaterService';
 import { openSnackbar } from '@redux/slices/snackbarSlice';
+import { adminTabSx, adminTabsSx } from '@utils/adminTabStyles';
+import { Box, Button, Tab, Tabs } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { MdDeleteForever } from 'react-icons/md';
+import ModalCreateCinemaTheater from './ModalCreateCinemaTheater';
 
 const resolveStatusFilter = (tab) => {
   if (tab === 1) {
@@ -179,11 +180,16 @@ const CinemaTheaterTable = ({
 
   return (
     <Box>
-      <Box sx={{ borderBottom: '2px solid lightGray' }}>
-        <Tabs value={tab} onChange={handleChangeTab} aria-label="trạng thái phòng chiếu">
-          <Tab label="Tất cả" />
-          <Tab label="Đã xuất bản" />
-          <Tab label="Bản nháp" />
+      <Box>
+        <Tabs
+          value={tab}
+          onChange={handleChangeTab}
+          aria-label="trạng thái phòng chiếu"
+          sx={adminTabsSx}
+        >
+          <Tab label="Tất cả" sx={adminTabSx} />
+          <Tab label="Đã xuất bản" sx={adminTabSx} />
+          <Tab label="Bản nháp" sx={adminTabSx} />
         </Tabs>
       </Box>
 

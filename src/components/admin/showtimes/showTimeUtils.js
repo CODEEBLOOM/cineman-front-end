@@ -104,22 +104,22 @@ export const getStatusMeta = (status) => {
   switch (status) {
     case 'VALID':
       return {
-        label: 'Dang ap dung',
+        label: 'Đang áp dụng',
         className: 'bg-emerald-100 text-emerald-700',
       };
     case 'INVALID':
       return {
-        label: 'Tam an',
+        label: 'Tạm ẩn',
         className: 'bg-amber-100 text-amber-700',
       };
     case 'DELETED':
       return {
-        label: 'Da xoa',
+        label: 'Đã xóa',
         className: 'bg-rose-100 text-rose-700',
       };
     default:
       return {
-        label: status || 'Khong ro',
+        label: status || 'Không rõ',
         className: 'bg-slate-200 text-slate-700',
       };
   }
@@ -145,7 +145,7 @@ export const normalizeShowTimeItem = (entry) => {
     originPrice: Number(showTime?.originPrice ?? entry?.originPrice ?? 0),
     status: showTime?.status ?? entry?.status ?? '',
     movieId: movie?.movieId ?? movie?.id ?? showTime?.movieId ?? '',
-    movieTitle: movie?.title ?? showTime?.movieTitle ?? 'Chua co ten phim',
+    movieTitle: movie?.title ?? showTime?.movieTitle ?? 'Chưa có tên phim',
     movieDuration: Number(movie?.duration ?? showTime?.movieDuration ?? 0),
     posterImage: movie?.posterImage ?? '',
     cinemaTheaterId:
@@ -154,18 +154,18 @@ export const normalizeShowTimeItem = (entry) => {
       showTime?.cinemaTheaterId ??
       '',
     cinemaTheaterName:
-      cinemaTheater?.name ?? entry?.cinemaTheaterName ?? 'Chua co phong chieu',
+      cinemaTheater?.name ?? entry?.cinemaTheaterName ?? 'Chưa có phòng chiếu',
     movieTheaterId:
       movieTheater?.movieTheaterId ??
       movieTheater?.id ??
       entry?.movieTheaterId ??
       '',
     movieTheaterName:
-      movieTheater?.name ?? entry?.movieTheaterName ?? 'Chua co rap chieu',
+      movieTheater?.name ?? entry?.movieTheaterName ?? 'Chưa có rạp chiếu',
     movieVariationId:
       movieVariation?.id ?? showTime?.movieVariationId ?? entry?.movieVariationId ?? '',
     movieVariationName:
-      movieVariation?.name ?? entry?.movieVariationName ?? 'Chua chon bien the',
+      movieVariation?.name ?? entry?.movieVariationName ?? 'Chưa chọn biến thể',
     totalSeatEmpty:
       entry?.totalSeatEmpty ?? showTime?.totalSeatEmpty ?? movie?.totalSeatEmpty ?? null,
     raw: entry,

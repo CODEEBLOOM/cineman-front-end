@@ -9,6 +9,9 @@ const MenuItems = ({ items, depthLevel }) => {
   const [dropdown, setDropdown] = useState(false);
   const dispatch = useDispatch();
   const ref = useRef();
+  const hasSubmenu = Array.isArray(items?.submenu) && items.submenu.length > 0;
+  const isSelectableMovieTheater = items?.kind === 'movieTheater' && items?.id != null;
+  const isReadonly = items?.kind === 'readonly';
 
   useEffect(() => {
     const handler = (event) => {
@@ -25,15 +28,39 @@ const MenuItems = ({ items, depthLevel }) => {
   }, [dropdown]);
 
   const onMouseEnter = () => {
-    setDropdown(true);
+    if (hasSubmenu) {
+      setDropdown(true);
+    }
   };
+
   const onMouseLeave = () => {
-    setDropdown(false);
+    if (hasSubmenu) {
+      setDropdown(false);
+    }
+  };
+
+  const handleToggleDropdown = () => {
+    if (depthLevel === 1 && hasSubmenu) {
+      dispatch(setMovieTheater(items.submenu[0]));
+    }
+
+    setDropdown((prev) => !prev);
   };
 
   const handleChangeMovieTheater = () => {
+    if (!isSelectableMovieTheater) {
+      return;
+    }
+
     dispatch(setMovieTheater(items));
+    setDropdown(false);
   };
+
+  const itemClassName = isSelectableMovieTheater
+    ? 'hover:text-white'
+    : isReadonly
+      ? ''
+      : 'cursor-default text-slate-400';
 
   return (
     <li
@@ -42,13 +69,13 @@ const MenuItems = ({ items, depthLevel }) => {
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      {items.submenu ? (
+      {hasSubmenu ? (
         <>
           <button
             type="button"
             aria-haspopup="menu"
             aria-expanded={dropdown ? 'true' : 'false'}
-            onClick={() => setDropdown((prev) => !prev)}
+            onClick={handleToggleDropdown}
             className={`flex items-center justify-between ${depthLevel === 1 ? 'px-[.7rem] py-[.7rem]' : ''} `}
           >
             {items.title}&nbsp;
@@ -61,9 +88,13 @@ const MenuItems = ({ items, depthLevel }) => {
           />
         </>
       ) : (
-        <p className="hover:text-white" onClick={handleChangeMovieTheater}>
+        <button
+          type="button"
+          className={itemClassName}
+          onClick={handleChangeMovieTheater}
+        >
           {items.title}
-        </p>
+        </button>
       )}
     </li>
   );

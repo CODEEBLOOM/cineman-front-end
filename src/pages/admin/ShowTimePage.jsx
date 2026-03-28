@@ -13,7 +13,7 @@ const ShowTimePage = () => {
   const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
-    document.title = 'Quan ly suat chieu - POLY CINEMAS';
+    document.title = 'Quản lý suất chiếu - POLY CINEMAS';
   }, []);
 
   return (
@@ -21,10 +21,10 @@ const ShowTimePage = () => {
       <CustomBreadcrumb
         items={[
           {
-            label: 'Quan ly suat chieu',
+            label: 'Quản lý suất chiếu',
           },
         ]}
-        title="Quan ly suat chieu"
+        title="Quản lý suất chiếu"
       />
 
       <div className="mx-5 mt-3 space-y-4">
@@ -32,23 +32,21 @@ const ShowTimePage = () => {
           <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                Admin showtime
+                Quản lý suất chiếu
               </p>
               <h1 className="mt-1 text-2xl font-semibold text-slate-900">
-                Scheduler truoc, list filter sau
+                Lập lịch trước, theo dõi danh sách sau
               </h1>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-                Man hinh nay duoc chia thanh 2 tab. Scheduler dung `occupied-slots`
-                de ve lich theo phong trong ngay; tab con lai gom danh sach va bo loc
-                de admin quan tri nhanh theo rap, ngay va trang thai.
-              </p>
             </div>
           </div>
 
           <Box sx={{ borderBottom: 1, borderColor: 'divider', mt: 2 }}>
-            <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value)}>
-              <Tab label="Scheduler" {...tabProps(0)} />
-              <Tab label="Danh sach / Filter" {...tabProps(1)} />
+            <Tabs
+              value={activeTab}
+              onChange={(_, value) => setActiveTab(value)}
+            >
+              <Tab label="Lập lịch" {...tabProps(0)} />
+              <Tab label="Danh sách / Bộ lọc" {...tabProps(1)} />
             </Tabs>
           </Box>
         </div>

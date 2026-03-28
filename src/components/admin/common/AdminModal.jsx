@@ -41,11 +41,15 @@ const AdminModal = ({
       )}
       data-modal-placement={placement}
     >
-      <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 sm:px-6">
+      <div className="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4 sm:px-6">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">{title}</h2>
+          <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
+            {title}
+          </h2>
           {description ? (
-            <p className="mt-1 text-sm leading-6 text-slate-500">{description}</p>
+            <p className="mt-1 text-sm leading-6 text-slate-500">
+              {description}
+            </p>
           ) : null}
         </div>
 

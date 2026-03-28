@@ -6,8 +6,8 @@ import {
   MdOutlinePriceChange,
   MdOutlineTheaters,
 } from 'react-icons/md';
-import { LuTheater, LuTicketsPlane } from 'react-icons/lu';
-import { BsDiagram3 } from 'react-icons/bs';
+import { LuAppWindow, LuTheater, LuTicketsPlane } from 'react-icons/lu';
+import { BsDiagram3, BsTags } from 'react-icons/bs';
 import { FaRegAddressCard, FaShieldAlt } from 'react-icons/fa';
 import {
   RiMovie2AiLine,
@@ -38,15 +38,21 @@ export const listMenuAdmin = [
         role: ['ADMIN'],
       },
       {
+        name: 'Loại phòng chiếu',
+        icon: LuAppWindow,
+        path: '/admin/cinema-type',
+        role: ['ADMIN', 'CADMIN'],
+      },
+      {
         name: 'Quản lý phòng chiếu',
         icon: LuTheater,
         path: '/admin/phong-chieu',
-        role: ['CADMIN'],
+        role: ['ADMIN', 'CADMIN'],
       },
       {
         name: 'Thẻ thành viên',
         icon: FaRegAddressCard,
-        path: 'the-thanh-vien',
+        path: '/admin/the-thanh-vien',
         role: ['ADMIN'],
       },
     ],
@@ -59,6 +65,36 @@ export const listMenuAdmin = [
         name: 'Quản lý phim',
         path: '/admin/danh-sach-phim',
         icon: MdMovieEdit,
+        role: ['ADMIN'],
+      },
+      {
+        name: 'Loại Phim',
+        path: '/admin/movie-type',
+        icon: BsTags,
+        role: ['ADMIN'],
+      },
+      {
+        name: 'Thể loại phim',
+        path: '/admin/the-loai-phim',
+        icon: BsTags,
+        role: ['ADMIN'],
+      },
+      {
+        name: 'Người tham gia',
+        path: '/admin/nguoi-tham-gia',
+        icon: FaUsersGear,
+        role: ['ADMIN'],
+      },
+      {
+        name: 'Vai trò phim',
+        path: '/admin/vai-tro-phim',
+        icon: BsDiagram3,
+        role: ['ADMIN'],
+      },
+      {
+        name: 'Người tham gia phim',
+        path: '/admin/nguoi-tham-gia-phim',
+        icon: FaUsersGear,
         role: ['ADMIN'],
       },
       {

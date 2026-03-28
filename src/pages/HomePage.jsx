@@ -11,6 +11,7 @@ const HomePage = () => {
     'img-banner-01.png',
     'img-banner-02.png',
     'img-banner-03.png',
+    // 'img-banner-04.png',
   ];
 
   // Set document title

@@ -28,10 +28,10 @@ import {
 } from './showTimeUtils';
 
 const showTimeStatusOptions = [
-  { value: '', label: 'Tat ca trang thai' },
-  { value: 'VALID', label: 'Dang ap dung' },
-  { value: 'INVALID', label: 'Tam an' },
-  { value: 'DELETED', label: 'Da xoa' },
+  { value: '', label: 'Tất cả trạng thái' },
+  { value: 'VALID', label: 'Đang áp dụng' },
+  { value: 'INVALID', label: 'Tạm ẩn' },
+  { value: 'DELETED', label: 'Đã xóa' },
 ];
 
 const ShowTimeListPanel = () => {
@@ -49,7 +49,7 @@ const ShowTimeListPanel = () => {
 
   const selectedMovieTheaterLabel = useMemo(() => {
     return (
-      movieTheaters.find((item) => item.value === filters.movieTheaterId)?.label ?? 'Tat ca rap'
+      movieTheaters.find((item) => item.value === filters.movieTheaterId)?.label ?? 'Tất cả rạp'
     );
   }, [filters.movieTheaterId, movieTheaters]);
 
@@ -60,7 +60,7 @@ const ShowTimeListPanel = () => {
       const response = await findAllMovieTheater();
       const options = extractCollection(response, ['movieTheaters']).map((item) => ({
         value: String(item?.movieTheaterId ?? item?.id ?? ''),
-        label: item?.name ?? `Rap ${item?.movieTheaterId ?? item?.id ?? ''}`,
+        label: item?.name ?? `Rạp ${item?.movieTheaterId ?? item?.id ?? ''}`,
       }));
 
       setMovieTheaters(options);
@@ -71,7 +71,7 @@ const ShowTimeListPanel = () => {
           String(user?.movieTheater?.movieTheaterId ?? ''),
       }));
     } catch (error) {
-      toast.error('Khong the tai danh sach rap chieu!');
+      toast.error('Không thể tải danh sách rạp chiếu!');
     } finally {
       setIsLoadingMovieTheaters(false);
     }
@@ -94,7 +94,7 @@ const ShowTimeListPanel = () => {
       setShowTimes(sortedItems);
     } catch (error) {
       setShowTimes([]);
-      toast.error('Khong the tai danh sach suat chieu!');
+      toast.error('Không thể tải danh sách suất chiếu!');
     } finally {
       setIsLoadingShowTimes(false);
     }
@@ -123,7 +123,7 @@ const ShowTimeListPanel = () => {
   };
 
   const handleDeleteShowTime = async (showTimeId) => {
-    const confirmed = window.confirm('Ban co chac muon xoa suat chieu nay khong?');
+    const confirmed = window.confirm('Bạn có chắc muốn xóa suất chiếu này không?');
 
     if (!confirmed) {
       return;
@@ -131,7 +131,7 @@ const ShowTimeListPanel = () => {
 
     try {
       await deleteShowTime(showTimeId);
-      toast.success('Xoa suat chieu thanh cong!');
+      toast.success('Xóa suất chiếu thành công!');
       await loadShowTimes();
     } catch (error) {
       if (
@@ -142,7 +142,7 @@ const ShowTimeListPanel = () => {
         return toast.error(error?.response?.data?.message);
       }
 
-      toast.error('Xoa suat chieu that bai!');
+      toast.error('Xóa suất chiếu thất bại!');
     }
   };
 
@@ -150,7 +150,7 @@ const ShowTimeListPanel = () => {
     const groups = new Map();
 
     showTimes.forEach((item) => {
-      const dateKey = item.showDate || 'Khong ro ngay';
+      const dateKey = item.showDate || 'Không rõ ngày';
       const currentGroup = groups.get(dateKey) ?? [];
       currentGroup.push(item);
       groups.set(dateKey, currentGroup);
@@ -164,19 +164,19 @@ const ShowTimeListPanel = () => {
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-            Admin list
+            Danh sách
           </p>
           <h2 className="mt-1 text-xl font-semibold text-slate-900">
-            Danh sach va bo loc showtime
+            Danh sách và bộ lọc suất chiếu
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            Man nay dung de quan tri nhanh theo rap, ngay va trang thai. Sau khi loc,
-            admin co the mo lai modal de sua hoac xoa showtime ngay tu danh sach.
+            Màn này dùng để quản trị nhanh theo rạp, ngày và trạng thái. Sau khi lọc,
+            admin có thể mở lại modal để sửa hoặc xóa suất chiếu ngay từ danh sách.
           </p>
         </div>
 
         <Button variant="contained" startIcon={<AddRounded />} onClick={() => handleOpenModal()}>
-          Tao suat chieu
+          Tạo suất chiếu
         </Button>
       </div>
 
@@ -185,7 +185,7 @@ const ShowTimeListPanel = () => {
           fullWidth
           select
           size="small"
-          label="Movie theater"
+          label="Rạp chiếu"
           value={filters.movieTheaterId}
           disabled={isLoadingMovieTheaters}
           onChange={(event) =>
@@ -195,7 +195,7 @@ const ShowTimeListPanel = () => {
             }))
           }
         >
-          <MenuItem value="">Tat ca rap chieu</MenuItem>
+          <MenuItem value="">Tất cả rạp chiếu</MenuItem>
           {movieTheaters.map((option) => (
             <MenuItem key={option.value} value={option.value}>
               {option.label}
@@ -206,7 +206,7 @@ const ShowTimeListPanel = () => {
         <TextField
           fullWidth
           size="small"
-          label="Show date"
+          label="Ngày chiếu"
           type="date"
           value={filters.showDate}
           onChange={(event) =>
@@ -222,7 +222,7 @@ const ShowTimeListPanel = () => {
           fullWidth
           select
           size="small"
-          label="Status"
+          label="Trạng thái"
           value={filters.showTimeStatus}
           onChange={(event) =>
             setFilters((currentValue) => ({
@@ -243,35 +243,35 @@ const ShowTimeListPanel = () => {
           startIcon={<FilterAltRounded />}
           onClick={loadShowTimes}
         >
-          Tai lai
+          Tải lại
         </Button>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
         <p>
-          Bo loc hien tai: <span className="font-semibold text-slate-900">{selectedMovieTheaterLabel}</span>
+          Bộ lọc hiện tại: <span className="font-semibold text-slate-900">{selectedMovieTheaterLabel}</span>
           {' | '}
-          <span className="font-semibold text-slate-900">{filters.showDate || 'Tat ca ngay'}</span>
+          <span className="font-semibold text-slate-900">{filters.showDate || 'Tất cả ngày'}</span>
         </p>
         <p>
-          Tong so ket qua: <span className="font-semibold text-slate-900">{showTimes.length}</span>
+          Tổng số kết quả: <span className="font-semibold text-slate-900">{showTimes.length}</span>
         </p>
       </div>
 
       {isLoadingShowTimes ? (
-        <Loading content="Dang tai danh sach suat chieu..." />
+        <Loading content="Đang tải danh sách suất chiếu..." />
       ) : showTimes.length === 0 ? (
-        <EmptyList content="Khong tim thay suat chieu nao voi bo loc hien tai" />
+        <EmptyList content="Không tìm thấy suất chiếu nào với bộ lọc hiện tại" />
       ) : (
         <div className="space-y-4">
           {groupedByDate.map(([dateKey, items]) => (
             <div key={dateKey} className="overflow-hidden rounded-2xl border border-slate-200">
               <div className="flex items-center justify-between gap-3 bg-slate-900 px-4 py-3 text-white">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-300">Show date</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-300">Ngày chiếu</p>
                   <p className="text-lg font-semibold">{dateKey}</p>
                 </div>
-                <p className="text-sm text-slate-200">{items.length} suat chieu</p>
+                <p className="text-sm text-slate-200">{items.length} suất chiếu</p>
               </div>
 
               <div className="overflow-x-auto">
@@ -279,12 +279,12 @@ const ShowTimeListPanel = () => {
                   <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                     <tr>
                       <th className="px-4 py-3">Phim</th>
-                      <th className="px-4 py-3">Rap / Phong</th>
-                      <th className="px-4 py-3">Gio chieu</th>
-                      <th className="px-4 py-3">Bien the</th>
-                      <th className="px-4 py-3">Gia</th>
-                      <th className="px-4 py-3">Trang thai</th>
-                      <th className="px-4 py-3 text-right">Thao tac</th>
+                      <th className="px-4 py-3">Rạp / Phòng</th>
+                      <th className="px-4 py-3">Giờ chiếu</th>
+                      <th className="px-4 py-3">Biến thể</th>
+                      <th className="px-4 py-3">Giá</th>
+                      <th className="px-4 py-3">Trạng thái</th>
+                      <th className="px-4 py-3 text-right">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -327,7 +327,7 @@ const ShowTimeListPanel = () => {
                                 startIcon={<EditOutlined />}
                                 onClick={() => handleOpenModal(item.id)}
                               >
-                                Sua
+                                Sửa
                               </Button>
                               <Button
                                 variant="outlined"
@@ -336,7 +336,7 @@ const ShowTimeListPanel = () => {
                                 startIcon={<DeleteOutlineRounded />}
                                 onClick={() => handleDeleteShowTime(item.id)}
                               >
-                                Xoa
+                                Xóa
                               </Button>
                             </div>
                           </td>

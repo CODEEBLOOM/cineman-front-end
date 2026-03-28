@@ -6,7 +6,7 @@ import {
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 const DateStripPlaceholder = () => {
-  // TODO: láº¥y ra táº¥t cáº£ ngÃ y chiáº¿u cá»§a ráº¡p hiá»‡n táº¡i //
+  // TODO: lấy ra tất cả ngày chiếu của rạp hiện tại //
   const movieTheater = useSelector(
     (state) => state.movieTheater?.movieTheater ?? { id: null }
   );
@@ -18,13 +18,13 @@ const DateStripPlaceholder = () => {
 
   function formatDate(dateString) {
     const days = [
-      'Chá»§ Nháº­t',
-      'Thá»© Hai',
-      'Thá»© Ba',
-      'Thá»© TÆ°',
-      'Thá»© NÄƒm',
-      'Thá»© SÃ¡u',
-      'Thá»© Báº£y',
+      'Chủ Nhật',
+      'Thứ Hai',
+      'Thứ Ba',
+      'Thứ Tư',
+      'Thứ Năm',
+      'Thứ Sáu',
+      'Thứ Bảy',
     ];
     const date = new Date(dateString);
 

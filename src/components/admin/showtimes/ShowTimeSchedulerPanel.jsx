@@ -106,7 +106,7 @@ const ShowTimeSchedulerPanel = () => {
       const response = await findAllMovieTheater();
       const options = extractCollection(response, ['movieTheaters']).map((item) => ({
         value: String(item?.movieTheaterId ?? item?.id ?? ''),
-        label: item?.name ?? `Rap ${item?.movieTheaterId ?? item?.id ?? ''}`,
+        label: item?.name ?? `Rạp ${item?.movieTheaterId ?? item?.id ?? ''}`,
       }));
 
       setMovieTheaters(options);
@@ -117,7 +117,7 @@ const ShowTimeSchedulerPanel = () => {
 
       setSelectedMovieTheaterId((currentValue) => currentValue || preferredMovieTheaterId);
     } catch (error) {
-      toast.error('Khong the tai danh sach rap chieu!');
+      toast.error('Không thể tải danh sách rạp chiếu!');
     } finally {
       setIsLoadingMovieTheaters(false);
     }
@@ -136,7 +136,7 @@ const ShowTimeSchedulerPanel = () => {
       const response = await findByMovieTheaterId(movieTheaterId);
       const options = extractCollection(response, ['cinemaTheaters']).map((item) => ({
         value: String(item?.cinemaTheaterId ?? item?.id ?? ''),
-        label: item?.name ?? `Phong ${item?.cinemaTheaterId ?? item?.id ?? ''}`,
+        label: item?.name ?? `Phòng ${item?.cinemaTheaterId ?? item?.id ?? ''}`,
       }));
 
       setCinemaTheaters(options);
@@ -150,7 +150,7 @@ const ShowTimeSchedulerPanel = () => {
     } catch (error) {
       setCinemaTheaters([]);
       setSelectedCinemaTheaterId('');
-      toast.error('Khong the tai danh sach phong chieu!');
+      toast.error('Không thể tải danh sách phòng chiếu!');
     } finally {
       setIsLoadingCinemaTheaters(false);
     }
@@ -172,7 +172,7 @@ const ShowTimeSchedulerPanel = () => {
       setOccupiedSlots(extractCollection(response, ['occupiedSlots', 'showTimes']));
     } catch (error) {
       setOccupiedSlots([]);
-      toast.error('Khong the tai occupied slots cho phong nay!');
+      toast.error('Không thể tải các khung giờ đã chiếm cho phòng này!');
     } finally {
       setIsLoadingOccupiedSlots(false);
     }
@@ -206,7 +206,7 @@ const ShowTimeSchedulerPanel = () => {
   };
 
   const handleDeleteShowTime = async (showTimeId) => {
-    const confirmed = window.confirm('Ban co chac muon xoa suat chieu nay khong?');
+    const confirmed = window.confirm('Bạn có chắc muốn xóa suất chiếu này không?');
 
     if (!confirmed) {
       return;
@@ -214,7 +214,7 @@ const ShowTimeSchedulerPanel = () => {
 
     try {
       await deleteShowTime(showTimeId);
-      toast.success('Xoa suat chieu thanh cong!');
+      toast.success('Xóa suất chiếu thành công!');
       await loadOccupiedSlots();
     } catch (error) {
       if (
@@ -225,7 +225,7 @@ const ShowTimeSchedulerPanel = () => {
         return toast.error(error?.response?.data?.message);
       }
 
-      toast.error('Xoa suat chieu that bai!');
+      toast.error('Xóa suất chiếu thất bại!');
     }
   };
 
@@ -236,40 +236,40 @@ const ShowTimeSchedulerPanel = () => {
       <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-            Scheduler
+            Lập lịch
           </p>
           <h2 className="mt-1 text-xl font-semibold text-slate-900">
-            Lap lich theo phong va ngay
+            Lập lịch theo phòng và ngày
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            Chon rap, phong va ngay de xem occupied slots. Tao, sua, xoa showtime
-            ngay tren timeline cua phong.
+            Chọn rạp, phòng và ngày để xem các khung giờ đã được sử dụng. Tạo, sửa, xóa suất chiếu
+            ngay trên timeline của phòng.
           </p>
         </div>
 
         <div className="space-y-3">
           <SelectField
-            label="Movie theater"
+            label="Rạp chiếu"
             value={selectedMovieTheaterId}
             onChange={setSelectedMovieTheaterId}
             options={movieTheaters}
-            placeholder={isLoadingMovieTheaters ? 'Dang tai rap...' : 'Chon rap chieu'}
+            placeholder={isLoadingMovieTheaters ? 'Đang tải rạp...' : 'Chọn rạp chiếu'}
             disabled={isLoadingMovieTheaters}
           />
           <SelectField
-            label="Cinema theater"
+            label="Phòng chiếu"
             value={selectedCinemaTheaterId}
             onChange={setSelectedCinemaTheaterId}
             options={cinemaTheaters}
             placeholder={
-              isLoadingCinemaTheaters ? 'Dang tai phong...' : 'Chon phong chieu'
+              isLoadingCinemaTheaters ? 'Đang tải phòng...' : 'Chọn phòng chiếu'
             }
             disabled={!selectedMovieTheaterId || isLoadingCinemaTheaters}
           />
           <TextField
             fullWidth
             size="small"
-            label="Show date"
+            label="Ngày chiếu"
             type="date"
             value={showDate}
             onChange={(event) => setShowDate(event.target.value)}
@@ -282,9 +282,9 @@ const ShowTimeSchedulerPanel = () => {
             <div className="flex items-center gap-3 text-slate-700">
               <TheaterComedyRounded fontSize="small" />
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Rap</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Rạp</p>
                 <p className="font-semibold text-slate-900">
-                  {selectedMovieTheater?.label ?? 'Chua chon rap'}
+                  {selectedMovieTheater?.label ?? 'Chưa chọn rạp'}
                 </p>
               </div>
             </div>
@@ -293,9 +293,9 @@ const ShowTimeSchedulerPanel = () => {
             <div className="flex items-center gap-3 text-slate-700">
               <EventSeatRounded fontSize="small" />
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Phong</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Phòng</p>
                 <p className="font-semibold text-slate-900">
-                  {selectedCinemaTheater?.label ?? 'Chua chon phong'}
+                  {selectedCinemaTheater?.label ?? 'Chưa chọn phòng'}
                 </p>
               </div>
             </div>
@@ -304,8 +304,8 @@ const ShowTimeSchedulerPanel = () => {
             <div className="flex items-center gap-3 text-slate-700">
               <ScheduleRounded fontSize="small" />
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Ngay</p>
-                <p className="font-semibold text-slate-900">{showDate || 'Chua chon ngay'}</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Ngày</p>
+                <p className="font-semibold text-slate-900">{showDate || 'Chưa chọn ngày'}</p>
               </div>
             </div>
           </div>
@@ -318,7 +318,7 @@ const ShowTimeSchedulerPanel = () => {
           disabled={!selectedMovieTheaterId || !selectedCinemaTheaterId}
           onClick={() => handleOpenModal()}
         >
-          Tao suat chieu
+          Tạo suất chiếu
         </Button>
       </div>
 
@@ -326,28 +326,28 @@ const ShowTimeSchedulerPanel = () => {
         <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-              Occupied slots
+              Khung giờ đã chiếm
             </p>
             <h3 className="mt-1 text-lg font-semibold text-slate-900">
-              Timeline phong trong ngay
+              Timeline phòng trong ngày
             </h3>
             <p className="mt-1 text-sm text-slate-500">
-              Khung gio he thong dang validate la 08:00 den 22:00, timeline duoi day
-              giup admin nhin nhanh cac khoang da chiem.
+              Khung giờ hệ thống đang kiểm tra là 08:00 đến 22:00, timeline dưới đây
+              giúp admin nhìn nhanh các khoảng đã được sử dụng.
             </p>
           </div>
           <div className="rounded-2xl bg-slate-900 px-4 py-3 text-white">
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-300">Tong suat</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-slate-300">Tổng suất</p>
             <p className="mt-1 text-2xl font-semibold">{timelineSlots.length}</p>
           </div>
         </div>
 
         {isLoadingOccupiedSlots ? (
-          <Loading content="Dang tai lich trong ngay..." />
+          <Loading content="Đang tải lịch trong ngày..." />
         ) : !selectedCinemaTheaterId ? (
-          <EmptyList content="Hay chon rap va phong de tai timeline suat chieu" />
+          <EmptyList content="Hãy chọn rạp và phòng để tải timeline suất chiếu" />
         ) : timelineSlots.length === 0 ? (
-          <EmptyList content="Phong nay chua co suat chieu trong ngay da chon" />
+          <EmptyList content="Phòng này chưa có suất chiếu trong ngày đã chọn" />
         ) : (
           <>
             <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -422,7 +422,7 @@ const ShowTimeSchedulerPanel = () => {
                               </span>
                             </div>
                             <p className="mt-2 text-xs text-white/80">
-                              Gia goc: {formatCurrency(slot.originPrice)}
+                              Giá gốc: {formatCurrency(slot.originPrice)}
                             </p>
                           </div>
 
@@ -431,7 +431,7 @@ const ShowTimeSchedulerPanel = () => {
                               type="button"
                               className="rounded-full border border-white/30 bg-white/10 p-2 transition hover:bg-white/20"
                               onClick={() => handleOpenModal(slot.id)}
-                              title="Sua suat chieu"
+                              title="Sửa suất chiếu"
                             >
                               <EditOutlined fontSize="inherit" className="text-base" />
                             </button>
@@ -439,7 +439,7 @@ const ShowTimeSchedulerPanel = () => {
                               type="button"
                               className="rounded-full border border-white/30 bg-white/10 p-2 transition hover:bg-white/20"
                               onClick={() => handleDeleteShowTime(slot.id)}
-                              title="Xoa suat chieu"
+                              title="Xóa suất chiếu"
                             >
                               <DeleteOutlineRounded fontSize="inherit" className="text-base" />
                             </button>
@@ -478,7 +478,7 @@ const ShowTimeSchedulerPanel = () => {
                     <div className="mt-4 grid gap-3 sm:grid-cols-3">
                       <div>
                         <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
-                          Thoi gian
+                          Thời gian
                         </p>
                         <p className="mt-1 font-medium text-slate-900">
                           {slot.startTime} - {slot.endTime}
@@ -486,7 +486,7 @@ const ShowTimeSchedulerPanel = () => {
                       </div>
                       <div>
                         <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
-                          Gia
+                          Giá
                         </p>
                         <p className="mt-1 font-medium text-slate-900">
                           {formatCurrency(slot.originPrice)}
@@ -494,7 +494,7 @@ const ShowTimeSchedulerPanel = () => {
                       </div>
                       <div>
                         <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
-                          Ghe trong
+                          Ghế trống
                         </p>
                         <p className="mt-1 font-medium text-slate-900">
                           {slot.totalSeatEmpty ?? '--'}
@@ -509,7 +509,7 @@ const ShowTimeSchedulerPanel = () => {
                         startIcon={<EditOutlined />}
                         onClick={() => handleOpenModal(slot.id)}
                       >
-                        Sua
+                        Sửa
                       </Button>
                       <Button
                         variant="outlined"
@@ -518,7 +518,7 @@ const ShowTimeSchedulerPanel = () => {
                         startIcon={<DeleteOutlineRounded />}
                         onClick={() => handleDeleteShowTime(slot.id)}
                       >
-                        Xoa
+                        Xóa
                       </Button>
                     </div>
                   </div>

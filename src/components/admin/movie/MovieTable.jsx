@@ -1,15 +1,21 @@
+import {
+  extractMovieTheaterMappingList,
+  findAllMovieTheaterMappingsByMovieId,
+  normalizeMovieTheaterMapping,
+} from '@apis/movieTheaterMappingService';
 import { deleteMovie, findAllByFilterAdmin } from '@apis/movieService';
 import EmptyList from '@component/cinema_showtime/EmptyList';
 import ImageComponent from '@component/ImageComponent';
 import Loading from '@component/Loading';
 import { Pagination } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { MdOutlineDeleteSweep } from 'react-icons/md';
 import { toast } from 'react-toastify';
 
 const MovieTable = ({ setIsEdit, setValue, setEditingMovie }) => {
   const [movies, setMovies] = useState([]);
+  const [movieTheaterMap, setMovieTheaterMap] = useState({});
   const [meta, setMeta] = useState({
     currentPage: 0,
     pageSize: 10,
@@ -19,7 +25,7 @@ const MovieTable = ({ setIsEdit, setValue, setEditingMovie }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [pageActive, setPageActive] = useState(0);
 
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = (_, newPage) => {
     setPageActive(newPage);
   };
 
@@ -29,44 +35,72 @@ const MovieTable = ({ setIsEdit, setValue, setEditingMovie }) => {
     setValue(0);
   };
 
-  useEffect(() => {
-    setIsLoading(true);
-    findAllByFilterAdmin({
-      page: pageActive > 0 ? pageActive - 1 : 0,
-      size: meta.pageSize,
-      status: 'ALL',
-    })
-      .then((res) => {
-        setMovies(res?.data?.movies);
-        setMeta(res?.data?.meta);
-      })
-      .catch((err) => console.log(err))
-      .finally(() => setIsLoading(false));
-  }, [pageActive]);
+  const loadMovieTheaterMap = useCallback(async (movieItems) => {
+    const mappingEntries = await Promise.all(
+      movieItems.map(async (movie) => {
+        const movieId = movie?.movieId ?? movie?.id ?? null;
 
-  const handleDelete = (movie) => {
-    // Xóa phim
-    deleteMovie(movie.movieId)
-      .then((res) => {
-        toast.success('Xóa phim thành công');
-        findAllByFilterAdmin({
-          page: pageActive > 0 ? pageActive - 1 : 0,
-          size: meta.pageSize,
-          status: 'ALL',
-        })
-          .then((res) => {
-            setMovies(res?.data?.movies);
-            setMeta(res?.data?.meta);
-          })
-          .catch((err) => console.log(err))
-          .finally(() => setIsLoading(false));
-      })
-      .catch((err) => {
-        if (err?.response?.status === 400) {
-          return toast.error(err?.response?.data?.message);
+        if (!movieId) {
+          return null;
         }
-        toast.error('Xóa phim thất bại !');
+
+        try {
+          const response = await findAllMovieTheaterMappingsByMovieId(movieId);
+          const movieTheaterNames = extractMovieTheaterMappingList(response)
+            .map(normalizeMovieTheaterMapping)
+            .map((mapping) => mapping.movieTheaterName)
+            .filter(Boolean);
+
+          return [String(movieId), Array.from(new Set(movieTheaterNames))];
+        } catch {
+          return [String(movieId), []];
+        }
+      })
+    );
+
+    return Object.fromEntries(mappingEntries.filter(Boolean));
+  }, []);
+
+  const loadMovies = useCallback(async () => {
+    setIsLoading(true);
+
+    try {
+      const response = await findAllByFilterAdmin({
+        page: pageActive > 0 ? pageActive - 1 : 0,
+        size: meta.pageSize,
+        status: 'ALL',
       });
+      const nextMovies = response?.movies ?? response?.data?.movies ?? [];
+      const nextMeta = response?.meta ?? response?.data?.meta ?? meta;
+
+      setMovies(nextMovies);
+      setMeta(nextMeta);
+      setMovieTheaterMap(await loadMovieTheaterMap(nextMovies));
+    } catch (error) {
+      setMovies([]);
+      setMovieTheaterMap({});
+      toast.error('Không thể tải danh sách phim!');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [loadMovieTheaterMap, meta.pageSize, pageActive]);
+
+  useEffect(() => {
+    loadMovies();
+  }, [loadMovies]);
+
+  const handleDelete = async (movie) => {
+    try {
+      await deleteMovie(movie.movieId);
+      toast.success('Xóa phim thành công');
+      await loadMovies();
+    } catch (error) {
+      if (error?.response?.status === 400) {
+        return toast.error(error?.response?.data?.message);
+      }
+
+      toast.error('Xóa phim thất bại!');
+    }
   };
 
   return (
@@ -78,9 +112,10 @@ const MovieTable = ({ setIsEdit, setValue, setEditingMovie }) => {
         <thead>
           <tr>
             <th className="w-[5%]">STT</th>
-            <th className="w-[20%] min-w-[100px]">Hình ảnh</th>
-            <th className="w-[20% min-w-[200px]">Tóm tắt</th>
+            <th className="w-[20%] min-w-[100px]">Hình ảnh</th>
+            <th className="w-[20%] min-w-[200px]">Tóm tắt</th>
             <th className="w-[20%] min-w-[200px]">Người tham gia</th>
+            <th className="w-[5%]">Rạp áp dụng</th>
             <th className="w-[5%]">Thời lượng</th>
             <th className="w-[5%]">Ngôn ngữ</th>
             <th className="w-[5%]">Thể loại</th>
@@ -92,41 +127,44 @@ const MovieTable = ({ setIsEdit, setValue, setEditingMovie }) => {
         <tbody>
           {isLoading && (
             <tr>
-              <td colSpan={10}>
-                <Loading content="Loading ..." />
+              <td colSpan={11}>
+                <Loading content="Đang tải danh sách phim..." />
               </td>
             </tr>
           )}
           {movies.length === 0 && !isLoading && (
             <tr>
-              <td colSpan={10}>
+              <td colSpan={11}>
                 <EmptyList content="Danh sách phim trống" />
               </td>
             </tr>
           )}
-          {movies?.map((movie, index) => (
-            <tr key={movie.movieId}>
-              <td>{index + 1}</td>
-              <td>
-                <div>
-                  <ImageComponent
-                    src={movie.posterImage}
-                    alt="Film Image"
-                    className="h-[200px] min-w-[150px] object-cover"
-                    width={170}
-                    height={200}
-                  />
-                </div>
-              </td>
-              <td className="min-w-[100px]: overflow-hidden">
-                <div>
+          {movies?.map((movie, index) => {
+            const movieId = movie?.movieId ?? movie?.id;
+            const movieTheaters = movieTheaterMap[String(movieId)] ?? [];
+
+            return (
+              <tr key={movieId}>
+                <td>
+                  {index + 1 + (meta.currentPage ?? 0) * (meta.pageSize ?? 10)}
+                </td>
+                <td>
+                  <div>
+                    <ImageComponent
+                      src={movie.posterImage}
+                      alt="Film Image"
+                      className="h-[200px] min-w-[150px] object-cover"
+                      width={170}
+                      height={200}
+                    />
+                  </div>
+                </td>
+                <td className="overflow-hidden">
                   <p className="whitespace-normal text-justify">
                     {movie.synopsis}
                   </p>
-                </div>
-              </td>
-              <td className="overflow-hidden">
-                <div>
+                </td>
+                <td className="overflow-hidden">
                   <p className="whitespace-normal">
                     <span className="font-semibold">Diễn viên: </span>
                     <span>
@@ -139,35 +177,42 @@ const MovieTable = ({ setIsEdit, setValue, setEditingMovie }) => {
                     <span className="font-semibold">Đạo diễn: </span>
                     <span>
                       {(movie.directors || [])
-                        .map((cast) => cast.nickname)
+                        .map((director) => director.nickname)
                         .join(', ')}
                     </span>
                   </p>
-                </div>
-              </td>
-              <td>{movie.duration}</td>
-              <td>{movie.language}</td>
-              <td>{movie.genres.map((genre) => genre.name).join(', ')}</td>
-              <td>{movie.age}</td>
-              <td>{movie.releaseDate}</td>
-              <td>
-                <div className="flex gap-3">
-                  <div
-                    className="hover:cursor-pointer"
-                    onClick={() => handleEdit(movie)}
-                  >
-                    <CiEdit size={25} fill="orange" />
+                </td>
+                <td>
+                  {movieTheaters.length > 0
+                    ? movieTheaters.join(', ')
+                    : 'Chưa gán rạp'}
+                </td>
+                <td>{movie.duration}</td>
+                <td>{movie.language}</td>
+                <td>{movie.genres.map((genre) => genre.name).join(', ')}</td>
+                <td>{movie.age}</td>
+                <td>{movie.releaseDate}</td>
+                <td>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      className="hover:cursor-pointer"
+                      onClick={() => handleEdit(movie)}
+                    >
+                      <CiEdit size={25} fill="orange" />
+                    </button>
+                    <button
+                      type="button"
+                      className="hover:cursor-pointer"
+                      onClick={() => handleDelete(movie)}
+                    >
+                      <MdOutlineDeleteSweep size={25} fill="red" />
+                    </button>
                   </div>
-                  <div
-                    className="hover:cursor-pointer"
-                    onClick={() => handleDelete(movie)}
-                  >
-                    <MdOutlineDeleteSweep size={25} fill="red" />
-                  </div>
-                </div>
-              </td>
-            </tr>
-          ))}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
       <Pagination
@@ -183,4 +228,5 @@ const MovieTable = ({ setIsEdit, setValue, setEditingMovie }) => {
     </div>
   );
 };
+
 export default MovieTable;

@@ -9,7 +9,7 @@ export const snackSlice = createSlice({
   initialState,
   reducers: {
     setSnack: (state, action) => {
-      state.snackSelected = action.payload;
+      state.snackSelected = Array.isArray(action.payload) ? action.payload : [];
     },
     clearSnack: () => {
       return initialState;

@@ -1,18 +1,83 @@
-﻿import * as yup from 'yup';
+import { useCallback, useEffect, useState } from 'react';
+import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
-import { useModelContext } from '@context/ModalContext';
-import TextInput from '@component/form_field/TextInput';
-import FormField from '@component/FormField';
 import { Button, CircularProgress } from '@mui/material';
-import { create, update } from '@apis/cinemaTheaterService';
 import { useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
+import { useModelContext } from '@context/ModalContext';
 import { openSnackbar } from '@redux/slices/snackbarSlice';
-import { useEffect, useState } from 'react';
-import CustomSelect from '@component/form_field/CustomSelect';
-import { findAll } from '@apis/cinemaTypeService';
-import { findAllMovieTheater } from '@apis/movieTheaterService';
+import { create, update } from '@apis/cinemaTheaterService';
+import {
+  extractCinemaTypeList,
+  findAll as findAllCinemaType,
+} from '@apis/cinemaTypeService';
+import {
+  extractMovieTheaterList,
+  findAllMovieTheater,
+} from '@apis/movieTheaterService';
 import AdminModal from '@component/admin/common/AdminModal';
+import FormField from '@component/FormField';
+import TextInput from '@component/form_field/TextInput';
+import CustomSelect from '@component/form_field/CustomSelect';
+
+const formSchema = yup.object({
+  name: yup.string().trim().required('Tên phòng chiếu không được để trống!'),
+  numberOfRows: yup
+    .number()
+    .transform((value, originalValue) =>
+      originalValue === '' || originalValue === null ? NaN : value
+    )
+    .typeError('Vui lòng nhập số hàng ghế hợp lệ!')
+    .required('Số lượng hàng ghế không được để trống!')
+    .min(1, 'Số hàng ghế phải lớn hơn 0!'),
+  numberOfColumns: yup
+    .number()
+    .transform((value, originalValue) =>
+      originalValue === '' || originalValue === null ? NaN : value
+    )
+    .typeError('Vui lòng nhập số cột ghế hợp lệ!')
+    .required('Số lượng cột ghế không được để trống!')
+    .min(1, 'Số cột ghế phải lớn hơn 0!'),
+  regularSeatRow: yup
+    .number()
+    .transform((value, originalValue) =>
+      originalValue === '' || originalValue === null ? NaN : value
+    )
+    .typeError('Vui lòng nhập số hàng ghế thường hợp lệ!')
+    .required('Số lượng hàng ghế thường không được để trống!')
+    .min(1, 'Số hàng ghế thường phải lớn hơn 0!'),
+  vipSeatRow: yup
+    .number()
+    .transform((value, originalValue) =>
+      originalValue === '' || originalValue === null ? NaN : value
+    )
+    .typeError('Vui lòng nhập số hàng ghế VIP hợp lệ!')
+    .required('Số lượng hàng ghế VIP không được để trống!')
+    .min(0, 'Số hàng ghế VIP phải lớn hơn hoặc bằng 0!'),
+  doubleSeatRow: yup
+    .number()
+    .transform((value, originalValue) =>
+      originalValue === '' || originalValue === null ? NaN : value
+    )
+    .typeError('Vui lòng nhập số hàng ghế đôi hợp lệ!')
+    .required('Số lượng hàng ghế đôi không được để trống!')
+    .min(0, 'Số hàng ghế đôi phải lớn hơn hoặc bằng 0!'),
+  cinemaTypeId: yup
+    .number()
+    .transform((value, originalValue) =>
+      originalValue === '' || originalValue === null ? NaN : value
+    )
+    .typeError('Vui lòng chọn loại phòng chiếu!')
+    .required('Loại phòng chiếu không được để trống!'),
+  movieTheaterId: yup
+    .number()
+    .transform((value, originalValue) =>
+      originalValue === '' || originalValue === null ? NaN : value
+    )
+    .typeError('Vui lòng chọn rạp chiếu!')
+    .required('Rạp chiếu không được để trống!'),
+});
 
 const ModalCreateCinemaTheater = ({
   fetchCinemaTheaters,
@@ -26,74 +91,21 @@ const ModalCreateCinemaTheater = ({
   const [movieTheaters, setMovieTheaters] = useState([]);
   const [loading, setLoading] = useState(false);
   const formId = 'cinema-theater-form';
+  const isPublished = isUpdate && cinemaTheaters?.status === 'PUBLISHED';
 
-  useEffect(() => {
-    findAll().then((res) => {
-      const data = res.data.map((item) => ({
-        label: `${item.code} - ${item.name}`,
-        value: item.cinemaTypeId,
-      }));
-      setCinemaTypes(data);
-    });
-  }, []);
-
-  useEffect(() => {
-    findAllMovieTheater().then((res) => {
-      const data = res.data.movieTheaters.map((item) => ({
-        label: item.name,
-        value: item.movieTheaterId,
-      }));
-      setMovieTheaters(data);
-    });
-  }, []);
-
-  const formSchema = yup.object().shape({
-    name: yup.string().required('Tên phòng chiếu không được để trống!'),
-    numberOfRows: yup
-      .number()
-      .typeError('Vui lòng nhập số hàng ghế hợp lệ!')
-      .required('Số lượng hàng ghế không được để trống!')
-      .min(1, 'Số hàng ghế phải lớn hơn 0!'),
-    numberOfColumns: yup
-      .number()
-      .typeError('Vui lòng nhập số cột ghế hợp lệ!')
-      .required('Số lượng cột ghế không được để trống!')
-      .min(1, 'Số cột ghế phải lớn hơn 0!'),
-    regularSeatRow: yup
-      .number()
-      .typeError('Vui lòng nhập số hàng ghế thường hợp lệ!')
-      .required('Số lượng hàng ghế thường không được để trống!')
-      .min(1, 'Số hàng ghế thường phải lớn hơn 0!'),
-    vipSeatRow: yup
-      .number()
-      .typeError('Vui lòng nhập số hàng ghế VIP hợp lệ!')
-      .required('Số lượng hàng ghế VIP không được để trống!')
-      .min(0, 'Số hàng ghế VIP phải lớn hơn hoặc bằng 0!'),
-    doubleSeatRow: yup
-      .number()
-      .typeError('Vui lòng nhập số hàng ghế đôi hợp lệ!')
-      .required('Số lượng hàng ghế đôi không được để trống!')
-      .min(0, 'Số hàng ghế đôi phải lớn hơn hoặc bằng 0!'),
-    cinemaTypeId: yup
-      .number()
-      .typeError('Vui lòng chọn loại phòng chiếu!')
-      .required('Loại phòng chiếu không được để trống!'),
-    movieTheaterId: yup
-      .number()
-      .typeError('Vui lòng chọn rạp chiếu!')
-      .required('Rạp chiếu không được để trống!'),
-  });
-
-  const buildDefaultValues = () => ({
-    name: cinemaTheaters?.name ?? '',
-    numberOfRows: cinemaTheaters?.numberOfRows ?? 0,
-    numberOfColumns: cinemaTheaters?.numberOfColumns ?? 0,
-    regularSeatRow: cinemaTheaters?.regularSeatRow ?? 0,
-    vipSeatRow: cinemaTheaters?.vipSeatRow ?? 0,
-    doubleSeatRow: cinemaTheaters?.doubleSeatRow ?? 0,
-    movieTheaterId: cinemaTheaters?.movieTheater?.movieTheaterId ?? '',
-    cinemaTypeId: cinemaTheaters?.cinemaType?.cinemaTypeId ?? '',
-  });
+  const buildDefaultValues = useCallback(
+    () => ({
+      name: cinemaTheaters?.name ?? '',
+      numberOfRows: cinemaTheaters?.numberOfRows ?? '',
+      numberOfColumns: cinemaTheaters?.numberOfColumns ?? '',
+      regularSeatRow: cinemaTheaters?.regularSeatRow ?? '',
+      vipSeatRow: cinemaTheaters?.vipSeatRow ?? '',
+      doubleSeatRow: cinemaTheaters?.doubleSeatRow ?? '',
+      movieTheaterId: cinemaTheaters?.movieTheater?.movieTheaterId ?? '',
+      cinemaTypeId: cinemaTheaters?.cinemaType?.cinemaTypeId ?? '',
+    }),
+    [cinemaTheaters]
+  );
 
   const {
     control,
@@ -106,64 +118,85 @@ const ModalCreateCinemaTheater = ({
   });
 
   useEffect(() => {
-    if (isUpdate && movieTheaters.length > 0 && cinemaTypes.length > 0) {
-      reset(buildDefaultValues());
-    }
-  }, [reset, isUpdate, cinemaTheaters, movieTheaters, cinemaTypes]);
+    const loadDependencies = async () => {
+      try {
+        const [cinemaTypeResponse, movieTheaterResponse] = await Promise.all([
+          findAllCinemaType(),
+          findAllMovieTheater(),
+        ]);
 
-  const handleSubmitForm = (data) => {
-    setLoading(true);
-    const total = data.regularSeatRow + data.vipSeatRow + data.doubleSeatRow;
-
-    if (total > data.numberOfRows) {
-      alert('Tổng số hàng ghế vượt quá số hàng của phòng chiếu!');
-      setLoading(false);
-      return;
-    }
-
-    if (isUpdate) {
-      update({ id: cinemaTheaters.cinemaTheaterId, data })
-        .then((res) => {
-          if (res.status === 200) {
-            dispatch(openSnackbar({ message: 'Cập nhật phòng chiếu thành công.' }));
-            closeTopModal();
-            fetchCinemaTheaters({ page: 0, size: 5, status: null });
-          }
-        })
-        .catch((err) => {
-          dispatch(
-            openSnackbar({
-              message: err?.response?.data?.message,
-              type: 'error',
-            })
-          );
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-      return;
-    }
-
-    create(data)
-      .then((res) => {
-        if (res.status === 201) {
-          dispatch(openSnackbar({ message: 'Tạo mới phòng chiếu thành công.' }));
-          closeTopModal();
-          fetchCinemaTheaters({ page: 0, size: 5, status: null });
-        }
-      })
-      .catch((err) => {
-        dispatch(
-          openSnackbar({ message: err?.response?.data?.message, type: 'error' })
+        setCinemaTypes(
+          extractCinemaTypeList(cinemaTypeResponse).map((item) => ({
+            label: `${item.code} - ${item.name}`,
+            value: item.cinemaTypeId ?? item.id,
+          }))
         );
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
 
-  const handleReset = () => {
+        setMovieTheaters(
+          extractMovieTheaterList(movieTheaterResponse).map((item) => ({
+            label: item.name,
+            value: item.movieTheaterId ?? item.id,
+          }))
+        );
+      } catch {
+        toast.error('Không thể tải dữ liệu rạp và loại phòng!');
+      }
+    };
+
+    loadDependencies();
+  }, []);
+
+  useEffect(() => {
     reset(buildDefaultValues());
+  }, [buildDefaultValues, reset]);
+
+  const handleSubmitForm = async (value) => {
+    const totalSeatRows =
+      Number(value.regularSeatRow) + Number(value.vipSeatRow) + Number(value.doubleSeatRow);
+
+    if (totalSeatRows > Number(value.numberOfRows)) {
+      toast.error('Tổng số hàng ghế vượt quá số hàng của phòng chiếu!');
+      return;
+    }
+
+    const payload = {
+      name: value.name.trim(),
+      numberOfRows: Number(value.numberOfRows),
+      numberOfColumns: Number(value.numberOfColumns),
+      regularSeatRow: Number(value.regularSeatRow),
+      vipSeatRow: Number(value.vipSeatRow),
+      doubleSeatRow: Number(value.doubleSeatRow),
+      cinemaTypeId: Number(value.cinemaTypeId),
+      movieTheaterId: Number(value.movieTheaterId),
+    };
+
+    setLoading(true);
+
+    try {
+      if (isUpdate) {
+        await update({ id: cinemaTheaters.cinemaTheaterId, data: payload });
+        dispatch(openSnackbar({ message: 'Cập nhật phòng chiếu thành công.' }));
+      } else {
+        await create(payload);
+        dispatch(openSnackbar({ message: 'Tạo mới phòng chiếu thành công.' }));
+      }
+
+      closeTopModal();
+      await fetchCinemaTheaters({ page: 0, size: 5, status: null });
+    } catch (error) {
+      dispatch(
+        openSnackbar({
+          message:
+            error?.response?.data?.message ||
+            (isUpdate
+              ? 'Cập nhật phòng chiếu thất bại!'
+              : 'Tạo mới phòng chiếu thất bại!'),
+          type: 'error',
+        })
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -175,13 +208,18 @@ const ModalCreateCinemaTheater = ({
       placement={placement}
       actions={
         <>
-          <Button variant="outlined" onClick={handleReset}>
+          <Button variant="outlined" onClick={() => reset(buildDefaultValues())}>
             Làm mới
           </Button>
           <Button type="button" variant="outlined" color="warning" onClick={closeTopModal}>
             Hủy bỏ
           </Button>
-          <Button type="submit" form={formId} variant="contained" color={isUpdate ? 'warning' : 'primary'}>
+          <Button
+            type="submit"
+            form={formId}
+            variant="contained"
+            color={isUpdate ? 'warning' : 'primary'}
+          >
             {loading ? <CircularProgress size={20} color="inherit" className="mr-2" /> : null}
             {isUpdate ? 'Cập nhật' : 'Tạo mới'}
           </Button>
@@ -208,7 +246,7 @@ const ModalCreateCinemaTheater = ({
             Component={TextInput}
             type="number"
             require={true}
-            disabled={isUpdate && cinemaTheaters.status === 'PUBLISHED'}
+            disabled={isPublished}
             placeHolder="Số hàng ghế"
             error={errors.numberOfRows}
           />
@@ -219,7 +257,7 @@ const ModalCreateCinemaTheater = ({
             Component={TextInput}
             type="number"
             require={true}
-            disabled={isUpdate && cinemaTheaters.status === 'PUBLISHED'}
+            disabled={isPublished}
             placeHolder="Số cột ghế"
             error={errors.numberOfColumns}
           />
@@ -233,7 +271,7 @@ const ModalCreateCinemaTheater = ({
             Component={TextInput}
             type="number"
             require={true}
-            disabled={isUpdate && cinemaTheaters.status === 'PUBLISHED'}
+            disabled={isPublished}
             placeHolder="Số hàng ghế thường"
             error={errors.regularSeatRow}
           />
@@ -244,7 +282,7 @@ const ModalCreateCinemaTheater = ({
             Component={TextInput}
             type="number"
             require={true}
-            disabled={isUpdate && cinemaTheaters.status === 'PUBLISHED'}
+            disabled={isPublished}
             placeHolder="Số hàng ghế VIP"
             error={errors.vipSeatRow}
           />
@@ -255,7 +293,7 @@ const ModalCreateCinemaTheater = ({
             Component={TextInput}
             type="number"
             require={true}
-            disabled={isUpdate && cinemaTheaters.status === 'PUBLISHED'}
+            disabled={isPublished}
             placeHolder="Số hàng ghế đôi"
             error={errors.doubleSeatRow}
           />
@@ -267,18 +305,19 @@ const ModalCreateCinemaTheater = ({
           control={control}
           Component={CustomSelect}
           type="text"
-          disabled={isUpdate && cinemaTheaters.status === 'PUBLISHED'}
+          disabled={isPublished}
           placeHolder="Chọn loại phòng chiếu"
           options={cinemaTypes}
           error={errors.cinemaTypeId}
         />
+
         <FormField
           name="movieTheaterId"
           label="Rạp chiếu"
           control={control}
           Component={CustomSelect}
           type="text"
-          disabled={isUpdate && cinemaTheaters.status === 'PUBLISHED'}
+          disabled={isPublished}
           placeHolder="Chọn rạp chiếu"
           options={movieTheaters}
           error={errors.movieTheaterId}

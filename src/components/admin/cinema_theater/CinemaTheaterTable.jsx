@@ -1,54 +1,59 @@
-import { Box, Tabs, Tab, Badge, Button } from '@mui/material';
-import TabPanel from '@component/Tabpanel.jsx';
+import { Box, Button, Tab, Tabs } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
+import TabPanel from '@component/Tabpanel.jsx';
 import { useModelContext } from '@context/ModalContext';
-import ModalCreateSeatMap from './ModalCreateCinemaTheater';
-import { MdDeleteForever } from 'react-icons/md';
+import ModalCreateCinemaTheater from './ModalCreateCinemaTheater';
 import { deleteCinemaTheater } from '@apis/cinemaTheaterService';
 import { openSnackbar } from '@redux/slices/snackbarSlice';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { MdDeleteForever } from 'react-icons/md';
+
+const resolveStatusFilter = (tab) => {
+  if (tab === 1) {
+    return 'PUBLISHED';
+  }
+
+  if (tab === 2) {
+    return 'DRAFT';
+  }
+
+  return null;
+};
+
 const CinemaTheaterTable = ({
   tab,
   setTab,
+  isLoading,
   fetchCinemaTheaters,
   paginationModel,
   cinemaTheaters,
   totalCount,
 }) => {
   const { openPopup } = useModelContext();
+  const dispatch = useDispatch();
 
-  /* Handle change page */
   const handlePageChange = (newModel) => {
-    const status = tab < 1 ? null : tab > 1 ? 'DRAFT' : 'PUBLISHED';
     fetchCinemaTheaters({
       page: newModel.page,
       size: newModel.pageSize,
-      status,
-    });
-  };
-  /*Change tab*/
-  const handleChangeTab = (event, newValue) => {
-    const status = newValue < 1 ? null : newValue > 1 ? 'DRAFT' : 'PUBLISHED';
-    setTab(newValue);
-    fetchCinemaTheaters({
-      page: paginationModel.page,
-      size: paginationModel.pageSize,
-      status,
+      status: resolveStatusFilter(tab),
     });
   };
 
-  function a11yProps(index) {
-    return {
-      id: `simple-tab-${index}`,
-      'aria-controls': `simple-tabpanel-${index}`,
-    };
-  }
+  const handleChangeTab = (_, newValue) => {
+    setTab(newValue);
+    fetchCinemaTheaters({
+      page: 0,
+      size: paginationModel.pageSize,
+      status: resolveStatusFilter(newValue),
+    });
+  };
 
   const handleUpdateCinemaTheater = (data) => {
     openPopup(
-      <ModalCreateSeatMap
+      <ModalCreateCinemaTheater
         fetchCinemaTheaters={fetchCinemaTheaters}
         isUpdate={true}
         cinemaTheaters={data}
@@ -56,47 +61,51 @@ const CinemaTheaterTable = ({
     );
   };
 
-  const dispatch = useDispatch();
-  const handleDelete = (id) => {
-    const isDelete = confirm('Bạn muốn xóa phòng chiếu id: ' + id);
-    if (!isDelete) return;
-    deleteCinemaTheater(id)
-      .then(() => {
-        dispatch(openSnackbar({ message: 'Xóa phòng chiếu thành công' }));
-        fetchCinemaTheaters({
-          page: paginationModel.page,
-          size: paginationModel.pageSize,
-          status: tab < 1 ? null : tab > 1 ? 'DRAFT' : 'PUBLISHED',
-        });
-      })
-      .catch((err) => {
-        if (err.response.status === 400) {
-          return toast.error(err.response.data.message);
-        } else {
-          toast.error('Xóa phòng chiếu thất bại !');
-        }
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm(`Bạn muốn xóa phòng chiếu ID ${id} không?`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteCinemaTheater(id);
+      dispatch(openSnackbar({ message: 'Xóa phòng chiếu thành công.' }));
+      await fetchCinemaTheaters({
+        page: paginationModel.page,
+        size: paginationModel.pageSize,
+        status: resolveStatusFilter(tab),
       });
+    } catch (error) {
+      if (
+        error?.response?.status === 400 ||
+        error?.response?.status === 404 ||
+        error?.response?.status === 409
+      ) {
+        return toast.error(error?.response?.data?.message);
+      }
+
+      toast.error('Xóa phòng chiếu thất bại!');
+    }
   };
 
-  /* Table */
   const columns = [
-    { headerName: '#', field: 'cinemaTheaterId', width: 50 },
+    { headerName: '#', field: 'cinemaTheaterId', width: 70 },
     {
       headerName: 'Phòng chiếu',
       field: 'name',
       flex: 1,
+      minWidth: 220,
       renderCell: (params) => (
         <div>
-          <p>{params.value}</p>
-          <p>
-            Phòng chiếu:
-            <span
-              className="ml-2 cursor-pointer text-primary hover:underline"
-              onClick={() => handleUpdateCinemaTheater(params.row)}
-            >
-              Sửa
-            </span>
-          </p>
+          <p className="font-medium">{params.value}</p>
+          <button
+            type="button"
+            className="mt-1 cursor-pointer text-sm text-primary hover:underline"
+            onClick={() => handleUpdateCinemaTheater(params.row)}
+          >
+            Chỉnh sửa
+          </button>
         </div>
       ),
     },
@@ -104,19 +113,22 @@ const CinemaTheaterTable = ({
       headerName: 'Rạp chiếu',
       field: 'movieTheater',
       flex: 1,
-      renderCell: (params) => <p>{`${params.value?.name}`}</p>,
+      minWidth: 180,
+      renderCell: (params) => <p>{params.value?.name || 'Chưa có rạp'}</p>,
     },
     {
       headerName: 'Loại phòng',
       field: 'cinemaType',
       flex: 1,
-      renderCell: (params) => <p>{`${params.value?.name}`}</p>,
+      minWidth: 180,
+      renderCell: (params) => <p>{params.value?.name || 'Chưa có loại phòng'}</p>,
     },
     {
       headerName: 'Sức chứa',
       field: 'matrix',
+      minWidth: 140,
       renderCell: (params) => (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1 py-2">
           <p>{`${params.row.numberOfRows} x ${params.row.numberOfColumns}`}</p>
           <p className="text-primary">
             {`${params.row.numberOfRows * params.row.numberOfColumns} chỗ ngồi`}
@@ -127,9 +139,14 @@ const CinemaTheaterTable = ({
     {
       headerName: 'Trạng thái',
       field: 'status',
+      minWidth: 140,
       renderCell: (params) => (
         <small
-          className={`rounded-lg p-2 font-semibold capitalize ${params.value !== 'PUBLISHED' ? 'bg-yellow-100 text-yellow-500' : 'bg-[#b7e9e0] text-[#0bb392]'}`}
+          className={`rounded-lg p-2 font-semibold capitalize ${
+            params.value === 'PUBLISHED'
+              ? 'bg-emerald-100 text-emerald-600'
+              : 'bg-yellow-100 text-yellow-600'
+          }`}
         >
           {params.value === 'PUBLISHED' ? 'Xuất bản' : 'Nháp'}
         </small>
@@ -139,23 +156,19 @@ const CinemaTheaterTable = ({
       headerName: 'Hoạt động',
       field: 'action',
       flex: 1,
+      minWidth: 220,
       renderCell: (params) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 py-2">
           <Button
             onClick={() => handleDelete(params.row.cinemaTheaterId)}
             color="error"
             variant="contained"
             size="medium"
           >
-            <MdDeleteForever size={25} />
+            <MdDeleteForever size={24} />
           </Button>
           <Link to={`/admin/so-do-ghe/${params.row.cinemaTheaterId}`}>
-            <Button
-              variant="contained"
-              color="primary"
-              className="!capitalize"
-              size="medium"
-            >
+            <Button variant="contained" color="primary" className="!capitalize" size="medium">
               Sơ đồ ghế
             </Button>
           </Link>
@@ -165,66 +178,28 @@ const CinemaTheaterTable = ({
   ];
 
   return (
-    <Box className="max-h-auto">
+    <Box>
       <Box sx={{ borderBottom: '2px solid lightGray' }}>
-        <Tabs
-          value={tab}
-          onChange={handleChangeTab}
-          aria-label="basic tabs example"
-        >
-          <Tab
-            sx={{
-              '&.MuiButtonBase-root': {
-                padding: '16px',
-              },
-              '& .MuiTab-iconWrapper': {
-                marginLeft: '16px',
-              },
-            }}
-            iconPosition={'end'}
-            label="tất cả"
-            {...a11yProps(0)}
-          />
-          <Tab
-            sx={{
-              '&.MuiButtonBase-root': {
-                padding: '16px',
-              },
-              '& .MuiTab-iconWrapper': {
-                marginLeft: '16px',
-              },
-            }}
-            iconPosition={'end'}
-            label="Đã xuất bản"
-            {...a11yProps(1)}
-          />
-          <Tab
-            sx={{
-              '&.MuiButtonBase-root': {
-                padding: '16px',
-              },
-              '& .MuiTab-iconWrapper': {
-                marginLeft: '16px',
-              },
-            }}
-            iconPosition={'end'}
-            label="Bản nháp"
-            {...a11yProps(1)}
-          />
+        <Tabs value={tab} onChange={handleChangeTab} aria-label="trạng thái phòng chiếu">
+          <Tab label="Tất cả" />
+          <Tab label="Đã xuất bản" />
+          <Tab label="Bản nháp" />
         </Tabs>
       </Box>
+
       <TabPanel value={tab} index={tab}>
         <div className="w-full overflow-x-auto">
           <DataGrid
             rows={cinemaTheaters}
             getRowId={(row) => row.cinemaTheaterId}
             columns={columns}
+            loading={isLoading}
             initialState={{
               pagination: { paginationModel },
             }}
+            paginationModel={paginationModel}
             rowCount={totalCount}
             pageSizeOptions={[5, 10, 30, 50, 100]}
-            checkboxSelection={false}
             paginationMode="server"
             onPaginationModelChange={handlePageChange}
             getRowHeight={() => 'auto'}

@@ -1,129 +1,76 @@
-import { findAll } from '@apis/showTimeService';
-import PopupShowTime from '@component/admin/showtimes/PopupShowTime';
+import ShowTimeListPanel from '@component/admin/showtimes/ShowTimeListPanel';
+import ShowTimeSchedulerPanel from '@component/admin/showtimes/ShowTimeSchedulerPanel';
 import CustomBreadcrumb from '@component/CustomBreakcrumb';
-import { useModelContext } from '@context/ModalContext';
-import { Button } from '@mui/material';
+import { Box, Tab, Tabs } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { CiEdit } from 'react-icons/ci';
-import { MdDeleteSweep } from 'react-icons/md';
+
+const tabProps = (index) => ({
+  id: `showtime-tab-${index}`,
+  'aria-controls': `showtime-panel-${index}`,
+});
 
 const ShowTimePage = () => {
-  const { openPopup } = useModelContext();
-  const [showTimes, setShowTimes] = useState([]);
+  const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
     document.title = 'Quản lý suất chiếu - POLY CINEMAS';
   }, []);
 
-  useEffect(() => {
-    findAll()
-      .then((res) => {
-        console.log(res);
-        setShowTimes(res.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []);
-
-  const handleOpenPopup = (showTime, movieId, movieTheaterId) => {
-    openPopup(
-      <PopupShowTime
-        showTime={showTime}
-        movieId={movieId}
-        variantId={movieTheaterId}
-        movieTheaterId={movieTheaterId}
-      />
-    );
-  };
-
   return (
-    <>
+    <div>
       <CustomBreadcrumb
-        className="mb-2"
-        linkComponent={''}
         items={[
           {
             label: 'Quản lý suất chiếu',
           },
         ]}
-        title={'Quản lý suất chiếu'}
+        title="Quản lý suất chiếu"
       />
-      <div className="px-2 py-3">
-        <div className="border-slate-200 bg-white p-2">
-          <div className="mb-2 border-b-2">
-            <div className="my-2 flex items-end justify-between">
-              <h1 className="font-semibold">Danh sách suất chiếu</h1>
-              <Button
-                variant="contained"
-                color="info"
-                type="submit"
-                size="medium"
-                onClick={handleOpenPopup}
-              >
-                Tạo mới
-              </Button>
+
+      <div className="mx-5 mt-3 space-y-4">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                Quản lý suất chiếu
+              </p>
+              <h1 className="mt-1 text-2xl font-semibold text-slate-900">
+                Lập lịch trước, theo dõi danh sách sau
+              </h1>
             </div>
           </div>
-          <div>
-            <table>
-              <thead>
-                <tr>
-                  <th className="px-2 py-2">STT</th>
-                  <th className="px-2 py-2">Phim</th>
-                  <th className="px-2 py-2">Ngày chiếu</th>
-                  <th className="px-2 py-2">Giờ chiếu</th>
-                  <th className="px-2 py-2">Biến thể</th>
-                  <th className="px-2 py-2">Trạng thái</th>
-                  <th className="px-2 py-2">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {showTimes.length > 0 &&
-                  showTimes.map((showTime, index) => (
-                    <tr key={showTime.showTime.id}>
-                      {console.log(showTime)}
-                      <td>{index + 1}</td>
-                      <td>{showTime.movie.title}</td>
-                      <td>{showTime.cinemaTheater.name}</td>
-                      <td>{showTime.showTime.showDate}</td>
-                      <td>{showTime.movieVariation.name}</td>
-                      <td>
-                        <p
-                          className={`${showTime.showTime.status === 'VALID' ? 'bg-green-100 text-green-500' : 'bg-red-100 text-red-500'} inline-block rounded-full px-2 py-1 text-xs font-semibold`}
-                        >
-                          {showTime.showTime.status === 'VALID'
-                            ? 'Công chiếu'
-                            : ' Chưa công chiếu'}
-                        </p>
-                      </td>
-                      <td>
-                        <div className="flex items-center gap-2">
-                          <button
-                            className="mr-2"
-                            onClick={() =>
-                              handleOpenPopup(
-                                showTime,
-                                showTime.movie.movieId,
-                                showTime.cinemaTheater.cinemaTheaterId
-                              )
-                            }
-                          >
-                            <CiEdit size={25} fill="#FFC107" />
-                          </button>
-                          <button className="mr-2">
-                            <MdDeleteSweep size={25} fill="red" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
+
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', mt: 2 }}>
+            <Tabs
+              value={activeTab}
+              onChange={(_, value) => setActiveTab(value)}
+            >
+              <Tab label="Lập lịch" {...tabProps(0)} />
+              <Tab label="Danh sách / Bộ lọc" {...tabProps(1)} />
+            </Tabs>
+          </Box>
+        </div>
+
+        <div
+          id="showtime-panel-0"
+          role="tabpanel"
+          hidden={activeTab !== 0}
+          aria-labelledby="showtime-tab-0"
+        >
+          {activeTab === 0 ? <ShowTimeSchedulerPanel /> : null}
+        </div>
+
+        <div
+          id="showtime-panel-1"
+          role="tabpanel"
+          hidden={activeTab !== 1}
+          aria-labelledby="showtime-tab-1"
+        >
+          {activeTab === 1 ? <ShowTimeListPanel /> : null}
         </div>
       </div>
-    </>
+    </div>
   );
 };
+
 export default ShowTimePage;

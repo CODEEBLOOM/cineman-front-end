@@ -49,12 +49,12 @@ const ShowTimeComponent = ({ movieId }) => {
       });
   }, [movieId, movieTheater?.id]);
 
-  /* HÃ m thay Ä‘á»•i show time */
+  /* Hàm thay đổi show time */
   const handleChangeShowTimeSelected = (id) => {
     setShowTimeSelected(id);
   };
 
-  // Hiá»‡u á»©ng loading khi váº«n cÃ²n gá»i API //
+  // Hiệu ứng loading khi vẫn còn gọi API //
   if (isLoading) {
     return <Loading />;
   }

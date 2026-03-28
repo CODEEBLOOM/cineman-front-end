@@ -10,67 +10,58 @@ const ComboComponent = () => {
   const [combos, setCombos] = useState([]);
   const { snackSelected } = useSelector((state) => state.snack);
 
-  /* Fetch danh sách combo */
+  const snackItems = Array.isArray(snackSelected) ? snackSelected : [];
+  const comboItems = Array.isArray(combos) ? combos : [];
+
   useEffect(() => {
     findAllCombos()
       .then((res) => {
-        setCombos(res.data);
+        setCombos(Array.isArray(res?.data) ? res.data : []);
       })
       .catch((err) => {
         console.log(err);
+        setCombos([]);
       });
   }, []);
 
-  /**
-   * Handle select combo
-   * @param {object} combo - Combo info
-   * @description
-   * If the combo does not exist in snackSelected, create a new snackSelected with quantity equal to 1.
-   * Otherwise, increase the quantity of the combo in snackSelected by 1.
-   */
   const handleSelectCombo = (combo) => {
-    const foundSnackSelected = snackSelected.find(
-      (item) => item.id === combo.id
-    );
+    const foundSnackSelected = snackItems.find((item) => item.id === combo.id);
+
     if (!foundSnackSelected) {
-      const createSnackSelected = {
-        ...combo,
-        quantity: 1,
-      };
-      dispatch(setSnack([...snackSelected, createSnackSelected]));
-    } else {
-      const findIndex = snackSelected.findIndex((item) => item.id === combo.id);
-      if (findIndex !== -1) {
-        const updatedSnacks = snackSelected.map((item) =>
-          item.id === combo.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-        dispatch(setSnack(updatedSnacks));
-      }
+      dispatch(
+        setSnack([
+          ...snackItems,
+          {
+            ...combo,
+            quantity: 1,
+          },
+        ])
+      );
+      return;
     }
+
+    const updatedSnacks = snackItems.map((item) =>
+      item.id === combo.id ? { ...item, quantity: item.quantity + 1 } : item
+    );
+    dispatch(setSnack(updatedSnacks));
   };
 
-  /**
-   * Handle remove combo
-   * @param {object} combo - Combo info
-   * @description
-   * If the quantity of the combo is 1, remove the combo from the snackSelected array.
-   * Otherwise, minus the quantity of the combo by 1.
-   */
   const handleRemoveCombo = (combo) => {
-    const findIndex = snackSelected.findIndex((item) => item.id === combo.id);
-    if (findIndex !== -1) {
-      if (snackSelected[findIndex].quantity === 1) {
-        const updatedSnacks = snackSelected.filter(
-          (item) => item.id !== combo.id
-        );
-        dispatch(setSnack(updatedSnacks));
-        return;
-      }
-      const updatedSnacks = snackSelected.map((item) =>
-        item.id === combo.id ? { ...item, quantity: item.quantity - 1 } : item
-      );
-      dispatch(setSnack(updatedSnacks));
+    const foundSnackSelected = snackItems.find((item) => item.id === combo.id);
+
+    if (!foundSnackSelected) {
+      return;
     }
+
+    if (foundSnackSelected.quantity === 1) {
+      dispatch(setSnack(snackItems.filter((item) => item.id !== combo.id)));
+      return;
+    }
+
+    const updatedSnacks = snackItems.map((item) =>
+      item.id === combo.id ? { ...item, quantity: item.quantity - 1 } : item
+    );
+    dispatch(setSnack(updatedSnacks));
   };
 
   return (
@@ -90,54 +81,51 @@ const ComboComponent = () => {
             </tr>
           </thead>
           <tbody>
-            {combos.map((item, index) => {
-              return (
-                <tr key={`combo-${item.id}-${index}`}>
-                  <td className={'flex w-[100px] justify-center px-3 py-5'}>
-                    <img
-                      src="/combo-online-03.png"
-                      className="h-[80px] w-[80px] rounded-full"
-                    />
-                  </td>
-                  <td className={'px-3 py-5'}>
-                    <span className={'font-medium'}> {item.snackName}</span>
-                    <span className="text-[18px] font-medium text-pink-400">
-                      <FaMinus />
-                      {currencyFormatter(item.unitPrice)}
+            {comboItems.map((item, index) => (
+              <tr key={`combo-${item.id}-${index}`}>
+                <td className={'flex w-[100px] justify-center px-3 py-5'}>
+                  <img
+                    src="/combo-online-03.png"
+                    className="h-[80px] w-[80px] rounded-full"
+                  />
+                </td>
+                <td className={'px-3 py-5'}>
+                  <span className={'font-medium'}>{item.snackName}</span>
+                  <span className="text-[18px] font-medium text-pink-400">
+                    <FaMinus />
+                    {currencyFormatter(item.unitPrice)}
+                  </span>
+                </td>
+                <td className={'px-3 py-5'}>
+                  <p className="whitespace-normal break-words text-justify">
+                    {item.description}
+                  </p>
+                </td>
+                <td className={'px-3 py-5'}>
+                  <div
+                    className={
+                      'flex select-none items-center justify-between gap-2'
+                    }
+                  >
+                    <span className="text-[18px] font-medium">
+                      {snackItems.find((snack) => snack.id === item.id)?.quantity || 0}
                     </span>
-                  </td>
-                  <td className={'px-3 py-5'}>
-                    <p className="whitespace-normal break-words text-justify">
-                      {item.description}
-                    </p>
-                  </td>
-                  <td className={'px-3 py-5'}>
-                    <div
-                      className={
-                        'flex select-none items-center justify-between gap-2'
-                      }
+                    <span
+                      className={'cursor-pointer bg-primary p-1'}
+                      onClick={() => handleSelectCombo(item)}
                     >
-                      <span className="text-[18px] font-medium">
-                        {snackSelected.find((snack) => snack.id === item.id)
-                          ?.quantity || 0}
-                      </span>
-                      <span
-                        className={'cursor-pointer bg-primary p-1'}
-                        onClick={() => handleSelectCombo(item)}
-                      >
-                        <FaPlus fill={'white'} />
-                      </span>
-                      <span
-                        className={'cursor-pointer bg-gray-400 p-1'}
-                        onClick={() => handleRemoveCombo(item)}
-                      >
-                        <FaMinus />
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
+                      <FaPlus fill={'white'} />
+                    </span>
+                    <span
+                      className={'cursor-pointer bg-gray-400 p-1'}
+                      onClick={() => handleRemoveCombo(item)}
+                    >
+                      <FaMinus />
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

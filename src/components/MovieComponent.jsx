@@ -44,7 +44,7 @@ const MovieComponent = () => {
     dispatch(setMovieStatus(status));
   };
 
-  /* Láº¥y táº¥t cáº£ thÃ´ng tin phim theo status vÃ  movie theater id */
+  /* Lấy tất cả thông tin phim theo status và movie theater id */
   useEffect(() => {
     if (movieTheater?.id) {
       setIsLoading(true);
@@ -87,19 +87,19 @@ const MovieComponent = () => {
             >
               <Tab
                 onClick={() => handleChangeMovieStatus('SC')}
-                label="Phim Sáº¯p Chiáº¿u"
+                label="Phim Sắp Chiếu"
                 className="lg:!text-[25px]"
                 {...a11yProps(0)}
               />
               <Tab
                 onClick={() => handleChangeMovieStatus('DC')}
-                label="Phim Äang Chiáº¿u"
+                label="Phim Đang Chiếu"
                 className="lg:!text-[25px]"
                 {...a11yProps(1)}
               />
               <Tab
                 onClick={() => handleChangeMovieStatus('DB')}
-                label="Xuáº¥t chiáº¿u Ä‘áº·c biá»‡t"
+                label="Xuất chiếu đặc biệt"
                 className="lg:!text-[25px]"
                 {...a11yProps(2)}
               />
@@ -107,7 +107,7 @@ const MovieComponent = () => {
           </Box>
           {listMovies.length === 0 && !isLoading && (
             <div className="col-span-full w-full">
-              <EmptyList content="Danh sÃ¡ch trá»‘ng" />
+              <EmptyList content="Danh sách trống" />
             </div>
           )}
           <TabPanel value={value} index={0}>
@@ -200,4 +200,5 @@ const MovieComponent = () => {
     </div>
   );
 };
+
 export default MovieComponent;

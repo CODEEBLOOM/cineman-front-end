@@ -23,12 +23,14 @@ import { persistor, store } from '@redux/store';
 import { PersistGate } from 'redux-persist/integration/react';
 import DetailMoviePage from '@pages/DetailMoviePage';
 import MoviePage from '@pages/MoviePage';
-import ChooseSeatPage from '@pages/protected_route/ChooseSeatsPage.jsx';
 import ProtectedRoute from '@pages/protected_route/ProtectedRoute.jsx';
 import AdminRoute from '@pages/admin/AdminRoute.jsx';
 import DashBoardPage from '@pages/admin/DashBoardPage.jsx';
 import StatisticalPage from '@pages/admin/StatisticalPage.jsx';
 import TheaterSystemPage from '@pages/admin/TheaterSystemPage.jsx';
+import ProvincePage from '@pages/admin/ProvincePage.jsx';
+import MovieTheaterPage from '@pages/admin/MovieTheaterPage.jsx';
+import CinemaTypePage from '@pages/admin/CinemaTypePage.jsx';
 import CinemaTheater from '@component/admin/cinema_theater/CinemaTheater.jsx';
 import SeatMap from '@component/admin/seat/SeatMap';
 import GoogleCallback from '@pages/auth/GoogleCallback';
@@ -43,6 +45,13 @@ import CinemaShowtime from '@pages/CinemaShowTime';
 import InvoiceIndex from '@component/admin/invoice/InvoiceIndex';
 import TicketManagementPage from '@pages/admin/TicketManagementPage';
 import ShowTimePage from '@pages/admin/ShowTimePage';
+import MovieVariationPage from '@pages/admin/MovieVariationPage';
+import TicketTypePage from '@pages/admin/TicketTypePage';
+import MovieTypePage from '@pages/admin/MovieTypePage.jsx';
+import MovieGenrePage from '@pages/admin/MovieGenrePage';
+import MovieRolePage from '@pages/admin/MovieRolePage';
+import MovieParticipantPage from '@pages/admin/MovieParticipantPage';
+import ParticipantPage from '@pages/admin/ParticipantPage';
 
 const router = createBrowserRouter([
   {
@@ -106,7 +115,6 @@ const router = createBrowserRouter([
           },
         ],
       },
-
       {
         element: <AdminRoute />,
         path: '/admin',
@@ -134,11 +142,15 @@ const router = createBrowserRouter([
           },
           {
             path: 'chi-nhanh',
-            element: <p>Chi nhanh</p>,
+            element: <ProvincePage />,
           },
           {
             path: 'rap',
-            element: <p>Quản lý rạp</p>,
+            element: <MovieTheaterPage />,
+          },
+          {
+            path: 'cinema-type',
+            element: <CinemaTypePage />,
           },
           {
             path: 'so-do-ghe/:id',
@@ -157,8 +169,32 @@ const router = createBrowserRouter([
             element: <ShowTimePage />,
           },
           {
+            path: 'bien-the-xuat-chieu',
+            element: <MovieVariationPage />,
+          },
+          {
             path: 'danh-sach-phim',
             element: <ListMovie />,
+          },
+          {
+            path: 'movie-type',
+            element: <MovieTypePage />,
+          },
+          {
+            path: 'the-loai-phim',
+            element: <MovieGenrePage />,
+          },
+          {
+            path: 'nguoi-tham-gia',
+            element: <ParticipantPage />,
+          },
+          {
+            path: 'vai-tro-phim',
+            element: <MovieRolePage />,
+          },
+          {
+            path: 'nguoi-tham-gia-phim',
+            element: <MovieParticipantPage />,
           },
           {
             path: 'do-an',
@@ -174,9 +210,8 @@ const router = createBrowserRouter([
           },
           {
             path: 'gia-ve',
-            element: <p>Quản lý giá vé</p>,
+            element: <TicketTypePage />,
           },
-
           {
             path: 'nguoi-dung',
             element: <p>Quản lý người dùng</p>,
@@ -194,6 +229,7 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+
 injectStore(store);
 createRoot(document.getElementById('root')).render(
   // <StrictMode>

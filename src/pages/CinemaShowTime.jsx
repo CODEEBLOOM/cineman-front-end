@@ -13,7 +13,7 @@ const CinemaShowtime = () => {
   const [movies, setMovies] = useState([]);
 
   useEffect(() => {
-    document.title = 'Danh sÃ¡ch phim theo lá»‹ch chiáº¿u - POLY CINEMAS';
+    document.title = 'Danh sách phim theo lịch chiếu - POLY CINEMAS';
     if (!movieTheater?.id || !showDateActive) {
       setMovies([]);
       return;

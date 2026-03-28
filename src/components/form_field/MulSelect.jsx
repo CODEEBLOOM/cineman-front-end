@@ -1,4 +1,4 @@
-import { Box, MenuItem, TextField } from '@mui/material';
+﻿import { Box, MenuItem, TextField } from '@mui/material';
 
 const MulSelect = ({
   onChange,
@@ -11,6 +11,7 @@ const MulSelect = ({
   disabled,
 }) => {
   const safeValue = Array.isArray(value) ? value : [];
+
   return (
     <Box className="min-w-[150px] !overflow-hidden">
       <TextField
@@ -19,16 +20,39 @@ const MulSelect = ({
         fullWidth
         type={type}
         value={safeValue}
-        onChange={(e) => {
-          // MUI trả về array khi multiple
-          const val = e.target.value;
-          const next = Array.isArray(val) ? val : (val ?? '').split(',');
-          onChange?.(next);
+        onChange={(event) => {
+          const nextValue = event.target.value;
+          const nextSelection = Array.isArray(nextValue)
+            ? nextValue
+            : String(nextValue ?? '')
+                .split(',')
+                .filter(Boolean);
+
+          onChange?.(nextSelection);
         }}
         select
         size="small"
         error={!!error}
-        SelectProps={{ multiple: true }}
+        SelectProps={{
+          multiple: true,
+          displayEmpty: true,
+          renderValue: (selected) => {
+            const selectedValues = Array.isArray(selected) ? selected : [];
+
+            if (selectedValues.length === 0) {
+              return <span className="text-slate-400">{placeHolder}</span>;
+            }
+
+            return selectedValues
+              .map(
+                (selectedValue) =>
+                  options?.find(
+                    (option) => String(option?.value) === String(selectedValue)
+                  )?.label ?? selectedValue
+              )
+              .join(', ');
+          },
+        }}
         disabled={disabled}
       >
         <MenuItem disabled value="">
@@ -43,4 +67,5 @@ const MulSelect = ({
     </Box>
   );
 };
+
 export default MulSelect;

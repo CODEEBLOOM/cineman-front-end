@@ -19,6 +19,7 @@ const Payment = ({
   const { snackSelected } = useSelector((state) => state.snack);
   const { selectedSeats } = useSelector((state) => state.ticket);
   const { voucher, savePointRedeem } = useSelector((state) => state.invoice);
+  const snackItems = Array.isArray(snackSelected) ? snackSelected : [];
 
   let totalDiscount = useMemo(() => {
     const conv =
@@ -38,7 +39,7 @@ const Payment = ({
       selectedSeats.reduce((total, item) => total + item.price, 0) -
       totalDiscount;
 
-    const totalSnackMoney = snackSelected.reduce(
+    const totalSnackMoney = snackItems.reduce(
       (total, item) => total + item.unitPrice * item.quantity,
       0
     );
@@ -60,7 +61,7 @@ const Payment = ({
         },
       })
     );
-  }, [selectedSeats, snackSelected, totalDiscount, invoice, dispatch]);
+  }, [selectedSeats, snackItems, totalDiscount, invoice, dispatch]);
 
   return (
     <>

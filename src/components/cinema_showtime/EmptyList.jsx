@@ -6,4 +6,5 @@ const EmptyList = ({ content = 'Danh sách lịch chiếu trống' }) => {
     </div>
   );
 };
+
 export default EmptyList;

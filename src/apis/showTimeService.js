@@ -77,6 +77,7 @@ export const findAllAdminShowTimes = async ({
   movieTheaterId = '',
   showDate = '',
   showTimeStatus = '',
+  special = '',
 } = {}) => {
   const url = '/admin/show-time/all';
   return await axios.get(url, {
@@ -84,6 +85,7 @@ export const findAllAdminShowTimes = async ({
       movieTheaterId: movieTheaterId || undefined,
       showDate: showDate || undefined,
       showTimeStatus: showTimeStatus || undefined,
+      special: special || undefined,
     },
   });
 };

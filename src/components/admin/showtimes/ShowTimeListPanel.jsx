@@ -19,6 +19,7 @@ import PopupShowTime from './PopupShowTime';
 import {
   extractCollection,
   formatCurrency,
+  getSpecialMeta,
   getStatusMeta,
   getTodayValue,
   normalizeShowTimeItem,
@@ -31,6 +32,12 @@ const showTimeStatusOptions = [
   { value: 'DELETED', label: 'Đã xóa' },
 ];
 
+const showTimeSpecialFilterOptions = [
+  { value: '', label: 'Tất cả loại suất' },
+  { value: 'false', label: 'Suất thường' },
+  { value: 'true', label: 'Suất đặc biệt' },
+];
+
 const ShowTimeListPanel = () => {
   const { openPopup } = useModelContext();
   const { user } = useSelector((state) => state.user);
@@ -39,6 +46,7 @@ const ShowTimeListPanel = () => {
     movieTheaterId: '',
     showDate: getTodayValue(),
     showTimeStatus: '',
+    special: '',
   });
   const [showTimes, setShowTimes] = useState([]);
   const [isLoadingMovieTheaters, setIsLoadingMovieTheaters] = useState(false);
@@ -49,6 +57,13 @@ const ShowTimeListPanel = () => {
       movieTheaters.find((item) => item.value === filters.movieTheaterId)?.label ?? 'Tất cả rạp'
     );
   }, [filters.movieTheaterId, movieTheaters]);
+
+  const selectedSpecialLabel = useMemo(() => {
+    return (
+      showTimeSpecialFilterOptions.find((item) => item.value === filters.special)?.label ??
+      'Tất cả loại suất'
+    );
+  }, [filters.special]);
 
   const loadMovieTheaters = useCallback(async () => {
     setIsLoadingMovieTheaters(true);
@@ -112,6 +127,7 @@ const ShowTimeListPanel = () => {
           movieTheaterId: filters.movieTheaterId,
           showDate: filters.showDate,
           status: filters.showTimeStatus || 'VALID',
+          special: filters.special || 'false',
         }}
         onSuccess={loadShowTimes}
       />
@@ -205,6 +221,20 @@ const ShowTimeListPanel = () => {
       renderCell: (params) => formatCurrency(params.value),
     },
     {
+      field: 'special',
+      headerName: 'Loại suất',
+      width: 170,
+      renderCell: (params) => {
+        const specialMeta = getSpecialMeta(params.value);
+
+        return (
+          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${specialMeta.className}`}>
+            {specialMeta.label}
+          </span>
+        );
+      },
+    },
+    {
       field: 'status',
       headerName: 'Trạng thái',
       width: 160,
@@ -268,7 +298,7 @@ const ShowTimeListPanel = () => {
         </Button>
       </div>
 
-      <div className="grid gap-3 rounded-2xl bg-slate-50 p-4 lg:grid-cols-[1.2fr_1fr_1fr_auto]">
+      <div className="grid gap-3 rounded-2xl bg-slate-50 p-4 lg:grid-cols-[1.2fr_1fr_1fr_1fr_auto]">
         <TextField
           fullWidth
           select
@@ -310,6 +340,26 @@ const ShowTimeListPanel = () => {
           fullWidth
           select
           size="small"
+          label="Loại suất"
+          value={filters.special}
+          onChange={(event) =>
+            setFilters((currentValue) => ({
+              ...currentValue,
+              special: event.target.value,
+            }))
+          }
+        >
+          {showTimeSpecialFilterOptions.map((option) => (
+            <MenuItem key={option.value || 'all-special'} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        <TextField
+          fullWidth
+          select
+          size="small"
           label="Trạng thái"
           value={filters.showTimeStatus}
           onChange={(event) =>
@@ -336,6 +386,8 @@ const ShowTimeListPanel = () => {
           Bộ lọc hiện tại: <span className="font-semibold text-slate-900">{selectedMovieTheaterLabel}</span>
           {' | '}
           <span className="font-semibold text-slate-900">{filters.showDate || 'Tất cả ngày'}</span>
+          {' | '}
+          <span className="font-semibold text-slate-900">{selectedSpecialLabel}</span>
         </p>
         <p>
           Tổng số kết quả: <span className="font-semibold text-slate-900">{showTimes.length}</span>

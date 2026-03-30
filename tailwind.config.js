@@ -33,7 +33,6 @@ export default {
       animationDelay: {
         2000: '2000ms',
         3000: '3000ms',
-        // thêm các giá trị bạn cần
       },
     },
   },

@@ -1,4 +1,5 @@
 import Loading from '@component/Loading';
+import { GOOGLE_AUTH_POPUP_MESSAGE } from '@component/auth/useGoogleAuthPopup';
 import { loginGoogle } from '@redux/slices/authSlice';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
@@ -10,30 +11,57 @@ const GoogleCallback = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const code = searchParams.get('code');
+  const error = searchParams.get('error');
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
 
   useEffect(() => {
+    const openerWindow = window.opener;
+    const canNotifyOpener =
+      Boolean(openerWindow) &&
+      openerWindow !== window &&
+      !openerWindow.closed;
+
+    if (canNotifyOpener) {
+      openerWindow.postMessage(
+        {
+          type: GOOGLE_AUTH_POPUP_MESSAGE,
+          status: code ? 'success' : 'error',
+          code,
+          message: error || 'Đăng nhập Google thất bại.',
+        },
+        window.location.origin
+      );
+
+      window.close();
+      return;
+    }
+
     const login = async () => {
+      if (!code) {
+        toast.error(error || 'Đăng nhập Google thất bại.');
+        navigate('/auth/login?auth=login', { replace: true });
+        return;
+      }
+
       try {
         await dispatch(loginGoogle(code)).unwrap();
-        toast.success('Đăng nhập thành công !');
+        toast.success('Đăng nhập thành công!');
         navigate(from, { replace: true });
-      } catch (error) {
-        toast.error(error);
+      } catch (loginError) {
+        toast.error(loginError);
         navigate('/auth/login?auth=login', { replace: true });
       }
     };
 
-    if (code) {
-      login();
-    }
-  }, [code, dispatch, navigate, from]);
+    login();
+  }, [code, dispatch, error, from, navigate]);
 
   return (
     <div className="flex h-[300px] flex-col items-center justify-center gap-3">
-      <Loading content={'Xử lý đăng nhập ...'} />
+      <Loading content="Xử lý đăng nhập Google..." />
     </div>
   );
 };
+
 export default GoogleCallback;

@@ -13,6 +13,7 @@ const CardItemFilm = ({
   genres,
   duration,
   isUpcoming = false,
+  showBuyButton = !isUpcoming,
   releaseDate,
   age = 13,
   img,
@@ -144,7 +145,7 @@ const CardItemFilm = ({
           </ul>
         </div>
 
-        {!isUpcoming && (
+        {showBuyButton && (
           <div onClick={() => openPopup(renderPopup())}>
             <CustomButton title="Mua vé" />
           </div>

@@ -74,6 +74,12 @@ export const listMenuAdmin = [
         role: ['ADMIN'],
       },
       {
+        name: 'Trạng thái phim',
+        path: '/admin/trang-thai-phim',
+        icon: BsTags,
+        role: ['ADMIN'],
+      },
+      {
         name: 'Người tham gia',
         path: '/admin/nguoi-tham-gia',
         icon: FaUsersGear,

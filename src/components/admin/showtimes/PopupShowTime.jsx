@@ -42,10 +42,7 @@ const formSchema = yup.object({
   startTime: yup
     .string()
     .required('Giờ bắt đầu không được để trống!')
-    .matches(
-      /^([01]\d|2[0-3]):[0-5]\d$/,
-      'Giờ bắt đầu phải theo định dạng HH:mm'
-    ),
+    .matches(/^([01]\d|2[0-3]):[0-5]\d$/, 'Giờ bắt đầu phải theo định dạng HH:mm'),
   originPrice: yup
     .number()
     .typeError('Giá gốc không hợp lệ!')
@@ -55,6 +52,7 @@ const formSchema = yup.object({
     .string()
     .oneOf(['INVALID', 'VALID', 'DELETED'], 'Trạng thái không hợp lệ!')
     .required('Trạng thái không được để trống!'),
+  special: yup.string().oneOf(['true', 'false'], 'Loại suất chiếu không hợp lệ!'),
   movieId: yup.string().required('Vui lòng chọn phim!'),
   movieVariationId: yup.string().required('Vui lòng chọn biến thể suất chiếu!'),
 });
@@ -63,6 +61,11 @@ const showTimeStatusOptions = [
   { value: 'VALID', label: 'Đang áp dụng' },
   { value: 'INVALID', label: 'Tạm ẩn' },
   { value: 'DELETED', label: 'Đã xóa' },
+];
+
+const showTimeSpecialOptions = [
+  { value: 'false', label: 'Suất thường' },
+  { value: 'true', label: 'Suất đặc biệt' },
 ];
 
 const mapMovieTheaterOptions = (response) => {
@@ -132,6 +135,9 @@ const buildDefaultValues = ({ showTimeDetail, defaults }) => {
       '',
     originPrice: rawShowTime?.originPrice ?? defaults?.originPrice ?? 0,
     status: rawShowTime?.status ?? defaults?.status ?? 'VALID',
+    special: String(
+      rawShowTime?.special ?? normalizedItem?.special ?? defaults?.special ?? false
+    ),
     movieId: String(normalizedItem?.movieId ?? defaults?.movieId ?? ''),
     movieVariationId: String(
       normalizedItem?.movieVariationId ?? defaults?.movieVariationId ?? ''
@@ -203,9 +209,7 @@ const PopupShowTime = ({
       try {
         const response = await findByMovieTheaterId(movieTheaterId);
         const options = mapCinemaTheaterOptions(response);
-        const currentCinemaTheaterId = String(
-          getValues('cinemaTheaterId') || ''
-        );
+        const currentCinemaTheaterId = String(getValues('cinemaTheaterId') || '');
 
         setCinemaTheaters(options);
 
@@ -215,7 +219,7 @@ const PopupShowTime = ({
         ) {
           setValue('cinemaTheaterId', '');
         }
-      } catch (error) {
+      } catch {
         setCinemaTheaters([]);
         toast.error('Không thể tải danh sách phòng chiếu!');
       } finally {
@@ -259,9 +263,9 @@ const PopupShowTime = ({
         if (!hasCurrentMovie) {
           setValue('movieId', fallbackMovieOption?.value ?? '');
         }
-      } catch (error) {
+      } catch {
         setMovies(fallbackMovieOption ? [fallbackMovieOption] : []);
-        toast.error('Không thể tải danh sách phim đã gán cho rạp này!');
+        toast.error('Không thể tải danh sách phim đã gắn cho rạp này!');
       } finally {
         setIsLoadingMovies(false);
       }
@@ -298,7 +302,7 @@ const PopupShowTime = ({
 
         setLoadedShowTimeDetail(showTimeDetail);
         reset(buildDefaultValues({ showTimeDetail, defaults }));
-      } catch (error) {
+      } catch {
         toast.error(
           isEditing
             ? 'Không thể tải chi tiết suất chiếu!'
@@ -327,6 +331,7 @@ const PopupShowTime = ({
       startTime: `${values.startTime}:00`,
       originPrice: Number(values.originPrice),
       status: values.status,
+      special: values.special === 'true',
     };
 
     try {
@@ -454,9 +459,9 @@ const PopupShowTime = ({
               !selectedMovieTheaterId
                 ? 'Chọn rạp trước'
                 : isLoadingMovies
-                  ? 'Đang tải phim đã gán...'
+                  ? 'Đang tải phim đã gắn...'
                   : movies.length === 0
-                    ? 'Rạp này chưa có phim được gán'
+                    ? 'Rạp này chưa có phim được gắn'
                     : 'Chọn phim'
             }
             disabled={
@@ -493,6 +498,15 @@ const PopupShowTime = ({
             options={showTimeStatusOptions}
             placeHolder="Chọn trạng thái"
             error={errors.status}
+          />
+          <FormField
+            name="special"
+            label="Loại suất chiếu"
+            control={control}
+            Component={CustomSelect}
+            options={showTimeSpecialOptions}
+            placeHolder="Chọn loại suất chiếu"
+            error={errors.special}
           />
         </form>
       )}

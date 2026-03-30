@@ -114,7 +114,7 @@ const Footer = () => {
 
   return (
     <footer className="bg-primary text-white">
-      <div className="mx-auto w-full max-w-[1280px] px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+      <div className="container py-10 lg:py-12">
         <div className="grid gap-x-8 gap-y-10 md:grid-cols-[220px_minmax(0,1fr)] lg:grid-cols-[180px_minmax(0,1fr)_320px] xl:grid-cols-[190px_minmax(0,1fr)_360px]">
           <div className="md:max-w-[220px]">
             <div className="mb-8 max-w-[170px]">

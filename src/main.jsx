@@ -49,6 +49,7 @@ import MovieVariationPage from '@pages/admin/MovieVariationPage';
 import TicketTypePage from '@pages/admin/TicketTypePage';
 import MovieGenrePage from '@pages/admin/MovieGenrePage';
 import MovieRolePage from '@pages/admin/MovieRolePage';
+import MovieStatusPage from '@pages/admin/MovieStatusPage';
 import MovieParticipantPage from '@pages/admin/MovieParticipantPage';
 import ParticipantPage from '@pages/admin/ParticipantPage';
 import SnackPage from '@pages/admin/SnackPage';
@@ -182,6 +183,10 @@ const router = createBrowserRouter([
           {
             path: 'the-loai-phim',
             element: <MovieGenrePage />,
+          },
+          {
+            path: 'trang-thai-phim',
+            element: <MovieStatusPage />,
           },
           {
             path: 'nguoi-tham-gia',

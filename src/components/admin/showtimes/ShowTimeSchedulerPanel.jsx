@@ -26,6 +26,7 @@ import {
   buildTimelineSlots,
   extractCollection,
   formatCurrency,
+  getSpecialMeta,
   getStatusMeta,
   getTimelineHours,
   getTodayValue,
@@ -199,6 +200,7 @@ const ShowTimeSchedulerPanel = () => {
           cinemaTheaterId: selectedCinemaTheaterId,
           showDate,
           status: 'VALID',
+          special: 'false',
         }}
         onSuccess={loadOccupiedSlots}
       />
@@ -394,6 +396,7 @@ const ShowTimeSchedulerPanel = () => {
                     const leftPercent =
                       ((clippedStart - timelineStartMinute) / totalTimelineMinutes) * 100;
                     const statusMeta = getStatusMeta(slot.status);
+                    const specialMeta = getSpecialMeta(slot.special);
                     const surfaceClass =
                       statusSurfaceClassMap[slot.status] ?? 'from-slate-600 to-slate-500';
 
@@ -417,9 +420,16 @@ const ShowTimeSchedulerPanel = () => {
                                   {slot.startTime} - {slot.endTime} | {slot.movieVariationName}
                                 </p>
                               </div>
-                              <span className="rounded-full bg-white/15 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em]">
-                                {statusMeta.label}
-                              </span>
+                              <div className="flex flex-col items-end gap-1">
+                                <span className="rounded-full bg-white/15 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em]">
+                                  {statusMeta.label}
+                                </span>
+                                {slot.special ? (
+                                  <span className="rounded-full bg-white/20 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white">
+                                    {specialMeta.label}
+                                  </span>
+                                ) : null}
+                              </div>
                             </div>
                             <p className="mt-2 text-xs text-white/80">
                               Giá gốc: {formatCurrency(slot.originPrice)}
@@ -455,6 +465,7 @@ const ShowTimeSchedulerPanel = () => {
             <div className="grid gap-3 xl:grid-cols-2">
               {timelineSlots.map((slot) => {
                 const statusMeta = getStatusMeta(slot.status);
+                const specialMeta = getSpecialMeta(slot.special);
 
                 return (
                   <div
@@ -500,6 +511,14 @@ const ShowTimeSchedulerPanel = () => {
                           {slot.totalSeatEmpty ?? '--'}
                         </p>
                       </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <span
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${specialMeta.className}`}
+                      >
+                        {specialMeta.label}
+                      </span>
                     </div>
 
                     <div className="mt-4 flex items-center justify-end gap-2">

@@ -77,6 +77,22 @@ export const normalizeTimeValue = (value) => {
   return `${padNumber(date.getHours())}:${padNumber(date.getMinutes())}`;
 };
 
+export const normalizeBooleanValue = (value) => {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'number') {
+    return value === 1;
+  }
+
+  if (typeof value === 'string') {
+    return value.toLowerCase() === 'true' || value === '1';
+  }
+
+  return false;
+};
+
 export const getTodayValue = () => normalizeDateValue(new Date());
 
 export const timeToMinutes = (value) => {
@@ -125,6 +141,20 @@ export const getStatusMeta = (status) => {
   }
 };
 
+export const getSpecialMeta = (isSpecial) => {
+  if (isSpecial) {
+    return {
+      label: 'Suất đặc biệt',
+      className: 'bg-fuchsia-100 text-fuchsia-700',
+    };
+  }
+
+  return {
+    label: 'Suất thường',
+    className: 'bg-slate-100 text-slate-600',
+  };
+};
+
 export const normalizeShowTimeItem = (entry) => {
   const showTime = entry?.showTime ?? entry ?? {};
   const movie = entry?.movie ?? showTime?.movie ?? {};
@@ -143,6 +173,7 @@ export const normalizeShowTimeItem = (entry) => {
     startTime: normalizeTimeValue(showTime?.startTime ?? entry?.startTime),
     endTime: normalizeTimeValue(showTime?.endTime ?? entry?.endTime),
     originPrice: Number(showTime?.originPrice ?? entry?.originPrice ?? 0),
+    special: normalizeBooleanValue(showTime?.special ?? entry?.special ?? false),
     status: showTime?.status ?? entry?.status ?? '',
     movieId: movie?.movieId ?? movie?.id ?? showTime?.movieId ?? '',
     movieTitle: movie?.title ?? showTime?.movieTitle ?? 'Chưa có tên phim',

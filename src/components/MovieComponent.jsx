@@ -198,6 +198,7 @@ const MovieComponent = () => {
                     genres={movie.genres}
                     duration={movie.duration}
                     isUpcoming={true}
+                    showBuyButton={movie.status === 'DC'}
                     releaseDate={movie.releaseDate}
                     age={movie.age}
                     img={movie.posterImage}

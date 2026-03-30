@@ -99,51 +99,6 @@ const ChooseSeatPage = ({
             </div>
           </div>
         </div>
-
-        <div className="grid gap-3 rounded-[24px] border border-slate-200 bg-slate-50 px-4 py-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-[#23486c]">
-              <EventSeatOutlinedIcon fontSize="small" />
-              <Typography
-                variant="overline"
-                sx={{
-                  color: 'inherit',
-                  fontWeight: 800,
-                  letterSpacing: '0.18em',
-                }}
-              >
-                Ghế đang chọn
-              </Typography>
-            </div>
-            <Typography
-              variant="body1"
-              sx={{ fontWeight: 700, color: '#334155' }}
-            >
-              {selectedSeatLabels.length > 0
-                ? selectedSeatLabels.join(', ')
-                : 'Bạn chưa chọn ghế nào.'}
-            </Typography>
-          </div>
-
-          <div className="rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-right">
-            <Typography
-              variant="caption"
-              sx={{
-                color: '#64748b',
-                letterSpacing: '0.16em',
-                textTransform: 'uppercase',
-              }}
-            >
-              Tạm tính
-            </Typography>
-            <Typography
-              variant="h5"
-              sx={{ fontWeight: 800, color: '#23486c' }}
-            >
-              {currencyFormatter.format(totalMoneyTicket)} đ
-            </Typography>
-          </div>
-        </div>
       </Box>
     </div>
   );

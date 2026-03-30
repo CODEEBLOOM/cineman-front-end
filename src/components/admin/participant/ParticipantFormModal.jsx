@@ -231,17 +231,6 @@ const ParticipantFormModal = ({
           </div>
 
           <div className="flex flex-col justify-end gap-3">
-            <FormField
-              name="avatar"
-              require={true}
-              label="Giá trị ảnh"
-              control={control}
-              Component={TextInput}
-              placeHolder="Đường dẫn ảnh sau khi tải lên"
-              error={errors.avatar}
-              disabled={true}
-            />
-
             <div>
               <Button
                 variant="contained"
@@ -259,6 +248,10 @@ const ParticipantFormModal = ({
                 />
               </Button>
             </div>
+
+            {errors.avatar ? (
+              <p className="text-sm text-red-600">{errors.avatar.message}</p>
+            ) : null}
           </div>
         </div>
 

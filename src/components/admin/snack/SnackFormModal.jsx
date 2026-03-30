@@ -299,17 +299,6 @@ const SnackFormModal = ({ snack, onSuccess, placement = 'top-center' }) => {
           </div>
 
           <div className="flex flex-col justify-end gap-3">
-            <FormField
-              name="image"
-              require={true}
-              label="Giá trị ảnh"
-              control={control}
-              Component={TextInput}
-              placeHolder="Đường dẫn ảnh sau khi tải lên"
-              error={errors.image}
-              disabled={true}
-            />
-
             <div>
               <Button
                 variant="contained"
@@ -327,6 +316,10 @@ const SnackFormModal = ({ snack, onSuccess, placement = 'top-center' }) => {
                 />
               </Button>
             </div>
+
+            {errors.image ? (
+              <p className="text-sm text-red-600">{errors.image.message}</p>
+            ) : null}
           </div>
         </div>
 

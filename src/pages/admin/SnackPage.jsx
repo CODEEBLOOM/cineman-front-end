@@ -184,7 +184,7 @@ const SnackPage = () => {
         title="Quản lý snack"
       />
 
-      <div className="mx-5 mt-3 overflow-auto rounded-sm bg-white px-4 py-3">
+      <div className="mx-5 mt-3 rounded-sm bg-white px-4 py-3">
         <div className="mb-4 flex items-center justify-between border-b pb-3">
           <div>
             <h2 className="text-lg font-semibold">Danh sách đồ ăn vặt</h2>

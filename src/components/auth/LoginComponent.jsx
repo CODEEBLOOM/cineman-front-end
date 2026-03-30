@@ -24,6 +24,7 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { clearAuthRedirect, resolveAuthRedirect } from '@utils/authRedirect';
 import * as yup from 'yup';
 
 const authFieldSx = {
@@ -88,9 +89,7 @@ const LoginComponent = ({ dispatch, navigate, onSelectRegister }) => {
   });
 
   const location = useLocation();
-  const from = location.state?.from?.pathname || '/';
-  const fromSearch = location.state?.from?.search || '';
-  const redirectUrl = from + fromSearch;
+  const redirectUrl = resolveAuthRedirect(location.state?.from, '/');
   const { startGoogleAuth } = useGoogleAuthPopup({
     dispatch,
     navigate,
@@ -103,6 +102,7 @@ const LoginComponent = ({ dispatch, navigate, onSelectRegister }) => {
       await dispatch(fetchLogin(data))?.unwrap();
       toast.success('Đăng nhập thành công!');
       loginReset();
+      clearAuthRedirect();
       navigate(redirectUrl, { replace: true });
     } catch (error) {
       toast.error(error);

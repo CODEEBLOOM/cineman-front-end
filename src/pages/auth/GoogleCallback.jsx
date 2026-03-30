@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { clearAuthRedirect, resolveAuthRedirect } from '@utils/authRedirect';
 
 const GoogleCallback = () => {
   const dispatch = useDispatch();
@@ -13,7 +14,7 @@ const GoogleCallback = () => {
   const code = searchParams.get('code');
   const error = searchParams.get('error');
   const location = useLocation();
-  const from = location.state?.from?.pathname || '/';
+  const redirectUrl = resolveAuthRedirect(location.state?.from, '/');
 
   useEffect(() => {
     const openerWindow = window.opener;
@@ -47,7 +48,8 @@ const GoogleCallback = () => {
       try {
         await dispatch(loginGoogle(code)).unwrap();
         toast.success('Đăng nhập thành công!');
-        navigate(from, { replace: true });
+        clearAuthRedirect();
+        navigate(redirectUrl, { replace: true });
       } catch (loginError) {
         toast.error(loginError);
         navigate('/auth/login?auth=login', { replace: true });
@@ -55,7 +57,7 @@ const GoogleCallback = () => {
     };
 
     login();
-  }, [code, dispatch, error, from, navigate]);
+  }, [code, dispatch, error, navigate, redirectUrl]);
 
   return (
     <div className="flex h-[300px] flex-col items-center justify-center gap-3">

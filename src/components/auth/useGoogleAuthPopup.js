@@ -2,6 +2,7 @@ import { loginWithGoogle } from '@apis/authService';
 import { loginGoogle } from '@redux/slices/authSlice';
 import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
+import { clearAuthRedirect, resolveAuthRedirect } from '@utils/authRedirect';
 
 export const GOOGLE_AUTH_POPUP_MESSAGE = 'poly-cinemas:google-auth';
 
@@ -49,6 +50,7 @@ export const useGoogleAuthPopup = ({
 }) => {
   const popupRef = useRef(null);
   const popupWatcherRef = useRef(null);
+  const resolvedRedirectUrl = resolveAuthRedirect(redirectUrl, '/');
 
   const clearPopupWatcher = useCallback(() => {
     if (popupWatcherRef.current) {
@@ -122,7 +124,8 @@ export const useGoogleAuthPopup = ({
       try {
         await dispatch(loginGoogle(event.data.code)).unwrap();
         toast.success('Đăng nhập thành công!');
-        navigate(redirectUrl, { replace: true });
+        clearAuthRedirect();
+        navigate(resolvedRedirectUrl, { replace: true });
       } catch (error) {
         toast.error(error || 'Đăng nhập Google thất bại.');
       }
@@ -134,7 +137,13 @@ export const useGoogleAuthPopup = ({
       window.removeEventListener('message', handleMessage);
       clearPopupWatcher();
     };
-  }, [clearPopupWatcher, dispatch, navigate, redirectUrl, resetPopupState]);
+  }, [
+    clearPopupWatcher,
+    dispatch,
+    navigate,
+    resetPopupState,
+    resolvedRedirectUrl,
+  ]);
 
   return { startGoogleAuth };
 };

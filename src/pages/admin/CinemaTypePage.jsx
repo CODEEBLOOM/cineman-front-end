@@ -142,7 +142,7 @@ const CinemaTypePage = () => {
         title="Quản lý loại phòng chiếu"
       />
 
-      <div className="mx-5 mt-3 overflow-auto rounded-sm bg-white px-4 py-3">
+      <div className="mx-5 mt-3 rounded-sm bg-white px-4 py-3">
         <div className="mb-4 flex items-center justify-between border-b pb-3">
           <div>
             <h2 className="text-lg font-semibold">Danh sách loại phòng chiếu</h2>

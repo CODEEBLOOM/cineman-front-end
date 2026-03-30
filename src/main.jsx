@@ -56,6 +56,8 @@ import SnackPage from '@pages/admin/SnackPage';
 import SnackTypePage from '@pages/admin/SnackTypePage';
 import MembershipRankPage from '@pages/admin/MembershipRankPage';
 import PromotionPage from '@pages/admin/PromotionPage.jsx';
+import RolePage from '@pages/admin/RolePage.jsx';
+import UserPage from '@pages/admin/UserPage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -222,11 +224,11 @@ const router = createBrowserRouter([
           },
           {
             path: 'nguoi-dung',
-            element: <p>Quản lý người dùng</p>,
+            element: <UserPage />,
           },
           {
             path: 'vai-tro',
-            element: <p>Quản lý vai trò</p>,
+            element: <RolePage />,
           },
           {
             path: 'quyen-han',

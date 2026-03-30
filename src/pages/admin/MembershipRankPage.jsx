@@ -290,7 +290,7 @@ const MembershipRankPage = () => {
         />
       </div>
 
-      <div className="mx-5 mt-4 overflow-auto rounded-sm bg-white px-4 py-3">
+      <div className="mx-5 mt-4 rounded-sm bg-white px-4 py-3">
         <div className="mb-4 flex items-center justify-between border-b pb-3">
           <div>
             <h2 className="text-lg font-semibold">Danh sách hạng thẻ</h2>

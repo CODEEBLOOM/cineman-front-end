@@ -27,6 +27,7 @@ import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FcGoogle } from 'react-icons/fc';
 import { useLocation } from 'react-router-dom';
+import { resolveAuthRedirect } from '@utils/authRedirect';
 import * as yup from 'yup';
 
 const registerFieldSx = {
@@ -124,9 +125,7 @@ const RegisterComponent = ({ dispatch, openSnackbar, navigate, setValue }) => {
     password: false,
     confirmPassword: false,
   });
-  const from = location.state?.from?.pathname || '/';
-  const fromSearch = location.state?.from?.search || '';
-  const redirectUrl = from + fromSearch;
+  const redirectUrl = resolveAuthRedirect(location.state?.from, '/');
   const { startGoogleAuth } = useGoogleAuthPopup({
     dispatch,
     navigate,

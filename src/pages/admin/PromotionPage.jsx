@@ -450,7 +450,7 @@ const PromotionPage = () => {
         />
       </div>
 
-      <div className="mx-5 mt-4 overflow-auto rounded-sm bg-white px-4 py-3">
+      <div className="mx-5 mt-4 rounded-sm bg-white px-4 py-3">
         <div className="mb-4 flex flex-col gap-4 border-b pb-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-lg font-semibold">Danh sách khuyến mãi</h2>

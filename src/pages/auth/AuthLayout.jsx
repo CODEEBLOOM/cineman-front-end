@@ -1,13 +1,24 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import { Suspense } from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Suspense, useEffect } from 'react';
 import Header from '@component/headers/Header';
 import Footer from '@component/Footer';
 import { useSelector } from 'react-redux';
+import { clearAuthRedirect, resolveAuthRedirect } from '@utils/authRedirect';
 
 const AuthLayout = () => {
   const { isAuthentication } = useSelector((state) => state.auth);
+  const location = useLocation();
+
+  const redirectUrl = resolveAuthRedirect(location.state?.from, '/');
+
+  useEffect(() => {
+    if (isAuthentication) {
+      clearAuthRedirect();
+    }
+  }, [isAuthentication]);
+
   if (isAuthentication) {
-    return <Navigate to={'/'} replace />;
+    return <Navigate to={redirectUrl} replace />;
   }
   return (
     // <div className="bg-dark-200 flex h-screen items-center justify-center">

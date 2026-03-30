@@ -165,7 +165,7 @@ const MovieParticipantPage = () => {
         title="Quản lý người tham gia phim"
       />
 
-      <div className="mx-5 mt-3 overflow-auto rounded-sm bg-white px-4 py-3">
+      <div className="mx-5 mt-3 rounded-sm bg-white px-4 py-3">
         <div className="mb-4 flex items-center justify-between border-b pb-3">
           <div>
             <h2 className="text-lg font-semibold">Danh sách người tham gia phim</h2>

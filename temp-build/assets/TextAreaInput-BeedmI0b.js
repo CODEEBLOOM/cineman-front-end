@@ -1,0 +1,1 @@
+import{j as e}from"./index-fawYB1tI.js";import{T as x}from"./TextField-CjemmdKv.js";const n=({onChange:o,value:s="",name:t,placeHolder:l="",error:a=!1,required:i=!1,...r})=>e.jsx("div",{children:e.jsx(x,{fullWidth:!0,placeholder:l,name:t,value:s,onChange:o,required:i,multiline:!0,rows:r.rows,rowsmax:r.rowsmax,error:!!a})});export{n as T};

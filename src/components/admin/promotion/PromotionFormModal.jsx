@@ -5,8 +5,20 @@ import {
   normalizePromotion,
   updatePromotion,
 } from '@apis/promotionAdminService';
+import {
+  extractPromotionTypeList,
+  findAllPromotionTypesAdmin,
+  normalizePromotionType,
+} from '@apis/promotionTypeAdminService';
+import {
+  extractMembershipRankList,
+  findAllMembershipRanksAdmin,
+  normalizeMembershipRank,
+} from '@apis/membershipRankService';
 import AdminModal from '@component/admin/common/AdminModal';
 import FormField from '@component/FormField';
+import CustomSelect from '@component/form_field/CustomSelect';
+import MulSelect from '@component/form_field/MulSelect';
 import TextAreaInput from '@component/form_field/TextAreaInput';
 import TextInput from '@component/form_field/TextInput';
 import { useModelContext } from '@context/ModalContext';
@@ -73,7 +85,10 @@ const formSchema = yup.object({
           return true;
         }
 
-        return new Date(value).getTime() >= new Date(context.parent.startDate).getTime();
+        return (
+          new Date(value).getTime() >=
+          new Date(context.parent.startDate).getTime()
+        );
       }
     ),
   discount: yup
@@ -96,13 +111,14 @@ const formSchema = yup.object({
     .typeError('Giá trị đơn tối thiểu phải là số hợp lệ!')
     .required('Giá trị đơn tối thiểu không được để trống!')
     .min(1, 'Giá trị đơn tối thiểu phải lớn hơn hoặc bằng 1!'),
-  staffId: yup
+  promotionTypeId: yup
     .number()
     .transform((_, originalValue) => transformNumber(originalValue))
-    .typeError('Không tìm thấy nhân viên tạo khuyến mãi!')
-    .required('Không tìm thấy nhân viên tạo khuyến mãi!')
-    .integer('Mã nhân viên không hợp lệ!')
-    .min(1, 'Mã nhân viên không hợp lệ!'),
+    .typeError('Loại khuyến mãi không hợp lệ!')
+    .required('Loại khuyến mãi không được để trống!')
+    .integer('Loại khuyến mãi không hợp lệ!')
+    .min(1, 'Loại khuyến mãi không hợp lệ!'),
+  membershipRankIds: yup.array().of(yup.string().trim()),
 });
 
 const pad = (value) => String(value).padStart(2, '0');
@@ -113,7 +129,9 @@ const toDateTimeLocalInput = (value) => {
   }
 
   const normalizedValue = String(value).trim().replace(' ', 'T');
-  const matchedValue = normalizedValue.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
+  const matchedValue = normalizedValue.match(
+    /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/
+  );
 
   if (matchedValue) {
     return matchedValue[1];
@@ -125,9 +143,9 @@ const toDateTimeLocalInput = (value) => {
     return '';
   }
 
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
-    date.getHours()
-  )}:${pad(date.getMinutes())}`;
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+    date.getDate()
+  )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
 const toApiDateTime = (value) => {
@@ -138,25 +156,30 @@ const toApiDateTime = (value) => {
   return value.length === 16 ? `${value}:00` : value;
 };
 
-const buildDefaultValues = ({ promotion, staffId }) => ({
+const buildDefaultValues = ({ promotion }) => ({
   name: promotion?.name ?? '',
   content: promotion?.content ?? '',
   startDate: toDateTimeLocalInput(promotion?.startDate),
   endDate: toDateTimeLocalInput(promotion?.endDate),
   discount:
-    promotion?.discount || promotion?.discount === 0 ? String(promotion.discount) : '',
+    promotion?.discount || promotion?.discount === 0
+      ? String(promotion.discount)
+      : '',
   quantity:
-    promotion?.quantity || promotion?.quantity === 0 ? String(promotion.quantity) : '',
+    promotion?.quantity || promotion?.quantity === 0
+      ? String(promotion.quantity)
+      : '',
   limitAmount:
     promotion?.limitAmount || promotion?.limitAmount === 0
       ? String(promotion.limitAmount)
       : '',
-  staffId:
-    promotion?.staffId || promotion?.staffId === 0
-      ? String(promotion.staffId)
-      : staffId
-        ? String(staffId)
-        : '',
+  promotionTypeId:
+    promotion?.promotionTypeId || promotion?.promotionTypeId === 0
+      ? String(promotion.promotionTypeId)
+      : '',
+  membershipRankIds: Array.isArray(promotion?.membershipRankIds)
+    ? promotion.membershipRankIds.map((id) => String(id))
+    : [],
 });
 
 const PromotionFormModal = ({
@@ -171,6 +194,9 @@ const PromotionFormModal = ({
     promotion ? normalizePromotion(promotion) : null
   );
   const [isFetchingDetail, setIsFetchingDetail] = useState(false);
+  const [promotionTypeOptions, setPromotionTypeOptions] = useState([]);
+  const [membershipRankOptions, setMembershipRankOptions] = useState([]);
+  const [isLoadingDependencies, setIsLoadingDependencies] = useState(false);
   const effectivePromotionId =
     promotionId ?? promotion?.id ?? promotion?.promotionId ?? null;
   const isEditing = Boolean(effectivePromotionId);
@@ -191,11 +217,11 @@ const PromotionFormModal = ({
     resolver: yupResolver(formSchema),
     defaultValues: buildDefaultValues({
       promotion: currentPromotion,
-      staffId: user?.userId,
     }),
   });
 
   const startDateValue = watch('startDate');
+  const selectedMembershipRankIds = watch('membershipRankIds');
 
   useEffect(() => {
     setPromotionDetail(promotion ? normalizePromotion(promotion) : null);
@@ -205,10 +231,9 @@ const PromotionFormModal = ({
     reset(
       buildDefaultValues({
         promotion: currentPromotion,
-        staffId: user?.userId,
       })
     );
-  }, [currentPromotion, reset, user?.userId]);
+  }, [currentPromotion, reset]);
 
   useEffect(() => {
     let isMounted = true;
@@ -247,16 +272,73 @@ const PromotionFormModal = ({
     };
   }, [effectivePromotionId]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchDependencies = async () => {
+      setIsLoadingDependencies(true);
+
+      try {
+        const [promotionTypesResponse, membershipRanksResponse] =
+          await Promise.all([
+            findAllPromotionTypesAdmin(),
+            findAllMembershipRanksAdmin(),
+          ]);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setPromotionTypeOptions(
+          extractPromotionTypeList(promotionTypesResponse)
+            .map(normalizePromotionType)
+            .map((item) => ({
+              value: String(item.id ?? item.promotionTypeId),
+              label: item.name || item.code || `#${item.id}`,
+            }))
+        );
+
+        setMembershipRankOptions(
+          extractMembershipRankList(membershipRanksResponse)
+            .map(normalizeMembershipRank)
+            .filter((item) => item.status !== false)
+            .map((item) => ({
+              value: String(item.id ?? item.membershipRankId),
+              label: item.name,
+            }))
+        );
+      } catch {
+        if (isMounted) {
+          toast.error('Không thể tải dữ liệu cấu hình khuyến mãi!');
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingDependencies(false);
+        }
+      }
+    };
+
+    fetchDependencies();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleReset = () => {
     reset(
       buildDefaultValues({
         promotion: currentPromotion,
-        staffId: user?.userId,
       })
     );
   };
 
   const onSubmit = async (value) => {
+    if (!user?.userId) {
+      toast.error('Không tìm thấy nhân viên tạo khuyến mãi!');
+      return;
+    }
+
     try {
       const payload = {
         name: value.name.trim(),
@@ -265,7 +347,11 @@ const PromotionFormModal = ({
         discount: Number(value.discount),
         quantity: Number(value.quantity),
         limitAmount: Number(value.limitAmount),
-        staffId: Number(value.staffId),
+        staffId: Number(user.userId),
+        promotionTypeId: Number(value.promotionTypeId),
+        membershipRankIds: Array.isArray(value.membershipRankIds)
+          ? value.membershipRankIds.map((id) => Number(id))
+          : [],
       };
 
       if (value.endDate) {
@@ -292,7 +378,9 @@ const PromotionFormModal = ({
       }
 
       toast.error(
-        isEditing ? 'Cập nhật khuyến mãi thất bại!' : 'Tạo khuyến mãi thất bại!'
+        isEditing
+          ? 'Cập nhật khuyến mãi thất bại!'
+          : 'Tạo khuyến mãi thất bại!'
       );
     }
   };
@@ -300,23 +388,33 @@ const PromotionFormModal = ({
   return (
     <AdminModal
       title={isEditing ? 'Cập nhật khuyến mãi' : 'Tạo khuyến mãi'}
-      description="Thiết lập voucher giảm giá, thời gian áp dụng và số lượng phát hành cho chương trình khuyến mãi."
       onClose={closeTopModal}
       size="lg"
       placement={placement}
       actions={
         <>
-          <Button type="button" variant="outlined" color="info" onClick={handleReset}>
+          <Button
+            type="button"
+            variant="outlined"
+            color="info"
+            onClick={handleReset}
+            disabled={isSubmitting || isFetchingDetail || isLoadingDependencies}
+          >
             Làm mới
           </Button>
-          <Button type="button" variant="outlined" color="warning" onClick={closeTopModal}>
+          <Button
+            type="button"
+            variant="outlined"
+            color="warning"
+            onClick={closeTopModal}
+          >
             Hủy bỏ
           </Button>
           <Button
             type="submit"
             form={formId}
             variant="contained"
-            disabled={isSubmitting || isFetchingDetail}
+            disabled={isSubmitting || isFetchingDetail || isLoadingDependencies}
           >
             {isEditing ? 'Cập nhật' : 'Tạo mới'}
           </Button>
@@ -333,11 +431,15 @@ const PromotionFormModal = ({
       {currentPromotion?.code ? (
         <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
           <p className="font-semibold">Mã voucher: {currentPromotion.code}</p>
-          <p>Mã sử dụng được hệ thống sinh tự động và sẽ hiển thị cho khách hàng sau khi lưu.</p>
+          <p>
+            Mã sử dụng được hệ thống sinh tự động và sẽ hiển thị cho khách hàng
+            sau khi lưu.
+          </p>
         </div>
       ) : (
         <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
-          Mã voucher sẽ được hệ thống tự động sinh sau khi tạo khuyến mãi thành công.
+          Mã voucher sẽ được hệ thống tự động sinh sau khi tạo khuyến mãi thành
+          công.
         </div>
       )}
 
@@ -354,20 +456,23 @@ const PromotionFormModal = ({
           />
 
           <FormField
-            name="staffId"
+            name="promotionTypeId"
             require={true}
-            label="Nhân viên tạo"
+            label="Loại khuyến mãi"
             control={control}
-            Component={TextInput}
-            type="number"
-            placeHolder="Mã nhân viên"
-            disabled={true}
-            error={errors.staffId}
+            Component={CustomSelect}
+            placeHolder="Chọn loại khuyến mãi"
+            options={promotionTypeOptions}
+            disabled={isLoadingDependencies || isFetchingDetail}
+            error={errors.promotionTypeId}
           />
         </div>
 
         <div className="mb-4 rounded-xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
-          Người tạo hiện tại: <strong>{currentPromotion?.staffName ?? user?.fullName ?? 'Chưa xác định'}</strong>
+          Người tạo hiện tại:{' '}
+          <strong>
+            {currentPromotion?.staffName ?? user?.fullName ?? 'Chưa xác định'}
+          </strong>
         </div>
 
         <FormField
@@ -380,6 +485,24 @@ const PromotionFormModal = ({
           rows={4}
           error={errors.content}
         />
+
+        <FormField
+          name="membershipRankIds"
+          label="Hạng thành viên áp dụng"
+          control={control}
+          Component={MulSelect}
+          placeHolder="Để trống nếu áp dụng cho tất cả hạng thành viên"
+          options={membershipRankOptions}
+          disabled={isLoadingDependencies || isFetchingDetail}
+          error={errors.membershipRankIds}
+        />
+
+        <div className="mb-4 rounded-xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
+          {Array.isArray(selectedMembershipRankIds) &&
+          selectedMembershipRankIds.length > 0
+            ? 'Khuyến mãi sẽ chỉ áp dụng cho các hạng thành viên đã chọn.'
+            : 'Không chọn hạng thành viên nghĩa là khuyến mãi áp dụng cho tất cả hạng thành viên.'}
+        </div>
 
         <div className="grid gap-4 md:grid-cols-2">
           <FormField
@@ -418,7 +541,8 @@ const PromotionFormModal = ({
           />
 
           <div className="flex items-end rounded-xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
-            Voucher chỉ áp dụng khi tổng giá trị hóa đơn lớn hơn hoặc bằng ngưỡng này.
+            Voucher chỉ áp dụng khi tổng giá trị hóa đơn lớn hơn hoặc bằng
+            ngưỡng này.
           </div>
         </div>
 
@@ -452,7 +576,15 @@ const PromotionFormModal = ({
         ) : null}
 
         {isFetchingDetail ? (
-          <p className="mt-4 text-sm text-slate-500">Đang tải chi tiết khuyến mãi...</p>
+          <p className="mt-4 text-sm text-slate-500">
+            Đang tải chi tiết khuyến mãi...
+          </p>
+        ) : null}
+
+        {isLoadingDependencies ? (
+          <p className="mt-2 text-sm text-slate-500">
+            Đang tải loại khuyến mãi và hạng thành viên...
+          </p>
         ) : null}
       </form>
     </AdminModal>

@@ -1,3 +1,4 @@
+import Loading from '@component/Loading';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Suspense, useEffect } from 'react';
 import Header from '@component/headers/Header';
@@ -26,7 +27,7 @@ const AuthLayout = () => {
     //     <img className="mx-auto mb-6" src="/weconnect-logo.png" alt="" />
     <>
       <Header />
-      <Suspense fallback={<p>Loading ...</p>}>
+      <Suspense fallback={<Loading minHeight="45vh" />}>
         <Outlet />
       </Suspense>
       <Footer />

@@ -1,0 +1,1 @@
+import{p as P,q as S,k as c,t as u}from"./createSimplePaletteValueFilter-rwSua_3a.js";function g(e){var t;const{elementType:s,externalSlotProps:p,ownerState:r,skipResolvingSlotProps:n=!1,...a}=e,o=n?{}:P(p,r),{props:l,internalRef:f}=S({...a,externalSlotProps:o}),i=c(f,o==null?void 0:o.ref,(t=e.additionalProps)==null?void 0:t.ref);return u(s,{...l,ref:i},r)}export{g as u};

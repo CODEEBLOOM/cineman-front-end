@@ -107,7 +107,6 @@ const CinemaTypeFormModal = ({
   return (
     <AdminModal
       title={isEditing ? 'Cập nhật loại phòng chiếu' : 'Tạo loại phòng chiếu'}
-      description="loại phòng chiếu dùng để quản lý loại phòng chiếu như 2D, 3D, IMAX hoặc các cấu hình phòng chuyên biệt khác."
       onClose={closeTopModal}
       size="sm"
       placement={placement}

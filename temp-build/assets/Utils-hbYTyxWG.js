@@ -1,0 +1,1 @@
+const i=(t,r="VND")=>new Intl.NumberFormat("vi-VN",{style:"currency",currency:r}).format(t),a=(t,r={locale:"vi-VN",minimumFractionDigits:0,maximumFractionDigits:2})=>typeof t!="number"||isNaN(t)?"":new Intl.NumberFormat(r.locale,{minimumFractionDigits:r.minimumFractionDigits,maximumFractionDigits:r.maximumFractionDigits}).format(t);export{i as c,a as f};

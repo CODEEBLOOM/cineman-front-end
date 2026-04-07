@@ -65,8 +65,12 @@ const MyAccount = () => {
       default:
         return (
           <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start xl:grid-cols-[260px_minmax(0,1fr)]">
-            <UploadAvatar setAvatar={setAvatar} avatar={avatar} />
-            <FormInfoUser avatar={avatar} />
+            <div className="rounded-[16px] border border-slate-200/80 bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.08)]">
+              <UploadAvatar setAvatar={setAvatar} avatar={avatar} />
+            </div>
+            <div className="rounded-[16px] border border-slate-200/80 bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.08)]">
+              <FormInfoUser avatar={avatar} />
+            </div>
           </div>
         );
     }
@@ -79,7 +83,7 @@ const MyAccount = () => {
       <div className="pointer-events-none absolute bottom-10 right-[-100px] h-64 w-64 rounded-full bg-[rgba(148,163,184,0.14)] blur-3xl" />
 
       <div className="container relative">
-        <div className="overflow-hidden rounded-[28px] border border-white/60 bg-white/95 shadow-[0_20px_60px_rgba(15,23,42,0.14)] backdrop-blur">
+        <div className="overflow-hidden rounded-[16px] border border-white/60 bg-white/95 shadow-[0_20px_60px_rgba(15,23,42,0.14)] backdrop-blur">
           <div className="border-b border-slate-200/90 px-5 pt-4 md:px-8 md:pt-5">
             <div className="flex flex-wrap gap-x-6 gap-y-2">
               {ACCOUNT_TABS.map((tab) => {

@@ -146,6 +146,12 @@ export const listMenuAdmin = [
         role: ['CADMIN'],
       },
       {
+        name: 'Loại khuyến mãi',
+        icon: BsTags,
+        path: '/admin/loai-khuyen-mai',
+        role: ['ADMIN', 'CADMIN'],
+      },
+      {
         name: 'Quản lý khuyến mãi',
         icon: MdOutlineDiscount,
         path: '/admin/khuyen-mai',

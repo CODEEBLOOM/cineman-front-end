@@ -7,7 +7,11 @@ import {
   findUserById,
   normalizeUser,
 } from '@apis/userService';
-import { extractRoleList, findAllRolesAdmin, normalizeRole } from '@apis/roleService';
+import {
+  extractRoleList,
+  findAllRolesAdmin,
+  normalizeRole,
+} from '@apis/roleService';
 import CustomBreadcrumb from '@component/CustomBreakcrumb';
 import DataGridTable from '@component/DataGridTable';
 import ImageComponent from '@component/ImageComponent';
@@ -88,7 +92,9 @@ const UserPage = () => {
   const [roles, setRoles] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [paginationModel, setPaginationModel] = useState(defaultPaginationModel);
+  const [paginationModel, setPaginationModel] = useState(
+    defaultPaginationModel
+  );
 
   const loadRoles = useCallback(async () => {
     try {
@@ -141,7 +147,9 @@ const UserPage = () => {
   const handleOpenModal = useCallback(
     async (user = null) => {
       if (!user?.userId) {
-        openPopup(<UserFormModal roles={roles} onSuccess={reloadCurrentPage} />);
+        openPopup(
+          <UserFormModal roles={roles} onSuccess={reloadCurrentPage} />
+        );
         return;
       }
 
@@ -150,7 +158,11 @@ const UserPage = () => {
         const userDetail = normalizeUser(extractUserDetail(response));
 
         openPopup(
-          <UserFormModal user={userDetail} roles={roles} onSuccess={reloadCurrentPage} />
+          <UserFormModal
+            user={userDetail}
+            roles={roles}
+            onSuccess={reloadCurrentPage}
+          />
         );
       } catch {
         toast.error('Không thể tải chi tiết người dùng!');
@@ -212,7 +224,9 @@ const UserPage = () => {
   const summary = useMemo(() => {
     const activeCount = users.filter((user) => user.isActive).length;
     const adminCount = users.filter((user) =>
-      (user.roleIds ?? []).some((roleId) => ['ADMIN', 'CADMIN'].includes(roleId))
+      (user.roleIds ?? []).some((roleId) =>
+        ['ADMIN', 'CADMIN'].includes(roleId)
+      )
     ).length;
     const customerCount = users.filter((user) =>
       (user.roleIds ?? []).includes('USER')

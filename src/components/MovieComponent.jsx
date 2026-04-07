@@ -1,6 +1,5 @@
 import { findAllByFilter } from '@apis/movieService';
-import { Box, Pagination, Tab, Tabs } from '@mui/material';
-import Loading from '@component/Loading';
+import { Box, Pagination, Skeleton, Tab, Tabs } from '@mui/material';
 import { setMovieStatus } from '@redux/slices/movieSlice.js';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -13,6 +12,8 @@ const MOVIE_TABS = [
   { label: 'Phim đang chiếu', status: 'DC' },
   { label: 'Xuất chiếu đặc biệt', status: 'DB' },
 ];
+
+const DEFAULT_SKELETON_COUNT = 8;
 
 const movieTabSx = {
   minHeight: { xs: 48, md: 56 },
@@ -33,6 +34,42 @@ const movieTabSx = {
     backgroundColor: 'transparent',
   },
 };
+
+const MovieCardSkeleton = ({ showReleaseDate = false, showButton = false }) => (
+  <div className="mb-3 flex w-full gap-5 px-4 pb-4 sm:block">
+    <div className="w-full min-w-[120px] max-w-[150px] sm:max-w-[300px]">
+      <div className="relative aspect-[235/372] overflow-hidden rounded-[26px]">
+        <Skeleton
+          variant="rounded"
+          sx={{
+            width: '100%',
+            height: '100%',
+            transform: 'none',
+            borderRadius: '26px',
+          }}
+        />
+      </div>
+    </div>
+
+    <div className="flex-1">
+      <div className="text-left">
+        <Skeleton variant="text" width="72%" height={38} />
+        <Skeleton variant="text" width="92%" height={28} />
+        <Skeleton variant="text" width="58%" height={28} />
+        {showReleaseDate && <Skeleton variant="text" width="64%" height={28} />}
+      </div>
+
+      {showButton && (
+        <Skeleton
+          variant="rounded"
+          width={132}
+          height={40}
+          sx={{ mt: 2, borderRadius: '999px' }}
+        />
+      )}
+    </div>
+  </div>
+);
 
 const MovieComponent = () => {
   const { movieStatus } = useSelector((state) => state.movie);
@@ -91,6 +128,11 @@ const MovieComponent = () => {
     setPageActive(newPage);
   };
 
+  const renderMovieSkeletons = (options = {}) =>
+    Array.from({ length: meta.pageSize || DEFAULT_SKELETON_COUNT }, (_, index) => (
+      <MovieCardSkeleton key={`movie-skeleton-${value}-${index}`} {...options} />
+    ));
+
   return (
     <div className="container">
       <div className="mt-10 text-center">
@@ -137,9 +179,7 @@ const MovieComponent = () => {
           <TabPanel value={value} index={0}>
             <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-4">
               {isLoading ? (
-                <div className="col-span-full w-full">
-                  <Loading />
-                </div>
+                renderMovieSkeletons({ showReleaseDate: true })
               ) : (
                 (listMovies || []).map((movie) => (
                   <CardItemFilm
@@ -162,9 +202,7 @@ const MovieComponent = () => {
           <TabPanel value={value} index={1}>
             <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-4">
               {isLoading ? (
-                <div className="col-span-full w-full">
-                  <Loading />
-                </div>
+                renderMovieSkeletons({ showButton: true })
               ) : (
                 (listMovies || []).map((movie) => (
                   <CardItemFilm
@@ -186,9 +224,7 @@ const MovieComponent = () => {
           <TabPanel value={value} index={2}>
             <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-4">
               {isLoading ? (
-                <div className="col-span-full w-full">
-                  <Loading />
-                </div>
+                renderMovieSkeletons({ showReleaseDate: true })
               ) : (
                 (listMovies || []).map((movie) => (
                   <CardItemFilm

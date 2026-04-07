@@ -21,6 +21,14 @@ import FormField from '@component/FormField';
 import TextInput from '@component/form_field/TextInput';
 import CustomSelect from '@component/form_field/CustomSelect';
 
+const DEFAULT_SEAT_LAYOUT = {
+  numberOfRows: 10,
+  numberOfColumns: 10,
+  regularSeatRow: 7,
+  vipSeatRow: 2,
+  doubleSeatRow: 1,
+};
+
 const formSchema = yup.object({
   name: yup.string().trim().required('Tên phòng chiếu không được để trống!'),
   numberOfRows: yup
@@ -96,11 +104,15 @@ const ModalCreateCinemaTheater = ({
   const buildDefaultValues = useCallback(
     () => ({
       name: cinemaTheaters?.name ?? '',
-      numberOfRows: cinemaTheaters?.numberOfRows ?? '',
-      numberOfColumns: cinemaTheaters?.numberOfColumns ?? '',
-      regularSeatRow: cinemaTheaters?.regularSeatRow ?? '',
-      vipSeatRow: cinemaTheaters?.vipSeatRow ?? '',
-      doubleSeatRow: cinemaTheaters?.doubleSeatRow ?? '',
+      numberOfRows:
+        cinemaTheaters?.numberOfRows ?? DEFAULT_SEAT_LAYOUT.numberOfRows,
+      numberOfColumns:
+        cinemaTheaters?.numberOfColumns ?? DEFAULT_SEAT_LAYOUT.numberOfColumns,
+      regularSeatRow:
+        cinemaTheaters?.regularSeatRow ?? DEFAULT_SEAT_LAYOUT.regularSeatRow,
+      vipSeatRow: cinemaTheaters?.vipSeatRow ?? DEFAULT_SEAT_LAYOUT.vipSeatRow,
+      doubleSeatRow:
+        cinemaTheaters?.doubleSeatRow ?? DEFAULT_SEAT_LAYOUT.doubleSeatRow,
       movieTheaterId: cinemaTheaters?.movieTheater?.movieTheaterId ?? '',
       cinemaTypeId: cinemaTheaters?.cinemaType?.cinemaTypeId ?? '',
     }),

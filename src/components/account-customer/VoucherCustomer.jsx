@@ -1,11 +1,14 @@
 import { findAllPromotions } from '@apis/promotionService';
 import {
+  extractPromotionTypeList,
+  findAllPromotionTypesAdmin,
+  normalizePromotionType,
+} from '@apis/promotionTypeAdminService';
+import {
   extractPromotionList,
   normalizePromotion,
 } from '@apis/promotionAdminService';
-import {
-  accountPrimaryButtonSx,
-} from '@component/account-customer/accountUiStyles';
+import { accountPrimaryButtonSx } from '@component/account-customer/accountUiStyles';
 import AccessTimeRounded from '@mui/icons-material/AccessTimeRounded';
 import AddCardRounded from '@mui/icons-material/AddCardRounded';
 import CardGiftcardRounded from '@mui/icons-material/CardGiftcardRounded';
@@ -30,26 +33,22 @@ import {
 } from '@mui/material';
 import { currencyFormatter } from '@libs/Utils';
 import DateFormatter from '@utils/DateFormatter';
+import { PROMOTION_ACTIVATED_EVENT } from '@utils/promotionRealtime';
 import { motion } from 'framer-motion';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 const MotionPaper = motion(Paper);
 
 const shellPaperSx = {
-  borderRadius: '22px',
+  borderRadius: '16px',
   border: '1px solid rgba(148,163,184,0.18)',
   backgroundColor: '#fff',
   boxShadow: '0 14px 34px rgba(15,23,42,0.08)',
 };
 
-const filterOptions = [
-  { key: 'all', label: 'Tất cả' },
-  { key: 'movie', label: 'Voucher Vé Phim' },
-  { key: 'combo', label: 'Voucher Combo Bắp Nước' },
-  { key: 'expiring', label: 'Sắp hết hạn' },
-];
+const ALL_FILTER_KEY = 'all';
 
 const fallbackDescriptions = {
   movie: [
@@ -88,11 +87,11 @@ const isVoucherExpiringSoon = (promotion) => {
   }
 
   const timeLeft = new Date(promotion.endDate).getTime() - Date.now();
-  return timeLeft <= 7 * 24 * 60 * 60 * 1000;
+  return timeLeft <= 2 * 24 * 60 * 60 * 1000;
 };
 
 const resolveVoucherCategory = (promotion) => {
-  const source = `${promotion?.name ?? ''} ${promotion?.content ?? ''}`.toLowerCase();
+  const source = `${promotion?.promotionTypeName ?? ''} ${promotion?.name ?? ''} ${promotion?.content ?? ''}`.toLowerCase();
 
   if (
     source.includes('combo') ||
@@ -201,7 +200,7 @@ const buildDescriptionLines = (promotion, category) => {
     return content;
   }
 
-  const fallback = [...fallbackDescriptions[category] ?? fallbackDescriptions.general];
+  const fallback = [...(fallbackDescriptions[category] ?? fallbackDescriptions.general)];
 
   if (Number(promotion?.limitAmount ?? 0) > 0) {
     fallback.unshift(
@@ -343,7 +342,7 @@ const VoucherCard = ({
               sx={{
                 width: featured ? 64 : 50,
                 height: featured ? 64 : 50,
-                borderRadius: featured ? '18px' : '15px',
+                borderRadius: '16px',
                 bgcolor: theme.iconBg,
                 color: theme.accent,
                 boxShadow: `inset 0 1px 0 ${alpha('#ffffff', 0.72)}`,
@@ -578,41 +577,122 @@ const EmptyVoucherState = ({ onOpen }) => (
 
 const VoucherCustomer = () => {
   const { user } = useSelector((state) => state.user);
+  const [allPromotions, setAllPromotions] = useState([]);
   const [promotions, setPromotions] = useState([]);
+  const [promotionTypes, setPromotionTypes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [selectedPromotionTypeId, setSelectedPromotionTypeId] =
+    useState(ALL_FILTER_KEY);
+  const [expiringSoonOnly, setExpiringSoonOnly] = useState(false);
+
+  const fetchPromotionSummary = useCallback(async () => {
+    const response = await findAllPromotions(user.userId);
+    const payload = extractPromotionList(response).map((promotion) =>
+      buildVoucherMeta(normalizePromotion(promotion))
+    );
+
+    setAllPromotions(payload);
+    return payload;
+  }, [user.userId]);
+
+  const fetchPromotionTypes = useCallback(async () => {
+    const response = await findAllPromotionTypesAdmin();
+    const nextPromotionTypes = extractPromotionTypeList(response)
+      .map(normalizePromotionType)
+      .filter((promotionType) => promotionType?.id || promotionType?.promotionTypeId);
+
+    setPromotionTypes(nextPromotionTypes);
+    return nextPromotionTypes;
+  }, []);
+
+  const fetchPromotionList = useCallback(
+    async ({ silent = false } = {}) => {
+      setIsLoading(true);
+
+      const params = {};
+
+      if (selectedPromotionTypeId !== ALL_FILTER_KEY) {
+        params.promotionTypeId = Number(selectedPromotionTypeId);
+      }
+
+      if (expiringSoonOnly) {
+        params.expiringSoon = true;
+      }
+
+      try {
+        const response = await findAllPromotions(
+          user.userId,
+          Object.keys(params).length > 0 ? params : undefined
+        );
+        const payload = extractPromotionList(response).map((promotion) =>
+          buildVoucherMeta(normalizePromotion(promotion))
+        );
+
+        setPromotions(payload);
+        return payload;
+      } catch (error) {
+        if (!silent) {
+          toast.error('Không thể tải danh sách voucher!');
+        }
+        throw error;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [expiringSoonOnly, selectedPromotionTypeId, user.userId]
+  );
 
   useEffect(() => {
     let isMounted = true;
 
     document.title = 'Danh sách voucher - POLY CINEMAS';
-    setIsLoading(true);
+    Promise.allSettled([
+      fetchPromotionSummary(),
+      fetchPromotionTypes(),
+    ]).then(([promotionResult, promotionTypeResult]) => {
+      if (!isMounted) {
+        return;
+      }
 
-    findAllPromotions(user.userId)
-      .then((res) => {
-        if (!isMounted) {
-          return;
-        }
-
-        const payload = extractPromotionList(res).map((promotion) =>
-          buildVoucherMeta(normalizePromotion(promotion))
-        );
-        setPromotions(payload);
-      })
-      .catch(() => {
+      if (promotionResult.status === 'fulfilled') {
+        setAllPromotions(promotionResult.value);
+      } else {
         toast.error('Không thể tải danh sách voucher!');
-      })
-      .finally(() => {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      });
+      }
+
+      if (promotionTypeResult.status === 'fulfilled') {
+        setPromotionTypes(promotionTypeResult.value);
+      }
+    });
 
     return () => {
       isMounted = false;
     };
-  }, [user.userId]);
+  }, [fetchPromotionSummary, fetchPromotionTypes]);
+
+  useEffect(() => {
+    fetchPromotionList().catch(() => {});
+  }, [fetchPromotionList]);
+
+  useEffect(() => {
+    const handlePromotionActivated = () => {
+      fetchPromotionSummary().catch(() => {});
+      fetchPromotionList({ silent: true }).catch(() => {});
+    };
+
+    window.addEventListener(
+      PROMOTION_ACTIVATED_EVENT,
+      handlePromotionActivated
+    );
+
+    return () => {
+      window.removeEventListener(
+        PROMOTION_ACTIVATED_EVENT,
+        handlePromotionActivated
+      );
+    };
+  }, [fetchPromotionList, fetchPromotionSummary]);
 
   const handleCopy = (code) => {
     if (!code) {
@@ -644,23 +724,47 @@ const VoucherCustomer = () => {
     toast.info('Tính năng nạp voucher mới sẽ được cập nhật khi API hỗ trợ.');
   };
 
+  const promotionTypeFilters = useMemo(() => {
+    const apiPromotionTypes = promotionTypes
+      .map((promotionType) => ({
+        key: String(promotionType?.id ?? promotionType?.promotionTypeId),
+        label: promotionType?.name || promotionType?.code,
+      }))
+      .filter((item) => item.key && item.label);
+
+    if (apiPromotionTypes.length > 0) {
+      return [{ key: ALL_FILTER_KEY, label: 'Tất cả' }, ...apiPromotionTypes];
+    }
+
+    const fallbackPromotionTypes = allPromotions.reduce((accumulator, promotion) => {
+      if (!promotion?.promotionTypeId || !promotion?.promotionTypeName) {
+        return accumulator;
+      }
+
+      if (
+        accumulator.some(
+          (item) => String(item.key) === String(promotion.promotionTypeId)
+        )
+      ) {
+        return accumulator;
+      }
+
+      accumulator.push({
+        key: String(promotion.promotionTypeId),
+        label: promotion.promotionTypeName,
+      });
+
+      return accumulator;
+    }, []);
+
+    return [{ key: ALL_FILTER_KEY, label: 'Tất cả' }, ...fallbackPromotionTypes];
+  }, [allPromotions, promotionTypes]);
+
   const filteredPromotions = useMemo(() => {
     const keyword = searchKeyword.trim().toLowerCase();
 
     return promotions
       .filter((promotion) => {
-        if (activeFilter === 'movie' && promotion.category !== 'movie') {
-          return false;
-        }
-
-        if (activeFilter === 'combo' && promotion.category !== 'combo') {
-          return false;
-        }
-
-        if (activeFilter === 'expiring' && !promotion.expiringSoon) {
-          return false;
-        }
-
         if (!keyword) {
           return true;
         }
@@ -670,6 +774,7 @@ const VoucherCustomer = () => {
           promotion.code,
           promotion.content,
           promotion.discountLabel,
+          promotion.promotionTypeName,
         ]
           .join(' ')
           .toLowerCase()
@@ -686,18 +791,15 @@ const VoucherCustomer = () => {
 
         return new Date(left.endDate || 0).getTime() - new Date(right.endDate || 0).getTime();
       });
-  }, [activeFilter, promotions, searchKeyword]);
+  }, [promotions, searchKeyword]);
 
   const summary = useMemo(() => {
-    const total = promotions.length;
-    const ready = promotions.filter((item) => item.available).length;
-    const expiring = promotions.filter((item) => item.expiringSoon).length;
+    const total = allPromotions.length;
+    const ready = allPromotions.filter((item) => item.available).length;
+    const expiring = allPromotions.filter((item) => item.expiringSoon).length;
 
     return { total, ready, expiring };
-  }, [promotions]);
-
-  const featuredPromotion = filteredPromotions[0] ?? null;
-  const secondaryPromotions = featuredPromotion ? filteredPromotions.slice(1) : [];
+  }, [allPromotions]);
 
   return (
     <Stack spacing={2.5}>
@@ -787,7 +889,7 @@ const VoucherCustomer = () => {
                 Search & Filter
               </Typography>
               <Typography sx={{ mt: 0.5, fontSize: 13.5, color: '#64748b' }}>
-                Lọc nhanh theo loại voucher hoặc tìm mã cụ thể bạn muốn sử dụng.
+                Lọc nhanh theo loại khuyến mãi, voucher sắp hết hạn hoặc tìm mã cụ thể bạn muốn sử dụng.
               </Typography>
             </Box>
 
@@ -833,14 +935,14 @@ const VoucherCustomer = () => {
             />
 
             <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-              {filterOptions.map((option) => {
-                const isActive = activeFilter === option.key;
+              {promotionTypeFilters.map((option) => {
+                const isActive = selectedPromotionTypeId === option.key;
 
                 return (
                   <Button
                     key={option.key}
                     type="button"
-                    onClick={() => setActiveFilter(option.key)}
+                    onClick={() => setSelectedPromotionTypeId(option.key)}
                     sx={{
                       minHeight: 40,
                       borderRadius: '999px',
@@ -861,6 +963,28 @@ const VoucherCustomer = () => {
                   </Button>
                 );
               })}
+
+              <Button
+                type="button"
+                onClick={() => setExpiringSoonOnly((prev) => !prev)}
+                sx={{
+                  minHeight: 40,
+                  borderRadius: '999px',
+                  px: 2,
+                  color: expiringSoonOnly ? '#fff' : '#9a3412',
+                  bgcolor: expiringSoonOnly ? '#c2410c' : alpha('#fb923c', 0.14),
+                  fontSize: 13.5,
+                  fontWeight: 700,
+                  textTransform: 'none',
+                  boxShadow: 'none',
+                  '&:hover': {
+                    bgcolor: expiringSoonOnly ? '#9a3412' : alpha('#fb923c', 0.22),
+                    boxShadow: 'none',
+                  },
+                }}
+              >
+                Sắp hết hạn
+              </Button>
             </Stack>
           </Stack>
 
@@ -869,56 +993,38 @@ const VoucherCustomer = () => {
               sx={{
                 display: 'grid',
                 gap: 2,
-                gridTemplateColumns: { xs: '1fr', xl: 'minmax(0, 1.08fr) minmax(0, 1fr)' },
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  lg: 'repeat(2, minmax(0, 1fr))',
+                },
               }}
             >
-              <LoadingVoucherCard featured />
-              <Box
-                sx={{
-                  display: 'grid',
-                  gap: 2,
-                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
-                }}
-              >
-                <LoadingVoucherCard />
-                <LoadingVoucherCard />
-                <LoadingVoucherCard />
-                <LoadingVoucherCard />
-              </Box>
+              <LoadingVoucherCard />
+              <LoadingVoucherCard />
+              <LoadingVoucherCard />
+              <LoadingVoucherCard />
             </Box>
           ) : filteredPromotions.length > 0 ? (
             <Box
               sx={{
                 display: 'grid',
                 gap: 2,
-                gridTemplateColumns: { xs: '1fr', xl: 'minmax(0, 1.08fr) minmax(0, 1fr)' },
-                alignItems: 'start',
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  lg: 'repeat(2, minmax(0, 1fr))',
+                },
+                alignItems: 'stretch',
               }}
             >
-              <VoucherCard
-                promotion={featuredPromotion}
-                featured
-                onCopy={handleCopy}
-                onUse={handleUseVoucher}
-              />
-
-              <Box
-                sx={{
-                  display: 'grid',
-                  gap: 2,
-                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
-                }}
-              >
-                {secondaryPromotions.map((promotion, index) => (
-                  <VoucherCard
-                    key={promotion.id ?? promotion.code ?? `${promotion.name}-${index}`}
-                    promotion={promotion}
-                    onCopy={handleCopy}
-                    onUse={handleUseVoucher}
-                  />
-                ))}
-                <AddVoucherTile onOpen={handleOpenRecharge} />
-              </Box>
+              {filteredPromotions.map((promotion, index) => (
+                <VoucherCard
+                  key={promotion.id ?? promotion.code ?? `${promotion.name}-${index}`}
+                  promotion={promotion}
+                  onCopy={handleCopy}
+                  onUse={handleUseVoucher}
+                />
+              ))}
+              <AddVoucherTile onOpen={handleOpenRecharge} />
             </Box>
           ) : (
             <EmptyVoucherState onOpen={handleOpenRecharge} />

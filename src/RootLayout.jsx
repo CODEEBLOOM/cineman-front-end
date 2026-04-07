@@ -1,4 +1,6 @@
 import '@fontsource/be-vietnam-pro/300.css';
+import Loading from '@component/Loading';
+import PromotionRealtimeListener from '@component/realtime/PromotionRealtimeListener.jsx';
 import { Alert, Snackbar } from '@mui/material';
 import { closeSnackbar } from '@redux/slices/snackbarSlice';
 import { Suspense, useEffect } from 'react';
@@ -25,7 +27,8 @@ function RootLayout() {
   return (
     <ModalProvider>
       <div>
-        <Suspense fallback={<p>Loading ...</p>}>
+        <PromotionRealtimeListener />
+        <Suspense fallback={<Loading minHeight="55vh" />}>
           <Outlet />
         </Suspense>
         <Snackbar

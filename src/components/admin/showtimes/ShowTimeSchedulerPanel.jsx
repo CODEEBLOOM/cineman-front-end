@@ -13,11 +13,7 @@ import EditOutlined from '@mui/icons-material/EditOutlined';
 import EventSeatRounded from '@mui/icons-material/EventSeatRounded';
 import ScheduleRounded from '@mui/icons-material/ScheduleRounded';
 import TheaterComedyRounded from '@mui/icons-material/TheaterComedyRounded';
-import {
-  Button,
-  MenuItem,
-  TextField,
-} from '@mui/material';
+import { Button, MenuItem, TextField } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -32,7 +28,14 @@ import {
   getTodayValue,
 } from './showTimeUtils';
 
-const SelectField = ({ label, value, onChange, options, placeholder, disabled = false }) => {
+const SelectField = ({
+  label,
+  value,
+  onChange,
+  options,
+  placeholder,
+  disabled = false,
+}) => {
   return (
     <TextField
       fullWidth
@@ -78,13 +81,15 @@ const ShowTimeSchedulerPanel = () => {
 
   const selectedMovieTheater = useMemo(() => {
     return (
-      movieTheaters.find((item) => item.value === selectedMovieTheaterId) ?? null
+      movieTheaters.find((item) => item.value === selectedMovieTheaterId) ??
+      null
     );
   }, [movieTheaters, selectedMovieTheaterId]);
 
   const selectedCinemaTheater = useMemo(() => {
     return (
-      cinemaTheaters.find((item) => item.value === selectedCinemaTheaterId) ?? null
+      cinemaTheaters.find((item) => item.value === selectedCinemaTheaterId) ??
+      null
     );
   }, [cinemaTheaters, selectedCinemaTheaterId]);
 
@@ -105,10 +110,12 @@ const ShowTimeSchedulerPanel = () => {
 
     try {
       const response = await findAllMovieTheater();
-      const options = extractCollection(response, ['movieTheaters']).map((item) => ({
-        value: String(item?.movieTheaterId ?? item?.id ?? ''),
-        label: item?.name ?? `Rạp ${item?.movieTheaterId ?? item?.id ?? ''}`,
-      }));
+      const options = extractCollection(response, ['movieTheaters']).map(
+        (item) => ({
+          value: String(item?.movieTheaterId ?? item?.id ?? ''),
+          label: item?.name ?? `Rạp ${item?.movieTheaterId ?? item?.id ?? ''}`,
+        })
+      );
 
       setMovieTheaters(options);
 
@@ -116,7 +123,9 @@ const ShowTimeSchedulerPanel = () => {
         user?.movieTheater?.movieTheaterId ?? options[0]?.value ?? ''
       );
 
-      setSelectedMovieTheaterId((currentValue) => currentValue || preferredMovieTheaterId);
+      setSelectedMovieTheaterId(
+        (currentValue) => currentValue || preferredMovieTheaterId
+      );
     } catch (error) {
       toast.error('Không thể tải danh sách rạp chiếu!');
     } finally {
@@ -135,10 +144,13 @@ const ShowTimeSchedulerPanel = () => {
 
     try {
       const response = await findByMovieTheaterId(movieTheaterId);
-      const options = extractCollection(response, ['cinemaTheaters']).map((item) => ({
-        value: String(item?.cinemaTheaterId ?? item?.id ?? ''),
-        label: item?.name ?? `Phòng ${item?.cinemaTheaterId ?? item?.id ?? ''}`,
-      }));
+      const options = extractCollection(response, ['cinemaTheaters']).map(
+        (item) => ({
+          value: String(item?.cinemaTheaterId ?? item?.id ?? ''),
+          label:
+            item?.name ?? `Phòng ${item?.cinemaTheaterId ?? item?.id ?? ''}`,
+        })
+      );
 
       setCinemaTheaters(options);
       setSelectedCinemaTheaterId((currentValue) => {
@@ -170,7 +182,9 @@ const ShowTimeSchedulerPanel = () => {
         selectedCinemaTheaterId,
         showDate
       );
-      setOccupiedSlots(extractCollection(response, ['occupiedSlots', 'showTimes']));
+      setOccupiedSlots(
+        extractCollection(response, ['occupiedSlots', 'showTimes'])
+      );
     } catch (error) {
       setOccupiedSlots([]);
       toast.error('Không thể tải các khung giờ đã chiếm cho phòng này!');
@@ -208,7 +222,9 @@ const ShowTimeSchedulerPanel = () => {
   };
 
   const handleDeleteShowTime = async (showTimeId) => {
-    const confirmed = window.confirm('Bạn có chắc muốn xóa suất chiếu này không?');
+    const confirmed = window.confirm(
+      'Bạn có chắc muốn xóa suất chiếu này không?'
+    );
 
     if (!confirmed) {
       return;
@@ -243,10 +259,6 @@ const ShowTimeSchedulerPanel = () => {
           <h2 className="mt-1 text-xl font-semibold text-slate-900">
             Lập lịch theo phòng và ngày
           </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-500">
-            Chọn rạp, phòng và ngày để xem các khung giờ đã được sử dụng. Tạo, sửa, xóa suất chiếu
-            ngay trên timeline của phòng.
-          </p>
         </div>
 
         <div className="space-y-3">
@@ -255,7 +267,9 @@ const ShowTimeSchedulerPanel = () => {
             value={selectedMovieTheaterId}
             onChange={setSelectedMovieTheaterId}
             options={movieTheaters}
-            placeholder={isLoadingMovieTheaters ? 'Đang tải rạp...' : 'Chọn rạp chiếu'}
+            placeholder={
+              isLoadingMovieTheaters ? 'Đang tải rạp...' : 'Chọn rạp chiếu'
+            }
             disabled={isLoadingMovieTheaters}
           />
           <SelectField
@@ -284,7 +298,9 @@ const ShowTimeSchedulerPanel = () => {
             <div className="flex items-center gap-3 text-slate-700">
               <TheaterComedyRounded fontSize="small" />
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Rạp</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                  Rạp
+                </p>
                 <p className="font-semibold text-slate-900">
                   {selectedMovieTheater?.label ?? 'Chưa chọn rạp'}
                 </p>
@@ -295,7 +311,9 @@ const ShowTimeSchedulerPanel = () => {
             <div className="flex items-center gap-3 text-slate-700">
               <EventSeatRounded fontSize="small" />
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Phòng</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                  Phòng
+                </p>
                 <p className="font-semibold text-slate-900">
                   {selectedCinemaTheater?.label ?? 'Chưa chọn phòng'}
                 </p>
@@ -306,8 +324,12 @@ const ShowTimeSchedulerPanel = () => {
             <div className="flex items-center gap-3 text-slate-700">
               <ScheduleRounded fontSize="small" />
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Ngày</p>
-                <p className="font-semibold text-slate-900">{showDate || 'Chưa chọn ngày'}</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                  Ngày
+                </p>
+                <p className="font-semibold text-slate-900">
+                  {showDate || 'Chưa chọn ngày'}
+                </p>
               </div>
             </div>
           </div>
@@ -325,7 +347,7 @@ const ShowTimeSchedulerPanel = () => {
       </div>
 
       <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
               Khung giờ đã chiếm
@@ -333,14 +355,14 @@ const ShowTimeSchedulerPanel = () => {
             <h3 className="mt-1 text-lg font-semibold text-slate-900">
               Timeline phòng trong ngày
             </h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Khung giờ hệ thống đang kiểm tra là 08:00 đến 22:00, timeline dưới đây
-              giúp admin nhìn nhanh các khoảng đã được sử dụng.
-            </p>
           </div>
-          <div className="rounded-2xl bg-slate-900 px-4 py-3 text-white">
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-300">Tổng suất</p>
-            <p className="mt-1 text-2xl font-semibold">{timelineSlots.length}</p>
+          <div className="min-w-[160px] rounded-2xl bg-slate-900 px-4 py-3 text-center text-white">
+            <p className="text-xs uppercase tracking-[0.18em] text-slate-300">
+              Tổng suất
+            </p>
+            <p className="mt-1 text-2xl font-semibold">
+              {timelineSlots.length}
+            </p>
           </div>
         </div>
 
@@ -387,18 +409,28 @@ const ShowTimeSchedulerPanel = () => {
                   })}
 
                   {timelineSlots.map((slot) => {
-                    const clippedStart = Math.max(slot.startMinutes, timelineStartMinute);
-                    const clippedEnd = Math.min(slot.endMinutes, timelineEndMinute);
+                    const clippedStart = Math.max(
+                      slot.startMinutes,
+                      timelineStartMinute
+                    );
+                    const clippedEnd = Math.min(
+                      slot.endMinutes,
+                      timelineEndMinute
+                    );
                     const widthPercent = Math.max(
-                      ((clippedEnd - clippedStart) / totalTimelineMinutes) * 100,
+                      ((clippedEnd - clippedStart) / totalTimelineMinutes) *
+                        100,
                       8
                     );
                     const leftPercent =
-                      ((clippedStart - timelineStartMinute) / totalTimelineMinutes) * 100;
+                      ((clippedStart - timelineStartMinute) /
+                        totalTimelineMinutes) *
+                      100;
                     const statusMeta = getStatusMeta(slot.status);
                     const specialMeta = getSpecialMeta(slot.special);
                     const surfaceClass =
-                      statusSurfaceClassMap[slot.status] ?? 'from-slate-600 to-slate-500';
+                      statusSurfaceClassMap[slot.status] ??
+                      'from-slate-600 to-slate-500';
 
                     return (
                       <div
@@ -415,9 +447,12 @@ const ShowTimeSchedulerPanel = () => {
                           <div>
                             <div className="flex items-start justify-between gap-2">
                               <div>
-                                <p className="text-sm font-semibold">{slot.movieTitle}</p>
+                                <p className="text-sm font-semibold">
+                                  {slot.movieTitle}
+                                </p>
                                 <p className="text-xs text-white/80">
-                                  {slot.startTime} - {slot.endTime} | {slot.movieVariationName}
+                                  {slot.startTime} - {slot.endTime} |{' '}
+                                  {slot.movieVariationName}
                                 </p>
                               </div>
                               <div className="flex flex-col items-end gap-1">
@@ -443,7 +478,10 @@ const ShowTimeSchedulerPanel = () => {
                               onClick={() => handleOpenModal(slot.id)}
                               title="Sửa suất chiếu"
                             >
-                              <EditOutlined fontSize="inherit" className="text-base" />
+                              <EditOutlined
+                                fontSize="inherit"
+                                className="text-base"
+                              />
                             </button>
                             <button
                               type="button"
@@ -451,7 +489,10 @@ const ShowTimeSchedulerPanel = () => {
                               onClick={() => handleDeleteShowTime(slot.id)}
                               title="Xóa suất chiếu"
                             >
-                              <DeleteOutlineRounded fontSize="inherit" className="text-base" />
+                              <DeleteOutlineRounded
+                                fontSize="inherit"
+                                className="text-base"
+                              />
                             </button>
                           </div>
                         </div>
@@ -474,7 +515,9 @@ const ShowTimeSchedulerPanel = () => {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-lg font-semibold text-slate-900">{slot.movieTitle}</p>
+                        <p className="text-lg font-semibold text-slate-900">
+                          {slot.movieTitle}
+                        </p>
                         <p className="text-sm text-slate-500">
                           {slot.cinemaTheaterName} | {slot.movieVariationName}
                         </p>

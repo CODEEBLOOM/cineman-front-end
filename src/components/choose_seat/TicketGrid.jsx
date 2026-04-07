@@ -1,6 +1,7 @@
 import { getAllTicketByShowTime } from '@apis/ticketService';
 import { Client } from '@stomp/stompjs';
 import { setSelectedSeats } from '@redux/slices/ticketSlice';
+import { resolveRealtimeBrokerUrl } from '@utils/promotionRealtime';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -16,6 +17,7 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
     selectedSeatsRef.current = selectedSeats;
   }, [selectedSeats]);
 
+  const { accessToken } = useSelector((state) => state.auth);
   const { user } = useSelector((state) => state.user);
   const [ticketMap, setTicketMap] = useState(new Map());
 
@@ -65,7 +67,12 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
     if (!showTime.id) return;
 
     const client = new Client({
-      brokerURL: import.meta.env.VITE_REALTIME,
+      brokerURL: resolveRealtimeBrokerUrl(),
+      connectHeaders: accessToken
+        ? {
+            Authorization: `Bearer ${accessToken}`,
+          }
+        : undefined,
       reconnectDelay: 0,
 
       onConnect: (frame) => {
@@ -159,7 +166,7 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
         clientRef.current.deactivate();
       }
     };
-  }, [showTime.id]);
+  }, [accessToken, showTime.id]);
 
   const sendMessageChooseSeat = (data) => {
     if (selectedSeats.length > 0) {

@@ -52,8 +52,17 @@ export const updateInvoiceStatusSuccess = async ({ id }) => {
   return await axios.put(url);
 };
 
-export const findAllByUserId = async (userId) => {
+export const findAllByUserId = async (userId, status) => {
   const url = `/invoice/user/${userId}/all`;
+
+  if (status) {
+    return await axios.get(url, {
+      params: {
+        status,
+      },
+    });
+  }
+
   return await axios.get(url);
 };
 

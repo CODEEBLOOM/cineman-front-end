@@ -63,7 +63,9 @@ const CinemaTheaterTable = ({
   };
 
   const handleDelete = async (id) => {
-    const confirmed = window.confirm(`Bạn muốn xóa phòng chiếu ID ${id} không?`);
+    const confirmed = window.confirm(
+      `Bạn muốn xóa phòng chiếu ID ${id} không?`
+    );
 
     if (!confirmed) {
       return;
@@ -122,7 +124,9 @@ const CinemaTheaterTable = ({
       field: 'cinemaType',
       flex: 1,
       minWidth: 180,
-      renderCell: (params) => <p>{params.value?.name || 'Chưa có loại phòng'}</p>,
+      renderCell: (params) => (
+        <p>{params.value?.name || 'Chưa có loại phòng'}</p>
+      ),
     },
     {
       headerName: 'Sức chứa',
@@ -169,7 +173,12 @@ const CinemaTheaterTable = ({
             <MdDeleteForever size={24} />
           </Button>
           <Link to={`/admin/so-do-ghe/${params.row.cinemaTheaterId}`}>
-            <Button variant="contained" color="primary" className="!capitalize" size="medium">
+            <Button
+              variant="contained"
+              color="primary"
+              className="!capitalize"
+              size="medium"
+            >
               Sơ đồ ghế
             </Button>
           </Link>

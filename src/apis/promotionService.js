@@ -31,7 +31,9 @@ export const revertApplyVoucher = async (vnp_TxnRef) => {
   return await axios.put(url);
 };
 
-export const findAllPromotions = async (userId) => {
+export const findAllPromotions = async (userId, params) => {
   const url = `/promotion/user/${userId}/all`;
-  return await axios.get(url);
+  return await axios.get(url, {
+    params,
+  });
 };

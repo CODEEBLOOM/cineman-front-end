@@ -1,4 +1,5 @@
 ﻿import { StrictMode } from 'react';
+import { Suspense, lazy } from 'react';
 
 /* Cấu hình react-toastify */
 import { ToastContainer } from 'react-toastify';
@@ -11,53 +12,81 @@ import './index.css';
 /* Import router */
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-/* Import component or page */
-import HomePage from '@pages/HomePage';
-import RootLayout from './RootLayout';
-import AuthLayout from '@pages/auth/AuthLayout';
-import LoginPage from '@pages/auth/LoginPage';
 import { ThemeProvider } from '@emotion/react';
+import Loading from '@component/Loading';
 import theme from '@configs/MUIConfig';
 import { Provider } from 'react-redux';
 import { persistor, store } from '@redux/store';
 import { PersistGate } from 'redux-persist/integration/react';
-import DetailMoviePage from '@pages/DetailMoviePage';
-import MoviePage from '@pages/MoviePage';
-import ProtectedRoute from '@pages/protected_route/ProtectedRoute.jsx';
-import AdminRoute from '@pages/admin/AdminRoute.jsx';
-import DashBoardPage from '@pages/admin/DashBoardPage.jsx';
-import StatisticalPage from '@pages/admin/StatisticalPage.jsx';
-import TheaterSystemPage from '@pages/admin/TheaterSystemPage.jsx';
-import ProvincePage from '@pages/admin/ProvincePage.jsx';
-import MovieTheaterPage from '@pages/admin/MovieTheaterPage.jsx';
-import CinemaTypePage from '@pages/admin/CinemaTypePage.jsx';
-import CinemaTheater from '@component/admin/cinema_theater/CinemaTheater.jsx';
-import SeatMap from '@component/admin/seat/SeatMap';
-import GoogleCallback from '@pages/auth/GoogleCallback';
-import ClientLayout from '@pages/client/ClientLayout';
-import ListMovie from '@component/admin/movie/ListMovie';
-import BookingTicket from '@pages/protected_route/BookingTicket';
-import PaymentCallback from '@component/payment/PaymentCallback';
 import { injectStore } from '@apis/axiosClient';
-import MyAccount from '@pages/protected_route/MyAccount';
-import NotFoundPage from '@pages/NotFound';
-import CinemaShowtime from '@pages/CinemaShowTime';
-import InvoiceIndex from '@component/admin/invoice/InvoiceIndex';
-import TicketManagementPage from '@pages/admin/TicketManagementPage';
-import ShowTimePage from '@pages/admin/ShowTimePage';
-import MovieVariationPage from '@pages/admin/MovieVariationPage';
-import TicketTypePage from '@pages/admin/TicketTypePage';
-import MovieGenrePage from '@pages/admin/MovieGenrePage';
-import MovieRolePage from '@pages/admin/MovieRolePage';
-import MovieStatusPage from '@pages/admin/MovieStatusPage';
-import MovieParticipantPage from '@pages/admin/MovieParticipantPage';
-import ParticipantPage from '@pages/admin/ParticipantPage';
-import SnackPage from '@pages/admin/SnackPage';
-import SnackTypePage from '@pages/admin/SnackTypePage';
-import MembershipRankPage from '@pages/admin/MembershipRankPage';
-import PromotionPage from '@pages/admin/PromotionPage.jsx';
-import RolePage from '@pages/admin/RolePage.jsx';
-import UserPage from '@pages/admin/UserPage.jsx';
+
+const RootLayout = lazy(() => import('./RootLayout'));
+const HomePage = lazy(() => import('@pages/HomePage'));
+const AuthLayout = lazy(() => import('@pages/auth/AuthLayout'));
+const LoginPage = lazy(() => import('@pages/auth/LoginPage'));
+const DetailMoviePage = lazy(() => import('@pages/DetailMoviePage'));
+const MoviePage = lazy(() => import('@pages/MoviePage'));
+const ProtectedRoute = lazy(
+  () => import('@pages/protected_route/ProtectedRoute.jsx')
+);
+const AdminRoute = lazy(() => import('@pages/admin/AdminRoute.jsx'));
+const DashBoardPage = lazy(() => import('@pages/admin/DashBoardPage.jsx'));
+const StatisticalPage = lazy(() => import('@pages/admin/StatisticalPage.jsx'));
+const TheaterSystemPage = lazy(
+  () => import('@pages/admin/TheaterSystemPage.jsx')
+);
+const ProvincePage = lazy(() => import('@pages/admin/ProvincePage.jsx'));
+const MovieTheaterPage = lazy(
+  () => import('@pages/admin/MovieTheaterPage.jsx')
+);
+const CinemaTypePage = lazy(() => import('@pages/admin/CinemaTypePage.jsx'));
+const CinemaTheater = lazy(
+  () => import('@component/admin/cinema_theater/CinemaTheater.jsx')
+);
+const SeatMap = lazy(() => import('@component/admin/seat/SeatMap'));
+const GoogleCallback = lazy(() => import('@pages/auth/GoogleCallback'));
+const ClientLayout = lazy(() => import('@pages/client/ClientLayout'));
+const ListMovie = lazy(() => import('@component/admin/movie/ListMovie'));
+const BookingTicket = lazy(
+  () => import('@pages/protected_route/BookingTicket')
+);
+const PaymentCallback = lazy(
+  () => import('@component/payment/PaymentCallback')
+);
+const MyAccount = lazy(() => import('@pages/protected_route/MyAccount'));
+const NotFoundPage = lazy(() => import('@pages/NotFound'));
+const CinemaShowtime = lazy(() => import('@pages/CinemaShowTime'));
+const InvoiceIndex = lazy(
+  () => import('@component/admin/invoice/InvoiceIndex')
+);
+const TicketManagementPage = lazy(
+  () => import('@pages/admin/TicketManagementPage')
+);
+const ShowTimePage = lazy(() => import('@pages/admin/ShowTimePage'));
+const MovieVariationPage = lazy(
+  () => import('@pages/admin/MovieVariationPage')
+);
+const TicketTypePage = lazy(() => import('@pages/admin/TicketTypePage'));
+const MovieGenrePage = lazy(() => import('@pages/admin/MovieGenrePage'));
+const MovieRolePage = lazy(() => import('@pages/admin/MovieRolePage'));
+const MovieStatusPage = lazy(() => import('@pages/admin/MovieStatusPage'));
+const MovieParticipantPage = lazy(
+  () => import('@pages/admin/MovieParticipantPage')
+);
+const ParticipantPage = lazy(() => import('@pages/admin/ParticipantPage'));
+const SnackPage = lazy(() => import('@pages/admin/SnackPage'));
+const SnackTypePage = lazy(() => import('@pages/admin/SnackTypePage'));
+const MembershipRankPage = lazy(
+  () => import('@pages/admin/MembershipRankPage')
+);
+const PromotionPage = lazy(() => import('@pages/admin/PromotionPage.jsx'));
+const PromotionTypePage = lazy(
+  () => import('@pages/admin/PromotionTypePage.jsx')
+);
+const RolePage = lazy(() => import('@pages/admin/RolePage.jsx'));
+const UserPage = lazy(() => import('@pages/admin/UserPage.jsx'));
+
+const routerFallback = <Loading minHeight="55vh" />;
 
 const router = createBrowserRouter([
   {
@@ -215,6 +244,10 @@ const router = createBrowserRouter([
             element: <p>Quản lý combo</p>,
           },
           {
+            path: 'loai-khuyen-mai',
+            element: <PromotionTypePage />,
+          },
+          {
             path: 'khuyen-mai',
             element: <PromotionPage />,
           },
@@ -244,9 +277,11 @@ injectStore(store);
 createRoot(document.getElementById('root')).render(
   // <StrictMode>
   <Provider store={store}>
-    <PersistGate loading={<p>Loading ...</p>} persistor={persistor}>
+    <PersistGate loading={<Loading minHeight="100vh" />} persistor={persistor}>
       <ThemeProvider theme={theme}>
-        <RouterProvider router={router} />
+        <Suspense fallback={routerFallback}>
+          <RouterProvider router={router} />
+        </Suspense>
         <ToastContainer theme="colored" autoClose={3000} position="top-right" />
       </ThemeProvider>
     </PersistGate>

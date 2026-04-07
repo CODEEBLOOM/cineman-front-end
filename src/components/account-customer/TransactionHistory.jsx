@@ -24,12 +24,12 @@ import {
   Typography,
 } from '@mui/material';
 import DateFormatter from '@utils/DateFormatter';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 const shellPaperSx = {
-  borderRadius: '22px',
+  borderRadius: '16px',
   border: '1px solid rgba(148,163,184,0.18)',
   backgroundColor: '#fff',
   boxShadow: '0 14px 34px rgba(15,23,42,0.08)',
@@ -46,8 +46,23 @@ const infoItemSx = {
   gap: 1.25,
 };
 
+const STATUS_FILTERS = [
+  { value: 'ALL', label: 'Tất cả' },
+  { value: 'PENDING', label: 'Chờ thanh toán' },
+  { value: 'PAID', label: 'Đã thanh toán' },
+  { value: 'PROCESSING', label: 'Đang xử lý' },
+  { value: 'USED', label: 'Đã xuất vé' },
+  { value: 'CANCELLED', label: 'Đã hủy' },
+  { value: 'REFUNDED', label: 'Đã hoàn tiền' },
+];
+
 const resolvePosterSrc = (invoice) =>
   invoice?.movie?.posterImage || invoice?.posterImage || '';
+
+const extractInvoices = (response) => {
+  const payload = response?.data ?? [];
+  return Array.isArray(payload) ? payload : [];
+};
 
 const formatShowDate = (dateValue) => {
   if (!dateValue) {
@@ -85,10 +100,22 @@ const getStatusMeta = (status) => {
         color: '#dc2626',
         bg: alpha('#dc2626', 0.12),
       };
+    case 'REFUNDED':
+      return {
+        label: 'Đã hoàn tiền',
+        color: '#7c3aed',
+        bg: alpha('#8b5cf6', 0.14),
+      };
+    case 'PENDING':
+      return {
+        label: 'Chờ thanh toán',
+        color: '#b45309',
+        bg: alpha('#f59e0b', 0.16),
+      };
     case 'PAID':
     default:
       return {
-        label: 'Chưa xuất vé',
+        label: 'Đã thanh toán',
         color: '#c2410c',
         bg: alpha('#fb923c', 0.18),
       };
@@ -109,7 +136,9 @@ const SummaryCard = ({ title, value, icon, color, bg }) => (
         {icon}
       </Avatar>
       <Box>
-        <Typography sx={{ fontSize: 13.5, color: '#64748b' }}>{title}</Typography>
+        <Typography sx={{ fontSize: 13.5, color: '#64748b' }}>
+          {title}
+        </Typography>
         <Typography sx={{ mt: 0.25, fontSize: 18, fontWeight: 800, color }}>
           {value}
         </Typography>
@@ -144,25 +173,104 @@ const LoadingCard = () => (
 
 const TransactionHistory = () => {
   const { user } = useSelector((state) => state.user);
+  const [allInvoices, setAllInvoices] = useState([]);
   const [invoices, setInvoices] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState('ALL');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasBootstrapped, setHasBootstrapped] = useState(false);
+
+  const loadAllInvoices = useCallback(async () => {
+    const response = await findAllByUserId(user.userId);
+    const payload = extractInvoices(response);
+    setAllInvoices(payload);
+    return payload;
+  }, [user.userId]);
+
+  const loadInvoicesByStatus = useCallback(
+    async (status) => {
+      const response = await findAllByUserId(
+        user.userId,
+        status && status !== 'ALL' ? status : undefined
+      );
+
+      return extractInvoices(response);
+    },
+    [user.userId]
+  );
 
   useEffect(() => {
     let isMounted = true;
-    setIsLoading(true);
-    document.title = 'Lịch sử giao dịch - POLY CINEMAS';
 
-    findAllByUserId(user.userId)
-      .then((res) => {
+    document.title = 'Lịch sử giao dịch - POLY CINEMAS';
+    setIsLoading(true);
+
+    loadAllInvoices()
+      .then((payload) => {
         if (!isMounted) {
           return;
         }
 
-        const payload = res?.data ?? [];
-        setInvoices(Array.isArray(payload) ? payload : []);
+        setInvoices(payload);
       })
       .catch(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        setAllInvoices([]);
+        setInvoices([]);
         toast.error('Không thể tải lịch sử giao dịch!');
+      })
+      .finally(() => {
+        if (isMounted) {
+          setHasBootstrapped(true);
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [loadAllInvoices]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!hasBootstrapped) {
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    if (selectedStatus === 'ALL') {
+      setInvoices(allInvoices);
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    setIsLoading(true);
+
+    loadInvoicesByStatus(selectedStatus)
+      .then((payload) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setInvoices(payload);
+      })
+      .catch(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        const fallbackInvoices = allInvoices.filter(
+          (invoice) =>
+            String(invoice?.status || '').toUpperCase() === selectedStatus
+        );
+
+        setInvoices(fallbackInvoices);
+        toast.error('Không thể lọc giao dịch theo trạng thái!');
       })
       .finally(() => {
         if (isMounted) {
@@ -173,36 +281,73 @@ const TransactionHistory = () => {
     return () => {
       isMounted = false;
     };
-  }, [user.userId]);
+  }, [allInvoices, hasBootstrapped, loadInvoicesByStatus, selectedStatus]);
 
   const sortedInvoices = useMemo(
     () =>
       [...invoices].sort(
         (left, right) =>
-          new Date(right?.showTime?.showDate || right?.createdAt || 0).getTime() -
+          new Date(
+            right?.showTime?.showDate || right?.createdAt || 0
+          ).getTime() -
           new Date(left?.showTime?.showDate || left?.createdAt || 0).getTime()
       ),
     [invoices]
   );
 
+  const statusCounts = useMemo(
+    () =>
+      allInvoices.reduce(
+        (accumulator, invoice) => {
+          const status = String(invoice?.status || '').toUpperCase();
+
+          accumulator.ALL += 1;
+
+          if (Object.prototype.hasOwnProperty.call(accumulator, status)) {
+            accumulator[status] += 1;
+          }
+
+          return accumulator;
+        },
+        {
+          ALL: 0,
+          PENDING: 0,
+          PAID: 0,
+          PROCESSING: 0,
+          USED: 0,
+          CANCELLED: 0,
+          REFUNDED: 0,
+        }
+      ),
+    [allInvoices]
+  );
+
   const summary = useMemo(() => {
-    const total = sortedInvoices.length;
-    const pending = sortedInvoices.filter((item) => item?.status === 'PAID').length;
-    const used = sortedInvoices.filter((item) => item?.status === 'USED').length;
-    const totalSpent = sortedInvoices.reduce(
+    const total = allInvoices.length;
+    const paid = allInvoices.filter((item) => item?.status === 'PAID').length;
+    const used = allInvoices.filter((item) => item?.status === 'USED').length;
+    const totalSpent = allInvoices.reduce(
       (sum, item) => sum + Number(item?.totalMoney ?? 0),
       0
     );
 
-    return { total, pending, used, totalSpent };
-  }, [sortedInvoices]);
+    return { total, paid, used, totalSpent };
+  }, [allInvoices]);
+
+  const activeFilterLabel =
+    STATUS_FILTERS.find((item) => item.value === selectedStatus)?.label ||
+    'Tất cả';
 
   const handleViewDetail = (invoice) => {
-    toast.info(`Mã giao dịch #${invoice?.id} hiện chưa có trang chi tiết riêng.`);
+    toast.info(
+      `Mã giao dịch #${invoice?.id} hiện chưa có trang chi tiết riêng.`
+    );
   };
 
   const handleReview = (invoice) => {
-    toast.info(`Chức năng đánh giá cho giao dịch #${invoice?.id} đang được cập nhật.`);
+    toast.info(
+      `Chức năng đánh giá cho giao dịch #${invoice?.id} đang được cập nhật.`
+    );
   };
 
   return (
@@ -219,7 +364,8 @@ const TransactionHistory = () => {
           Danh sách lịch sử giao dịch
         </Typography>
         <Typography sx={{ mt: 0.75, color: '#64748b', fontSize: 14.5 }}>
-          Theo dõi các đơn vé đã thanh toán, trạng thái xuất vé và tổng chi tiêu của bạn.
+          Theo dõi các đơn vé đã thanh toán, trạng thái xuất vé và lọc nhanh
+          theo tình trạng giao dịch mới từ hệ thống.
         </Typography>
       </Box>
 
@@ -227,7 +373,7 @@ const TransactionHistory = () => {
         sx={{
           display: 'grid',
           gap: 2,
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(4, minmax(0, 1fr))' },
         }}
       >
         <SummaryCard
@@ -238,11 +384,18 @@ const TransactionHistory = () => {
           bg={alpha('#23486c', 0.08)}
         />
         <SummaryCard
-          title="Chưa xuất vé"
-          value={`${summary.pending} đơn`}
+          title="Đã thanh toán"
+          value={`${summary.paid} đơn`}
           icon={<LocalOfferRounded />}
           color="#c2410c"
           bg={alpha('#fb923c', 0.15)}
+        />
+        <SummaryCard
+          title="Đã xuất vé"
+          value={`${summary.used} đơn`}
+          icon={<AccessTimeRounded />}
+          color="#15803d"
+          bg={alpha('#16a34a', 0.12)}
         />
         <SummaryCard
           title="Tổng chi tiêu"
@@ -252,6 +405,67 @@ const TransactionHistory = () => {
           bg={alpha('#cf6d05', 0.1)}
         />
       </Box>
+
+      <Paper sx={{ ...shellPaperSx, p: { xs: 2, md: 2.25 } }}>
+        <Stack spacing={1.75}>
+          <Box>
+            <Typography
+              sx={{ fontSize: 18, fontWeight: 700, color: '#1e293b' }}
+            >
+              Lọc theo trạng thái
+            </Typography>
+          </Box>
+
+          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+            {STATUS_FILTERS.map((filter) => {
+              const isActive = selectedStatus === filter.value;
+              const count = statusCounts[filter.value] ?? 0;
+
+              return (
+                <Button
+                  key={filter.value}
+                  type="button"
+                  onClick={() => setSelectedStatus(filter.value)}
+                  sx={{
+                    minHeight: 40,
+                    px: 1.75,
+                    borderRadius: '999px',
+                    textTransform: 'none',
+                    fontSize: 13.5,
+                    fontWeight: 700,
+                    color: isActive ? '#fff' : '#334155',
+                    bgcolor: isActive ? '#23486c' : alpha('#23486c', 0.06),
+                    boxShadow: 'none',
+                    '&:hover': {
+                      bgcolor: isActive ? '#1f3f61' : alpha('#23486c', 0.12),
+                      boxShadow: 'none',
+                    },
+                  }}
+                >
+                  {filter.label}
+                  <Box
+                    component="span"
+                    sx={{
+                      ml: 1,
+                      px: 1,
+                      py: 0.25,
+                      borderRadius: '999px',
+                      fontSize: 12,
+                      lineHeight: 1.2,
+                      bgcolor: isActive
+                        ? alpha('#ffffff', 0.18)
+                        : alpha('#0f172a', 0.06),
+                      color: isActive ? '#fff' : '#475569',
+                    }}
+                  >
+                    {count}
+                  </Box>
+                </Button>
+              );
+            })}
+          </Stack>
+        </Stack>
+      </Paper>
 
       {isLoading ? (
         <Stack spacing={2}>
@@ -331,7 +545,7 @@ const TransactionHistory = () => {
                       sx={{
                         width: { xs: 170, md: '100%' },
                         height: 238,
-                        borderRadius: '18px',
+                        borderRadius: '16px',
                         objectFit: 'cover',
                         border: '4px solid rgba(219,234,254,0.95)',
                         boxShadow: '0 16px 28px rgba(35,72,108,0.12)',
@@ -354,21 +568,29 @@ const TransactionHistory = () => {
 
                     <Stack spacing={1}>
                       <Box sx={infoItemSx}>
-                        <CalendarMonthRounded sx={{ color: '#23486c', fontSize: 22 }} />
+                        <CalendarMonthRounded
+                          sx={{ color: '#23486c', fontSize: 22 }}
+                        />
                         <Typography sx={{ fontSize: 15.5, color: '#1e293b' }}>
-                          <strong>Ngày chiếu:</strong> {formatShowDate(invoice?.showTime?.showDate)}
+                          <strong>Ngày chiếu:</strong>{' '}
+                          {formatShowDate(invoice?.showTime?.showDate)}
                         </Typography>
                       </Box>
 
                       <Box sx={infoItemSx}>
-                        <AccessTimeRounded sx={{ color: '#23486c', fontSize: 22 }} />
+                        <AccessTimeRounded
+                          sx={{ color: '#23486c', fontSize: 22 }}
+                        />
                         <Typography sx={{ fontSize: 15.5, color: '#1e293b' }}>
-                          <strong>Giờ chiếu:</strong> {formatShowTime(invoice?.showTime?.startTime)}
+                          <strong>Giờ chiếu:</strong>{' '}
+                          {formatShowTime(invoice?.showTime?.startTime)}
                         </Typography>
                       </Box>
 
                       <Box sx={infoItemSx}>
-                        <TheaterComedyRounded sx={{ color: '#23486c', fontSize: 22 }} />
+                        <TheaterComedyRounded
+                          sx={{ color: '#23486c', fontSize: 22 }}
+                        />
                         <Typography sx={{ fontSize: 15.5, color: '#1e293b' }}>
                           <strong>Rạp chiếu:</strong>{' '}
                           {invoice?.movieTheater?.name || 'Chưa cập nhật'}
@@ -376,7 +598,9 @@ const TransactionHistory = () => {
                       </Box>
 
                       <Box sx={infoItemSx}>
-                        <LocalOfferRounded sx={{ color: statusMeta.color, fontSize: 22 }} />
+                        <LocalOfferRounded
+                          sx={{ color: statusMeta.color, fontSize: 22 }}
+                        />
                         <Typography sx={{ fontSize: 15.5, color: '#1e293b' }}>
                           <strong>Trạng thái:</strong>{' '}
                         </Typography>
@@ -401,7 +625,8 @@ const TransactionHistory = () => {
                         color: '#111827',
                       }}
                     >
-                      Tổng tiền thanh toán: {currencyFormatter(Number(invoice?.totalMoney) || 0)}
+                      Tổng tiền thanh toán:{' '}
+                      {currencyFormatter(Number(invoice?.totalMoney) || 0)}
                     </Typography>
                   </Stack>
 
@@ -462,11 +687,15 @@ const TransactionHistory = () => {
           >
             <AssignmentRounded />
           </Avatar>
-          <Typography sx={{ mt: 2, fontSize: 20, fontWeight: 700, color: '#1e293b' }}>
-            Chưa có giao dịch nào
+          <Typography
+            sx={{ mt: 2, fontSize: 20, fontWeight: 700, color: '#1e293b' }}
+          >
+            Không có giao dịch nào
           </Typography>
           <Typography sx={{ mt: 1, color: '#64748b', fontSize: 14.5 }}>
-            Khi bạn hoàn tất thanh toán vé, lịch sử giao dịch sẽ hiển thị tại đây.
+            {selectedStatus === 'ALL'
+              ? 'Khi bạn hoàn tất thanh toán vé, lịch sử giao dịch sẽ hiển thị tại đây.'
+              : `Hiện chưa có giao dịch nào ở trạng thái "${activeFilterLabel}".`}
           </Typography>
         </Paper>
       )}

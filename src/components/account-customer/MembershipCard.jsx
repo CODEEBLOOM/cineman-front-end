@@ -38,7 +38,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 const shellPaperSx = {
-  borderRadius: '22px',
+  borderRadius: '16px',
   border: '1px solid rgba(148,163,184,0.18)',
   backgroundColor: '#fff',
   boxShadow: '0 14px 34px rgba(15,23,42,0.08)',
@@ -286,7 +286,7 @@ const MembershipCard = () => {
           <Stack spacing={2}>
             <Box
               sx={{
-                borderRadius: '20px',
+                borderRadius: '16px',
                 p: 2.5,
                 minHeight: 206,
                 color: '#1e293b',

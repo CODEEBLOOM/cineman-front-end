@@ -1,8 +1,5 @@
 ﻿import { findAllMovieTheater } from '@apis/movieTheaterService';
-import {
-  deleteShowTime,
-  findAllAdminShowTimes,
-} from '@apis/showTimeService';
+import { deleteShowTime, findAllAdminShowTimes } from '@apis/showTimeService';
 import DataGridTable from '@component/DataGridTable';
 import EmptyList from '@component/cinema_showtime/EmptyList';
 import Loading from '@component/Loading';
@@ -38,15 +35,15 @@ const showTimeSpecialFilterOptions = [
   { value: 'true', label: 'Suất đặc biệt' },
 ];
 
-const ShowTimeListPanel = () => {
+const ShowTimeListPanel = ({ initialFilters }) => {
   const { openPopup } = useModelContext();
   const { user } = useSelector((state) => state.user);
   const [movieTheaters, setMovieTheaters] = useState([]);
   const [filters, setFilters] = useState({
-    movieTheaterId: '',
-    showDate: getTodayValue(),
-    showTimeStatus: '',
-    special: '',
+    movieTheaterId: initialFilters?.movieTheaterId ?? '',
+    showDate: initialFilters?.showDate ?? getTodayValue(),
+    showTimeStatus: initialFilters?.showTimeStatus ?? '',
+    special: initialFilters?.special ?? '',
   });
   const [showTimes, setShowTimes] = useState([]);
   const [isLoadingMovieTheaters, setIsLoadingMovieTheaters] = useState(false);
@@ -54,14 +51,16 @@ const ShowTimeListPanel = () => {
 
   const selectedMovieTheaterLabel = useMemo(() => {
     return (
-      movieTheaters.find((item) => item.value === filters.movieTheaterId)?.label ?? 'Tất cả rạp'
+      movieTheaters.find((item) => item.value === filters.movieTheaterId)
+        ?.label ?? 'Tất cả rạp'
     );
   }, [filters.movieTheaterId, movieTheaters]);
 
   const selectedSpecialLabel = useMemo(() => {
     return (
-      showTimeSpecialFilterOptions.find((item) => item.value === filters.special)?.label ??
-      'Tất cả loại suất'
+      showTimeSpecialFilterOptions.find(
+        (item) => item.value === filters.special
+      )?.label ?? 'Tất cả loại suất'
     );
   }, [filters.special]);
 
@@ -70,23 +69,27 @@ const ShowTimeListPanel = () => {
 
     try {
       const response = await findAllMovieTheater();
-      const options = extractCollection(response, ['movieTheaters']).map((item) => ({
-        value: String(item?.movieTheaterId ?? item?.id ?? ''),
-        label: item?.name ?? `Rạp ${item?.movieTheaterId ?? item?.id ?? ''}`,
-      }));
+      const options = extractCollection(response, ['movieTheaters']).map(
+        (item) => ({
+          value: String(item?.movieTheaterId ?? item?.id ?? ''),
+          label: item?.name ?? `Rạp ${item?.movieTheaterId ?? item?.id ?? ''}`,
+        })
+      );
 
       setMovieTheaters(options);
       setFilters((currentValue) => ({
         ...currentValue,
         movieTheaterId:
-          currentValue.movieTheaterId || String(user?.movieTheater?.movieTheaterId ?? ''),
+          currentValue.movieTheaterId ||
+          initialFilters?.movieTheaterId ||
+          String(user?.movieTheater?.movieTheaterId ?? ''),
       }));
     } catch {
       toast.error('Không thể tải danh sách rạp chiếu!');
     } finally {
       setIsLoadingMovieTheaters(false);
     }
-  }, [user?.movieTheater?.movieTheaterId]);
+  }, [initialFilters?.movieTheaterId, user?.movieTheater?.movieTheaterId]);
 
   const loadShowTimes = useCallback(async () => {
     setIsLoadingShowTimes(true);
@@ -135,7 +138,9 @@ const ShowTimeListPanel = () => {
   };
 
   const handleDeleteShowTime = async (showTimeId) => {
-    const confirmed = window.confirm('Bạn có chắc muốn xóa suất chiếu này không?');
+    const confirmed = window.confirm(
+      'Bạn có chắc muốn xóa suất chiếu này không?'
+    );
 
     if (!confirmed) {
       return;
@@ -198,7 +203,9 @@ const ShowTimeListPanel = () => {
       renderCell: (params) => (
         <div className="py-2 text-sm text-slate-600">
           <p>{params.row.movieTheaterName}</p>
-          <p className="mt-1 font-medium text-slate-900">{params.row.cinemaTheaterName}</p>
+          <p className="mt-1 font-medium text-slate-900">
+            {params.row.cinemaTheaterName}
+          </p>
         </div>
       ),
     },
@@ -228,7 +235,9 @@ const ShowTimeListPanel = () => {
         const specialMeta = getSpecialMeta(params.value);
 
         return (
-          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${specialMeta.className}`}>
+          <span
+            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${specialMeta.className}`}
+          >
             {specialMeta.label}
           </span>
         );
@@ -242,7 +251,9 @@ const ShowTimeListPanel = () => {
         const statusMeta = getStatusMeta(params.value);
 
         return (
-          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusMeta.className}`}>
+          <span
+            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusMeta.className}`}
+          >
             {statusMeta.label}
           </span>
         );
@@ -287,13 +298,13 @@ const ShowTimeListPanel = () => {
           <h2 className="mt-1 text-xl font-semibold text-slate-900">
             Danh sách và bộ lọc suất chiếu
           </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-500">
-            Màn này dùng để quản trị nhanh theo rạp, ngày và trạng thái. Sau khi lọc,
-            admin có thể mở lại modal để sửa hoặc xóa suất chiếu ngay từ danh sách.
-          </p>
         </div>
 
-        <Button variant="contained" startIcon={<AddRounded />} onClick={() => handleOpenModal()}>
+        <Button
+          variant="contained"
+          startIcon={<AddRounded />}
+          onClick={() => handleOpenModal()}
+        >
           Tạo suất chiếu
         </Button>
       </div>
@@ -376,21 +387,35 @@ const ShowTimeListPanel = () => {
           ))}
         </TextField>
 
-        <Button variant="outlined" startIcon={<FilterAltRounded />} onClick={loadShowTimes}>
+        <Button
+          variant="outlined"
+          startIcon={<FilterAltRounded />}
+          onClick={loadShowTimes}
+        >
           Tải lại
         </Button>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
         <p>
-          Bộ lọc hiện tại: <span className="font-semibold text-slate-900">{selectedMovieTheaterLabel}</span>
+          Bộ lọc hiện tại:{' '}
+          <span className="font-semibold text-slate-900">
+            {selectedMovieTheaterLabel}
+          </span>
           {' | '}
-          <span className="font-semibold text-slate-900">{filters.showDate || 'Tất cả ngày'}</span>
+          <span className="font-semibold text-slate-900">
+            {filters.showDate || 'Tất cả ngày'}
+          </span>
           {' | '}
-          <span className="font-semibold text-slate-900">{selectedSpecialLabel}</span>
+          <span className="font-semibold text-slate-900">
+            {selectedSpecialLabel}
+          </span>
         </p>
         <p>
-          Tổng số kết quả: <span className="font-semibold text-slate-900">{showTimes.length}</span>
+          Tổng số kết quả:{' '}
+          <span className="font-semibold text-slate-900">
+            {showTimes.length}
+          </span>
         </p>
       </div>
 
@@ -401,13 +426,20 @@ const ShowTimeListPanel = () => {
       ) : (
         <div className="space-y-4">
           {groupedByDate.map(({ dateKey, rows }) => (
-            <div key={dateKey} className="overflow-hidden rounded-2xl border border-slate-200">
+            <div
+              key={dateKey}
+              className="overflow-hidden rounded-2xl border border-slate-200"
+            >
               <div className="flex items-center justify-between gap-3 bg-slate-900 px-4 py-3 text-white">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-300">Ngày chiếu</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-300">
+                    Ngày chiếu
+                  </p>
                   <p className="text-lg font-semibold">{dateKey}</p>
                 </div>
-                <p className="text-sm text-slate-200">{rows.length} suất chiếu</p>
+                <p className="text-sm text-slate-200">
+                  {rows.length} suất chiếu
+                </p>
               </div>
 
               <div className="bg-white px-2 py-2">

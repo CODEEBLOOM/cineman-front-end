@@ -28,25 +28,27 @@ const CardItemFilm = ({
     return (
       <div
         data-modal-placement="center"
-        className="relative flex aspect-video w-full flex-col justify-start rounded-md bg-white p-5 sm:w-[80vw] md:w-[60vw]"
+        className="relative flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl sm:w-[80vw] md:w-[60vw]"
       >
-        <span
-          className="absolute right-3 top-3 hover:cursor-pointer"
-          onClick={() => closeTopModal()}
-        >
-          <IoClose size={25} />
-        </span>
-        <div className="border-b-2 px-4">
-          <p className="font-bold uppercase lg:text-[25px]">
+        <div className="relative shrink-0 border-b-2 px-5 py-4 sm:px-6">
+          <span
+            className="absolute right-4 top-4 hover:cursor-pointer"
+            onClick={() => closeTopModal()}
+          >
+            <IoClose size={25} />
+          </span>
+          <p className="pr-10 font-bold uppercase lg:text-[25px]">
             Lịch chiếu phim - <span className="capitalize">{title}</span>
           </p>
         </div>
-        <div className="pb-3 pt-10 text-center">
+        <div className="shrink-0 px-5 pb-3 pt-5 text-center sm:px-6">
           <p className="text-[30px] font-medium uppercase text-primary">
             {movieTheater?.title || 'Chọn rạp'}
           </p>
         </div>
-        <ShowTimeComponent movieId={id} />
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 sm:px-6 sm:pb-6">
+          <ShowTimeComponent movieId={id} />
+        </div>
       </div>
     );
   };

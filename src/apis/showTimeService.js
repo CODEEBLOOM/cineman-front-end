@@ -109,6 +109,11 @@ export const addShowTime = async (data) => {
   return await axios.post(url, data);
 };
 
+export const autoFillShowTimes = async (data) => {
+  const url = '/admin/show-time/auto-fill';
+  return await axios.post(url, data);
+};
+
 export const updateShowTime = async (id, data) => {
   const url = `/admin/show-time/${id}/update`;
   return await axios.put(url, data);

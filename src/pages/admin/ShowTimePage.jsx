@@ -1,3 +1,4 @@
+import ShowTimeAutoFillPanel from '@component/admin/showtimes/ShowTimeAutoFillPanel';
 import ShowTimeListPanel from '@component/admin/showtimes/ShowTimeListPanel';
 import ShowTimeSchedulerPanel from '@component/admin/showtimes/ShowTimeSchedulerPanel';
 import CustomBreadcrumb from '@component/CustomBreakcrumb';
@@ -12,10 +13,28 @@ const tabProps = (index) => ({
 
 const ShowTimePage = () => {
   const [activeTab, setActiveTab] = useState(0);
+  const [listPreset, setListPreset] = useState({
+    movieTheaterId: '',
+    showDate: '',
+    showTimeStatus: '',
+    special: '',
+  });
+  const [listPanelKey, setListPanelKey] = useState(0);
 
   useEffect(() => {
     document.title = 'Quản lý suất chiếu - POLY CINEMAS';
   }, []);
+
+  const handleAutoFillSuccess = (nextFilters) => {
+    setListPreset({
+      movieTheaterId: nextFilters?.movieTheaterId ?? '',
+      showDate: nextFilters?.showDate ?? '',
+      showTimeStatus: nextFilters?.showTimeStatus ?? '',
+      special: nextFilters?.special ?? '',
+    });
+    setListPanelKey((currentValue) => currentValue + 1);
+    setActiveTab(2);
+  };
 
   return (
     <div>
@@ -33,7 +52,7 @@ const ShowTimePage = () => {
           <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-4">
             <div>
               <h1 className="mt-1 text-2xl font-semibold text-slate-900">
-                Lập lịch trước, theo dõi danh sách sau
+                Tạo nhanh bằng auto-fill, kiểm tra lại ở danh sách hoặc timeline
               </h1>
             </div>
           </div>
@@ -44,11 +63,12 @@ const ShowTimePage = () => {
               onChange={(_, value) => setActiveTab(value)}
               sx={adminTabsSx}
             >
-              <Tab label="Lập lịch" sx={adminTabSx} {...tabProps(0)} />
+              <Tab label="Tạo tự động" sx={adminTabSx} {...tabProps(0)} />
+              <Tab label="Lập lịch" sx={adminTabSx} {...tabProps(1)} />
               <Tab
                 label="Danh sách / Bộ lọc"
                 sx={adminTabSx}
-                {...tabProps(1)}
+                {...tabProps(2)}
               />
             </Tabs>
           </Box>
@@ -60,7 +80,9 @@ const ShowTimePage = () => {
           hidden={activeTab !== 0}
           aria-labelledby="showtime-tab-0"
         >
-          {activeTab === 0 ? <ShowTimeSchedulerPanel /> : null}
+          {activeTab === 0 ? (
+            <ShowTimeAutoFillPanel onSuccess={handleAutoFillSuccess} />
+          ) : null}
         </div>
 
         <div
@@ -69,7 +91,21 @@ const ShowTimePage = () => {
           hidden={activeTab !== 1}
           aria-labelledby="showtime-tab-1"
         >
-          {activeTab === 1 ? <ShowTimeListPanel /> : null}
+          {activeTab === 1 ? <ShowTimeSchedulerPanel /> : null}
+        </div>
+
+        <div
+          id="showtime-panel-2"
+          role="tabpanel"
+          hidden={activeTab !== 2}
+          aria-labelledby="showtime-tab-2"
+        >
+          {activeTab === 2 ? (
+            <ShowTimeListPanel
+              key={listPanelKey}
+              initialFilters={listPreset}
+            />
+          ) : null}
         </div>
       </div>
     </div>

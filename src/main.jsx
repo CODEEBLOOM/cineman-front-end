@@ -24,6 +24,8 @@ const RootLayout = lazy(() => import('./RootLayout'));
 const HomePage = lazy(() => import('@pages/HomePage'));
 const AuthLayout = lazy(() => import('@pages/auth/AuthLayout'));
 const LoginPage = lazy(() => import('@pages/auth/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('@pages/auth/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('@pages/auth/ResetPasswordPage'));
 const DetailMoviePage = lazy(() => import('@pages/DetailMoviePage'));
 const MoviePage = lazy(() => import('@pages/MoviePage'));
 const ProtectedRoute = lazy(
@@ -143,6 +145,14 @@ const router = createBrowserRouter([
             index: true,
             path: 'login',
             element: <LoginPage />,
+          },
+          {
+            path: 'forgot-password',
+            element: <ForgotPasswordPage />,
+          },
+          {
+            path: 'reset-password',
+            element: <ResetPasswordPage />,
           },
           {
             path: 'google/callback',

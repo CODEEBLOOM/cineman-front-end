@@ -9,6 +9,9 @@ import { clearAuthRedirect, resolveAuthRedirect } from '@utils/authRedirect';
 const AuthLayout = () => {
   const { isAuthentication } = useSelector((state) => state.auth);
   const location = useLocation();
+  const isRecoveryRoute =
+    location.pathname === '/auth/forgot-password' ||
+    location.pathname === '/auth/reset-password';
 
   const redirectUrl = resolveAuthRedirect(location.state?.from, '/');
 
@@ -18,7 +21,7 @@ const AuthLayout = () => {
     }
   }, [isAuthentication]);
 
-  if (isAuthentication) {
+  if (isAuthentication && !isRecoveryRoute) {
     return <Navigate to={redirectUrl} replace />;
   }
   return (

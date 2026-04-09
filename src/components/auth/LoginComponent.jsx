@@ -306,7 +306,7 @@ const LoginComponent = ({ dispatch, navigate, onSelectRegister }) => {
       >
         <Button
           variant="text"
-          onClick={handleForgotPassword}
+          onClick={() => navigate('/auth/forgot-password')}
           sx={{
             p: 0,
             minWidth: 0,

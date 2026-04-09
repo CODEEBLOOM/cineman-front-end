@@ -26,6 +26,7 @@ import {
 import DateFormatter from '@utils/DateFormatter';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 const shellPaperSx = {
@@ -58,6 +59,16 @@ const STATUS_FILTERS = [
 
 const resolvePosterSrc = (invoice) =>
   invoice?.movie?.posterImage || invoice?.posterImage || '';
+
+const resolveMovieId = (invoice) =>
+  invoice?.movie?.movieId || invoice?.movieId || null;
+
+const canOpenReviewComposer = (invoice) => {
+  const status = String(invoice?.status || '').toUpperCase();
+  const movieId = resolveMovieId(invoice);
+
+  return Boolean(movieId && (status === 'PAID' || status === 'USED'));
+};
 
 const extractInvoices = (response) => {
   const payload = response?.data ?? [];
@@ -172,6 +183,7 @@ const LoadingCard = () => (
 );
 
 const TransactionHistory = () => {
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
   const [allInvoices, setAllInvoices] = useState([]);
   const [invoices, setInvoices] = useState([]);
@@ -339,15 +351,25 @@ const TransactionHistory = () => {
     'Tất cả';
 
   const handleViewDetail = (invoice) => {
-    toast.info(
-      `Mã giao dịch #${invoice?.id} hiện chưa có trang chi tiết riêng.`
-    );
+    const movieId = resolveMovieId(invoice);
+
+    if (!movieId) {
+      toast.error('Không tìm thấy phim tương ứng để mở chi tiết.');
+      return;
+    }
+
+    navigate(`/detail-movie/${movieId}`);
   };
 
   const handleReview = (invoice) => {
-    toast.info(
-      `Chức năng đánh giá cho giao dịch #${invoice?.id} đang được cập nhật.`
-    );
+    const movieId = resolveMovieId(invoice);
+
+    if (!movieId) {
+      toast.error('Không tìm thấy phim tương ứng để mở khu vực đánh giá.');
+      return;
+    }
+
+    navigate(`/detail-movie/${movieId}#movie-reviews`);
   };
 
   return (
@@ -476,6 +498,9 @@ const TransactionHistory = () => {
         <Stack spacing={2}>
           {sortedInvoices.map((invoice, index) => {
             const statusMeta = getStatusMeta(invoice?.status);
+            const reviewActionLabel = canOpenReviewComposer(invoice)
+              ? 'Đánh giá'
+              : 'Xem đánh giá';
 
             return (
               <Paper
@@ -659,6 +684,7 @@ const TransactionHistory = () => {
                       startIcon={<RateReviewRounded />}
                       onClick={() => handleReview(invoice)}
                       sx={accountPrimaryButtonSx}
+                      title={reviewActionLabel}
                     >
                       Đánh giá
                     </Button>

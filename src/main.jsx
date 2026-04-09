@@ -87,6 +87,7 @@ const PromotionTypePage = lazy(
 );
 const RolePage = lazy(() => import('@pages/admin/RolePage.jsx'));
 const UserPage = lazy(() => import('@pages/admin/UserPage.jsx'));
+const PermissionPage = lazy(() => import('@pages/admin/PermissionPage.jsx'));
 
 const routerFallback = <Loading minHeight="55vh" />;
 
@@ -275,7 +276,7 @@ const router = createBrowserRouter([
           },
           {
             path: 'quyen-han',
-            element: <p>Quản lý quyền hạn</p>,
+            element: <PermissionPage />,
           },
         ],
       },

@@ -137,14 +137,14 @@ const PreHeader = () => {
             </li>
           </ul>
         )}
-        <div className="h-6 w-6">
-          <a href="#">
-            <img
-              src={`https://toppng.com/uploads/preview/vietnam-large-flag-11547887920ptaqfn7euo.png`}
-              alt=""
-              className="w-full object-cover"
-            />
-          </a>
+        <div
+          className="ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-sm"
+          aria-label="Tiếng Việt"
+          title="Tiếng Việt"
+        >
+          <span role="img" aria-hidden="true">
+            🇻🇳
+          </span>
         </div>
       </div>
     </div>

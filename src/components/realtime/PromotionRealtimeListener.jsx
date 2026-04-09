@@ -16,6 +16,7 @@ const PromotionRealtimeListener = () => {
   const { isAuthentication, accessToken } = useSelector((state) => state.auth);
   const clientRef = useRef(null);
   const displayedPromotionKeysRef = useRef(new Set());
+  const hasRealtimeFailureRef = useRef(false);
   const [activePromotion, setActivePromotion] = useState(null);
   const navigate = useNavigate();
 
@@ -49,6 +50,7 @@ const PromotionRealtimeListener = () => {
         clientRef.current.deactivate();
         clientRef.current = null;
       }
+      hasRealtimeFailureRef.current = false;
       displayedPromotionKeysRef.current.clear();
       setActivePromotion(null);
       return undefined;
@@ -59,9 +61,10 @@ const PromotionRealtimeListener = () => {
       connectHeaders: {
         Authorization: `Bearer ${accessToken}`,
       },
-      reconnectDelay: 5000,
+      reconnectDelay: 0,
       debug: () => {},
       onConnect: () => {
+        hasRealtimeFailureRef.current = false;
         client.subscribe(PROMOTION_DESTINATION, (message) => {
           const activatedPromotion = parsePromotionActivatedMessage(
             message.body
@@ -90,10 +93,25 @@ const PromotionRealtimeListener = () => {
         });
       },
       onStompError: (error) => {
+        if (hasRealtimeFailureRef.current) {
+          return;
+        }
+
+        hasRealtimeFailureRef.current = true;
         console.error('Promotion websocket STOMP error:', error);
+        client.deactivate();
       },
       onWebSocketError: (error) => {
-        console.error('Promotion websocket error:', error);
+        if (hasRealtimeFailureRef.current) {
+          return;
+        }
+
+        hasRealtimeFailureRef.current = true;
+        console.warn(
+          'Promotion realtime is unavailable. The listener was disabled for this session.',
+          error
+        );
+        client.deactivate();
       },
     });
 

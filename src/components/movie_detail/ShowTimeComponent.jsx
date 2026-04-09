@@ -93,7 +93,7 @@ const ShowTimeComponent = ({ movieId }) => {
   }
 
   return (
-    <section className="my-8 rounded-[16px] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+    <section className="my-8 rounded-[16px] bg-white shadow-sm">
       <div className="border-b border-slate-200 pb-4">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
           Lịch chiếu

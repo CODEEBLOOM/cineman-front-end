@@ -32,8 +32,8 @@ export const seatStatusAppearance = {
   },
   SELECTED: {
     iconColor: '#ffffff',
-    backgroundColor: '#2d5f8d',
-    borderColor: '#23486c',
+    backgroundColor: '#0a4d9c',
+    borderColor: '#083d7c',
     textColor: '#ffffff',
   },
   HOLDED: {

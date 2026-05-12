@@ -1,13 +1,11 @@
 import { deleteCinemaTheater } from '@apis/cinemaTheaterService';
 import TabPanel from '@component/Tabpanel.jsx';
 import { useModelContext } from '@context/ModalContext';
-import { openSnackbar } from '@redux/slices/snackbarSlice';
 import { adminTabSx, adminTabsSx } from '@utils/adminTabStyles';
 import { Box, Button, Tab, Tabs } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { MdDeleteForever } from 'react-icons/md';
 import ModalCreateCinemaTheater from './ModalCreateCinemaTheater';
 
@@ -33,7 +31,6 @@ const CinemaTheaterTable = ({
   totalCount,
 }) => {
   const { openPopup } = useModelContext();
-  const dispatch = useDispatch();
 
   const handlePageChange = (newModel) => {
     fetchCinemaTheaters({
@@ -73,7 +70,7 @@ const CinemaTheaterTable = ({
 
     try {
       await deleteCinemaTheater(id);
-      dispatch(openSnackbar({ message: 'Xóa phòng chiếu thành công.' }));
+      toast.success('Xóa phòng chiếu thành công.');
       await fetchCinemaTheaters({
         page: paginationModel.page,
         size: paginationModel.pageSize,

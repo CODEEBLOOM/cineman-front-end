@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+﻿import { useCallback, useEffect, useState } from 'react';
 import {
   extractCinemaTheaterList,
   extractCinemaTheaterMeta,
@@ -8,7 +8,7 @@ import CreateCinemaTheater from './CreateCinemaTheater';
 import CinemaTheaterTable from './CinemaTheaterTable';
 import CustomBreadcrumb from '@component/CustomBreakcrumb';
 import './seatMapComponent.scss';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 const defaultPaginationModel = {
   page: 0,

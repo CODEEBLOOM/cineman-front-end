@@ -3,10 +3,8 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import { Button, CircularProgress } from '@mui/material';
-import { useDispatch } from 'react-redux';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { useModelContext } from '@context/ModalContext';
-import { openSnackbar } from '@redux/slices/snackbarSlice';
 import { create, update } from '@apis/cinemaTheaterService';
 import {
   extractCinemaTypeList,
@@ -94,7 +92,6 @@ const ModalCreateCinemaTheater = ({
   placement = 'top-center',
 }) => {
   const { closeTopModal } = useModelContext();
-  const dispatch = useDispatch();
   const [cinemaTypes, setCinemaTypes] = useState([]);
   const [movieTheaters, setMovieTheaters] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -187,24 +184,20 @@ const ModalCreateCinemaTheater = ({
     try {
       if (isUpdate) {
         await update({ id: cinemaTheaters.cinemaTheaterId, data: payload });
-        dispatch(openSnackbar({ message: 'Cập nhật phòng chiếu thành công.' }));
+        toast.success('Cập nhật phòng chiếu thành công.');
       } else {
         await create(payload);
-        dispatch(openSnackbar({ message: 'Tạo mới phòng chiếu thành công.' }));
+        toast.success('Tạo mới phòng chiếu thành công.');
       }
 
       closeTopModal();
       await fetchCinemaTheaters({ page: 0, size: 5, status: null });
     } catch (error) {
-      dispatch(
-        openSnackbar({
-          message:
-            error?.response?.data?.message ||
-            (isUpdate
-              ? 'Cập nhật phòng chiếu thất bại!'
-              : 'Tạo mới phòng chiếu thất bại!'),
-          type: 'error',
-        })
+      toast.error(
+        error?.response?.data?.message ||
+          (isUpdate
+            ? 'Cập nhật phòng chiếu thất bại!'
+            : 'Tạo mới phòng chiếu thất bại!')
       );
     } finally {
       setLoading(false);

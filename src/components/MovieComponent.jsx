@@ -1,7 +1,7 @@
 import { findAllByFilter } from '@apis/movieService';
-import { Box, Pagination, Skeleton, Tab, Tabs } from '@mui/material';
+import { Box, CircularProgress, Skeleton, Tab, Tabs } from '@mui/material';
 import { setMovieStatus } from '@redux/slices/movieSlice.js';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import CardItemFilm from './CardItemFilm';
 import EmptyList from './cinema_showtime/EmptyList';
@@ -12,8 +12,6 @@ const MOVIE_TABS = [
   { label: 'Phim đang chiếu', status: 'DC' },
   { label: 'Xuất chiếu đặc biệt', status: 'DB' },
 ];
-
-const DEFAULT_SKELETON_COUNT = 8;
 
 const movieTabSx = {
   minHeight: { xs: 48, md: 56 },
@@ -27,10 +25,10 @@ const movieTabSx = {
   letterSpacing: '0.02em',
   transition: 'all 0.2s ease',
   '&.Mui-selected': {
-    color: '#23486c',
+    color: '#083d7c',
   },
   '&:hover': {
-    color: '#23486c',
+    color: '#083d7c',
     backgroundColor: 'transparent',
   },
 };
@@ -71,15 +69,17 @@ const MovieCardSkeleton = ({ showReleaseDate = false, showButton = false }) => (
   </div>
 );
 
+const PAGE_SIZE = 8;
+
 const MovieComponent = () => {
   const { movieStatus } = useSelector((state) => state.movie);
   const movieTheater = useSelector(
     (state) => state.movieTheater?.movieTheater ?? { id: null }
   );
-  const [pageActive, setPageActive] = useState(1);
+  const [pageActive, setPageActive] = useState(0);
   const [meta, setMeta] = useState({
     currentPage: 0,
-    pageSize: 8,
+    pageSize: PAGE_SIZE,
     totalPages: 0,
     totalElements: 0,
   });
@@ -87,12 +87,13 @@ const MovieComponent = () => {
     movieStatus === 'SC' ? 0 : movieStatus === 'DB' ? 2 : 1
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [listMovies, setListMovies] = useState([]);
+  const sentinelRef = useRef(null);
   const dispatch = useDispatch();
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
-    setPageActive(1);
   };
 
   const a11yProps = (index) => ({
@@ -104,32 +105,77 @@ const MovieComponent = () => {
     dispatch(setMovieStatus(status));
   };
 
-  /* Lấy tất cả thông tin phim theo status và movie theater id */
+  /* Reset danh sách khi đổi tab hoặc đổi rạp */
   useEffect(() => {
-    if (movieTheater?.id) {
-      setIsLoading(true);
-      findAllByFilter({
-        page: pageActive - 1,
-        size: meta.pageSize,
-        status: movieStatus,
-        movieTheaterId: movieTheater.id,
-      })
-        .then((res) => {
-          setListMovies(res.data.movies);
-          setMeta(res.data.meta);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    }
-  }, [movieStatus, movieTheater, pageActive]);
+    setPageActive(0);
+    setListMovies([]);
+    setMeta({
+      currentPage: 0,
+      pageSize: PAGE_SIZE,
+      totalPages: 0,
+      totalElements: 0,
+    });
+  }, [movieStatus, movieTheater?.id]);
 
-  const handleChangePage = (event, newPage) => {
-    setPageActive(newPage);
-  };
+  /* Lấy thông tin phim theo status, movie theater id và page hiện tại */
+  useEffect(() => {
+    if (!movieTheater?.id) return;
+    let cancelled = false;
+    const isFirstPage = pageActive === 0;
+    if (isFirstPage) setIsLoading(true);
+    else setIsLoadingMore(true);
+
+    findAllByFilter({
+      page: pageActive,
+      size: PAGE_SIZE,
+      status: movieStatus,
+      movieTheaterId: movieTheater.id,
+    })
+      .then((res) => {
+        if (cancelled) return;
+        setListMovies((prev) =>
+          isFirstPage ? res.data.movies : [...prev, ...res.data.movies]
+        );
+        setMeta(res.data.meta);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+        setIsLoadingMore(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [movieStatus, movieTheater?.id, pageActive]);
+
+  /* Infinite scroll: khi sentinel xuất hiện gần cuối viewport thì tăng page */
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        const hasMore = pageActive + 1 < meta.totalPages;
+        if (
+          entry.isIntersecting &&
+          hasMore &&
+          !isLoading &&
+          !isLoadingMore
+        ) {
+          setPageActive((prev) => prev + 1);
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [isLoading, isLoadingMore, pageActive, meta.totalPages]);
 
   const renderMovieSkeletons = (options = {}) =>
-    Array.from({ length: meta.pageSize || DEFAULT_SKELETON_COUNT }, (_, index) => (
+    Array.from({ length: PAGE_SIZE }, (_, index) => (
       <MovieCardSkeleton key={`movie-skeleton-${value}-${index}`} {...options} />
     ));
 
@@ -154,7 +200,7 @@ const MovieComponent = () => {
                 '.MuiTabs-indicator': {
                   height: 3,
                   borderRadius: 999,
-                  backgroundColor: '#2d5f8d',
+                  backgroundColor: '#0a4d9c',
                 },
               }}
             >
@@ -245,19 +291,16 @@ const MovieComponent = () => {
             </div>
           </TabPanel>
 
-          <Box className="py-3">
-            {!isLoading && (
-              <Pagination
-                onChange={handleChangePage}
-                sx={{ justifyContent: 'center', display: 'flex' }}
-                size="large"
-                count={meta.totalPages}
-                page={meta.currentPage + 1}
-                variant="outlined"
-                shape="rounded"
-                color="primary"
-              />
-            )}
+          <Box
+            ref={sentinelRef}
+            className="py-3"
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              minHeight: 48,
+            }}
+          >
+            {isLoadingMore && <CircularProgress size={28} />}
           </Box>
         </Box>
       </div>

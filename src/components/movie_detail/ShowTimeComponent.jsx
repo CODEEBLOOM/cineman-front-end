@@ -115,7 +115,7 @@ const ShowTimeComponent = ({ movieId }) => {
               className={`rounded-full border px-7 py-3 text-sm font-semibold transition ${
                 isActive
                   ? 'border-primary bg-primary text-white shadow-md shadow-primary/20'
-                  : 'border-[#9fc7f0] bg-white text-[#2d78bf] hover:border-primary hover:text-primary'
+                  : 'border-[#7fb0e0] bg-white text-[#0a4d9c] hover:border-primary hover:text-primary'
               }`}
             >
               {formatDateFilterLabel(showTime.parsedDate)}

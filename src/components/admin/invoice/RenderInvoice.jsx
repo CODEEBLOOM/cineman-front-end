@@ -1,4 +1,4 @@
-import { updateStatusUsed } from '@apis/invoiceService';
+﻿import { updateStatusUsed } from '@apis/invoiceService';
 import QRGenerator from '@component/QRGenerator';
 import { currencyFormatter } from '@libs/Utils';
 import { Button } from '@mui/material';
@@ -7,7 +7,7 @@ import React, { useRef } from 'react';
 import { MdPrint } from 'react-icons/md';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 const RenderInvoice = ({ invoiceDetail }) => {
   const detailInvoiceRef = useRef(null);

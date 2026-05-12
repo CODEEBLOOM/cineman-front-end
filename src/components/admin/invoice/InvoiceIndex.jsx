@@ -15,7 +15,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { IoEyeOutline, IoQrCodeOutline } from 'react-icons/io5';
 import { PiInvoiceBold } from 'react-icons/pi';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import ScanQRCode from './ScanQRCode';
 

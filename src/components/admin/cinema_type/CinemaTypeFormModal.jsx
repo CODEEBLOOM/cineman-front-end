@@ -1,4 +1,4 @@
-import { createCinemaType, updateCinemaType } from '@apis/cinemaTypeService';
+﻿import { createCinemaType, updateCinemaType } from '@apis/cinemaTypeService';
 import AdminModal from '@component/admin/common/AdminModal';
 import FormField from '@component/FormField';
 import TextAreaInput from '@component/form_field/TextAreaInput';
@@ -8,7 +8,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import * as yup from 'yup';
 
 const formSchema = yup.object({

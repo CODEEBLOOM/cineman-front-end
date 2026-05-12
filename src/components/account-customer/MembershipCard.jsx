@@ -1,4 +1,4 @@
-import {
+﻿import {
   extractMembershipRankList,
   findAllMembershipRanks,
   normalizeMembershipRank,
@@ -35,7 +35,7 @@ import { fetchInfoUser } from '@redux/slices/userSlice';
 import DateFormatter from '@utils/DateFormatter';
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 const shellPaperSx = {
   borderRadius: '16px',
@@ -52,10 +52,10 @@ const statPaperSx = {
 const progressTrackSx = {
   height: 10,
   borderRadius: 999,
-  backgroundColor: alpha('#23486c', 0.12),
+  backgroundColor: alpha('#083d7c', 0.12),
   '& .MuiLinearProgress-bar': {
     borderRadius: 999,
-    background: 'linear-gradient(90deg, #23486c 0%, #2d5f8d 100%)',
+    background: 'linear-gradient(90deg, #083d7c 0%, #0a4d9c 100%)',
   },
 };
 
@@ -303,7 +303,7 @@ const MembershipCard = () => {
                   position: 'absolute',
                   inset: 0,
                   background:
-                    'radial-gradient(circle at top left, rgba(45,95,141,0.16), transparent 40%), radial-gradient(circle at bottom right, rgba(207,109,5,0.16), transparent 38%)',
+                    'radial-gradient(circle at top left, rgba(10,77,156,0.16), transparent 40%), radial-gradient(circle at bottom right, rgba(207,109,5,0.16), transparent 38%)',
                 }}
               />
               <Stack
@@ -316,7 +316,7 @@ const MembershipCard = () => {
                     fontSize: 18,
                     fontWeight: 800,
                     textTransform: 'uppercase',
-                    color: '#1f3f61',
+                    color: '#062d5c',
                   }}
                 >
                   Thẻ thành viên
@@ -327,8 +327,8 @@ const MembershipCard = () => {
                     mx: 'auto',
                     width: 68,
                     height: 68,
-                    bgcolor: alpha('#23486c', 0.12),
-                    color: '#23486c',
+                    bgcolor: alpha('#083d7c', 0.12),
+                    color: '#083d7c',
                   }}
                 >
                   <CardMembershipRounded sx={{ fontSize: 36 }} />
@@ -338,7 +338,7 @@ const MembershipCard = () => {
                   <Typography sx={{ fontSize: 13, color: '#64748b' }}>
                     Cấp độ hiện tại
                   </Typography>
-                  <Typography sx={{ mt: 0.5, fontSize: 28, fontWeight: 800, color: '#1f3f61' }}>
+                  <Typography sx={{ mt: 0.5, fontSize: 28, fontWeight: 800, color: '#062d5c' }}>
                     {(currentRank?.name ?? 'Normal').toUpperCase()}
                   </Typography>
                   <Typography sx={{ mt: 0.75, fontSize: 15, fontWeight: 600 }}>
@@ -386,8 +386,8 @@ const MembershipCard = () => {
                 sx={{
                   height: 34,
                   borderRadius: '10px',
-                  bgcolor: alpha('#23486c', 0.1),
-                  color: '#23486c',
+                  bgcolor: alpha('#083d7c', 0.1),
+                  color: '#083d7c',
                   fontWeight: 700,
                 }}
               />
@@ -419,7 +419,7 @@ const MembershipCard = () => {
                       height: 26,
                       bgcolor:
                         Number(rank?.id) === Number(currentRank?.id)
-                          ? '#23486c'
+                          ? '#083d7c'
                           : alpha('#64748b', 0.45),
                     }}
                   />
@@ -443,7 +443,7 @@ const MembershipCard = () => {
                         sx={{
                           fontSize: 12.5,
                           fontWeight: 700,
-                          color: isCurrent ? '#23486c' : '#475569',
+                          color: isCurrent ? '#083d7c' : '#475569',
                         }}
                       >
                         {rank.name}
@@ -467,7 +467,7 @@ const MembershipCard = () => {
                   ...accountPrimaryButtonSx,
                   px: 4,
                   minWidth: 250,
-                  background: 'linear-gradient(90deg, #23486c 0%, #cf6d05 100%)',
+                  background: 'linear-gradient(90deg, #083d7c 0%, #cf6d05 100%)',
                   boxShadow: '0 12px 26px rgba(35,72,108,0.18)',
                 }}
               >
@@ -496,8 +496,8 @@ const MembershipCard = () => {
             title: 'Điểm đã tích lũy',
             value: `${formatNumber(totalPoint)} Điểm`,
             icon: <TrendingUpRounded />,
-            color: '#23486c',
-            bg: alpha('#23486c', 0.08),
+            color: '#083d7c',
+            bg: alpha('#083d7c', 0.08),
           },
           {
             title: 'Điểm đã sử dụng',

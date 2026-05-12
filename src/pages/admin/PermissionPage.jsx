@@ -1,4 +1,4 @@
-import {
+﻿import {
   deletePermission,
   extractPermissionDetail,
   extractPermissionList,
@@ -22,7 +22,7 @@ import {
   MdOutlineRefresh,
   MdSecurity,
 } from 'react-icons/md';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 const defaultFilters = {
   category: '',

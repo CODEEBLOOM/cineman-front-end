@@ -1,9 +1,9 @@
-import { useModelContext } from '@context/ModalContext';
+﻿import { useModelContext } from '@context/ModalContext';
 import { Button } from '@mui/material';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 const ScanQRCode = () => {
   const navigate = useNavigate();

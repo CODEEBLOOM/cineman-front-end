@@ -1,9 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
+const DRAG_THRESHOLD_RATIO = 0.15;
+
 const Carousel = ({ slides = [], autoSlide = false, autoSlideInterval = 3000 }) => {
   const intervalRef = useRef(null);
+  const containerRef = useRef(null);
+  const dragStateRef = useRef({
+    pointerId: null,
+    startX: 0,
+    width: 0,
+    moved: false,
+  });
   const [curr, setCurr] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
   const slideCount = Array.isArray(slides) ? slides.length : 0;
 
@@ -42,6 +53,99 @@ const Carousel = ({ slides = [], autoSlide = false, autoSlideInterval = 3000 }) 
     resetInterval();
   };
 
+  const handlePointerDown = (event) => {
+    if (slideCount <= 1) {
+      return;
+    }
+    if (event.pointerType === 'mouse' && event.button !== 0) {
+      return;
+    }
+
+    const container = containerRef.current;
+    if (!container) {
+      return;
+    }
+
+    dragStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      width: container.offsetWidth,
+      moved: false,
+    };
+
+    try {
+      container.setPointerCapture(event.pointerId);
+    } catch {
+      /* ignore */
+    }
+
+    setIsDragging(true);
+    setDragOffset(0);
+
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+  };
+
+  const handlePointerMove = (event) => {
+    const state = dragStateRef.current;
+    if (state.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const delta = event.clientX - state.startX;
+    if (Math.abs(delta) > 3) {
+      state.moved = true;
+    }
+    setDragOffset(delta);
+  };
+
+  const finishDrag = (event) => {
+    const state = dragStateRef.current;
+    if (state.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const container = containerRef.current;
+    if (container && container.hasPointerCapture?.(event.pointerId)) {
+      try {
+        container.releasePointerCapture(event.pointerId);
+      } catch {
+        /* ignore */
+      }
+    }
+
+    const delta = event.clientX - state.startX;
+    const width = state.width || 1;
+    const threshold = width * DRAG_THRESHOLD_RATIO;
+
+    dragStateRef.current = {
+      pointerId: null,
+      startX: 0,
+      width: 0,
+      moved: state.moved,
+    };
+
+    setIsDragging(false);
+    setDragOffset(0);
+
+    if (delta <= -threshold) {
+      next();
+    } else if (delta >= threshold) {
+      prev();
+    } else {
+      resetInterval();
+    }
+  };
+
+  const handleClickCapture = (event) => {
+    if (dragStateRef.current.moved) {
+      event.preventDefault();
+      event.stopPropagation();
+      dragStateRef.current.moved = false;
+    }
+  };
+
   useEffect(() => {
     if (curr > slideCount - 1) {
       setCurr(0);
@@ -63,11 +167,22 @@ const Carousel = ({ slides = [], autoSlide = false, autoSlideInterval = 3000 }) 
   }
 
   return (
-    <div className="relative mx-auto w-full overflow-hidden bg-slate-950">
+    <div
+      ref={containerRef}
+      className="relative mx-auto w-full touch-pan-y select-none overflow-hidden bg-slate-950"
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={finishDrag}
+      onPointerCancel={finishDrag}
+      onClickCapture={handleClickCapture}
+      style={{ cursor: slideCount > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+    >
       <div className="relative aspect-[21/8] min-h-[220px] w-full max-w-none sm:min-h-[280px] lg:min-h-[360px] 2xl:min-h-[420px]">
         <div
-          className="flex h-full transition-transform duration-700 ease-out"
-          style={{ transform: `translateX(-${curr * 100}%)` }}
+          className={`flex h-full ${isDragging ? '' : 'transition-transform duration-700 ease-out'}`}
+          style={{
+            transform: `translate3d(calc(-${curr * 100}% + ${dragOffset}px), 0, 0)`,
+          }}
         >
           {slides.map((slide, index) => (
             <div key={index} className="relative h-full min-w-full overflow-hidden">
@@ -76,6 +191,7 @@ const Carousel = ({ slides = [], autoSlide = false, autoSlideInterval = 3000 }) 
                 alt={`Banner ${index + 1}`}
                 className="h-full w-full object-cover object-center"
                 loading={index === 0 ? 'eager' : 'lazy'}
+                draggable={false}
               />
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10" />
             </div>

@@ -1,4 +1,4 @@
-import { clearMultiple, createMultiple } from '@apis/detailBookingSnack';
+﻿import { clearMultiple, createMultiple } from '@apis/detailBookingSnack';
 import { findAllSnacks } from '@apis/snackService';
 import { getAllSnackType } from '@apis/snackType';
 import ImageComponent from '@component/ImageComponent';
@@ -9,7 +9,7 @@ import { Skeleton } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 const resolveImageSrc = (image) => {
   if (!image) {

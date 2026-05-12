@@ -1,7 +1,7 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 const resolveAvatarSrc = (avatar) => {
   if (!avatar) {

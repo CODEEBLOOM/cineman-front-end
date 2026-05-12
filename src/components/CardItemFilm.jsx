@@ -62,7 +62,9 @@ const CardItemFilm = ({
         >
           <IoClose size={25} />
         </span>
-        <p className="mb-3 border-b-2 px-2 text-[20px]">{title}</p>
+        <p className="mb-3 border-b-2 px-2 text-[20px] font-semibold text-primary">
+          {title}
+        </p>
         <iframe
           title="Trailer"
           src={trailerLink}
@@ -119,29 +121,37 @@ const CardItemFilm = ({
         </div>
       </div>
 
-      <div className="flex-1">
-        <div className="truncate text-left">
+      <div className="min-w-0 flex-1">
+        <div className="min-w-0 text-left">
           <Link
             to={`/detail-movie/${id}`}
-            className="mb-2 mt-2 flex max-h-[30px] min-h-[30px] cursor-pointer flex-wrap text-[18px] font-bold text-primary hover:underline lg:truncate lg:text-[20px]"
+            title={title}
+            className="mb-2 mt-2 block cursor-pointer truncate text-[18px] font-bold text-primary hover:underline lg:text-[20px]"
           >
             {title}
           </Link>
           <ul>
-            <li className="w-full">
-              <span className="font-bold">Thể loại:</span>&nbsp;
-              <span className="truncate whitespace-nowrap lowercase">
+            <li className="flex w-full min-w-0 items-center">
+              <span className="flex-shrink-0 font-bold">Thể loại:</span>
+              <span
+                className="ml-1 truncate lowercase"
+                title={genres.map((genre) => genre.name).join(', ')}
+              >
                 {genres.map((genre) => genre.name).join(',\u200B ')}
               </span>
             </li>
-            <li className="flex flex-wrap">
-              <span className="font-bold">Thời lượng:</span>&nbsp; {duration}
-              <span>&nbsp;Phút</span>
+            <li className="flex w-full min-w-0 items-center">
+              <span className="flex-shrink-0 font-bold">Thời lượng:</span>
+              <span className="ml-1 truncate">{duration} Phút</span>
             </li>
             {isUpcoming && (
-              <li className="flex flex-wrap">
-                <span className="font-bold">Ngày khởi chiếu:</span>&nbsp;
-                <span className="font-bold text-primary">{releaseDate}</span>
+              <li className="flex w-full min-w-0 items-center">
+                <span className="flex-shrink-0 font-bold">
+                  Ngày khởi chiếu:
+                </span>
+                <span className="ml-1 truncate font-bold text-primary">
+                  {releaseDate}
+                </span>
               </li>
             )}
           </ul>

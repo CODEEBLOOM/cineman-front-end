@@ -53,7 +53,7 @@ const Header = ({ showTime }) => {
             color: '#334155',
             fontWeight: 800,
             border: '1px solid rgba(203,213,225,0.9)',
-            '.MuiChip-icon': { color: '#2d5f8d' },
+            '.MuiChip-icon': { color: '#0a4d9c' },
           }}
         />
       </Stack>
@@ -70,7 +70,7 @@ const Header = ({ showTime }) => {
           component={Link}
           to="/"
           underline="hover"
-          sx={{ fontWeight: 700, color: '#23486c' }}
+          sx={{ fontWeight: 700, color: '#083d7c' }}
         >
           Trang chủ
         </MuiLink>

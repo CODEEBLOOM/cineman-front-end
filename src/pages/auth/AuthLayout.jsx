@@ -9,9 +9,7 @@ import { clearAuthRedirect, resolveAuthRedirect } from '@utils/authRedirect';
 const AuthLayout = () => {
   const { isAuthentication } = useSelector((state) => state.auth);
   const location = useLocation();
-  const isRecoveryRoute =
-    location.pathname === '/auth/forgot-password' ||
-    location.pathname === '/auth/reset-password';
+  const isRecoveryRoute = location.pathname === '/auth/reset-password';
 
   const redirectUrl = resolveAuthRedirect(location.state?.from, '/');
 

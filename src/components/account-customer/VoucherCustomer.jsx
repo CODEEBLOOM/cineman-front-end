@@ -1,4 +1,4 @@
-import { findAllPromotions } from '@apis/promotionService';
+﻿import { findAllPromotions } from '@apis/promotionService';
 import {
   extractPromotionTypeList,
   findAllPromotionTypesAdmin,
@@ -37,7 +37,7 @@ import { PROMOTION_ACTIVATED_EVENT } from '@utils/promotionRealtime';
 import { motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 const MotionPaper = motion(Paper);
 
@@ -151,9 +151,9 @@ const resolveVoucherTheme = (category, expired) => {
   }
 
   return {
-    accent: '#23486c',
-    accentSoft: alpha('#23486c', 0.12),
-    iconBg: alpha('#23486c', 0.18),
+    accent: '#083d7c',
+    accentSoft: alpha('#083d7c', 0.12),
+    iconBg: alpha('#083d7c', 0.18),
     surface:
       'linear-gradient(135deg, rgba(239,246,255,0.98) 0%, rgba(255,255,255,1) 42%, rgba(224,242,254,0.92) 100%)',
     glow: alpha('#38bdf8', 0.14),
@@ -499,7 +499,7 @@ const AddVoucherTile = ({ onOpen }) => (
       minHeight: 232,
       p: 2,
       borderStyle: 'dashed',
-      borderColor: alpha('#23486c', 0.24),
+      borderColor: alpha('#083d7c', 0.24),
       background:
         'linear-gradient(135deg, rgba(248,250,252,0.98) 0%, rgba(255,255,255,1) 100%)',
     }}
@@ -514,8 +514,8 @@ const AddVoucherTile = ({ onOpen }) => (
         sx={{
           width: 56,
           height: 56,
-          bgcolor: alpha('#23486c', 0.08),
-          color: '#23486c',
+          bgcolor: alpha('#083d7c', 0.08),
+          color: '#083d7c',
         }}
       >
         <AddCardRounded />
@@ -552,8 +552,8 @@ const EmptyVoucherState = ({ onOpen }) => (
         mx: 'auto',
         width: 62,
         height: 62,
-        bgcolor: alpha('#23486c', 0.08),
-        color: '#23486c',
+        bgcolor: alpha('#083d7c', 0.08),
+        color: '#083d7c',
       }}
     >
       <ConfirmationNumberRounded />
@@ -832,8 +832,8 @@ const VoucherCustomer = () => {
             label: 'Tổng voucher',
             value: `${summary.total} mã`,
             icon: <ConfirmationNumberRounded />,
-            color: '#23486c',
-            bg: alpha('#23486c', 0.08),
+            color: '#083d7c',
+            bg: alpha('#083d7c', 0.08),
           },
           {
             label: 'Sẵn sàng dùng',
@@ -925,10 +925,10 @@ const VoucherCustomer = () => {
                     borderColor: alpha('#94a3b8', 0.42),
                   },
                   '&:hover fieldset': {
-                    borderColor: alpha('#23486c', 0.38),
+                    borderColor: alpha('#083d7c', 0.38),
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#23486c',
+                    borderColor: '#083d7c',
                   },
                 },
               }}
@@ -948,13 +948,13 @@ const VoucherCustomer = () => {
                       borderRadius: '999px',
                       px: 2,
                       color: isActive ? '#fff' : '#334155',
-                      bgcolor: isActive ? '#23486c' : alpha('#23486c', 0.06),
+                      bgcolor: isActive ? '#083d7c' : alpha('#083d7c', 0.06),
                       fontSize: 13.5,
                       fontWeight: 700,
                       textTransform: 'none',
                       boxShadow: 'none',
                       '&:hover': {
-                        bgcolor: isActive ? '#1f3f61' : alpha('#23486c', 0.12),
+                        bgcolor: isActive ? '#062d5c' : alpha('#083d7c', 0.12),
                         boxShadow: 'none',
                       },
                     }}

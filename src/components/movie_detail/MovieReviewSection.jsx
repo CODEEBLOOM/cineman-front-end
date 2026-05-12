@@ -1,25 +1,21 @@
-import {
+﻿import {
   createMovieReview,
   deleteMovieReview,
   getMovieReviewEligibility,
   getMovieReviews,
   updateMovieReview,
 } from '@apis/movieReviewService';
-import ChatBubbleOutlineRounded from '@mui/icons-material/ChatBubbleOutlineRounded';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
-import EditRounded from '@mui/icons-material/EditRounded';
 import LoginRounded from '@mui/icons-material/LoginRounded';
-import RateReviewRounded from '@mui/icons-material/RateReviewRounded';
 import StarBorderRounded from '@mui/icons-material/StarBorderRounded';
 import StarRounded from '@mui/icons-material/StarRounded';
-import VerifiedRounded from '@mui/icons-material/VerifiedRounded';
 import DateFormatter from '@utils/DateFormatter';
 import { persistAuthRedirect } from '@utils/authRedirect';
 import { containsProfanity } from '@utils/profanityFilter';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 const PAGE_SIZE = 6;
 const FALLBACK_AVATAR_GRADIENTS = [
@@ -223,17 +219,12 @@ const StarRow = ({
 );
 
 const ReviewSkeletonCard = () => (
-  <div className="rounded-[12px] border border-slate-200 bg-white p-5 shadow-sm">
-    <div className="animate-pulse">
-      <div className="flex items-start gap-4">
-        <div className="h-12 w-12 rounded-full bg-slate-200" />
-        <div className="flex-1">
-          <div className="h-4 w-36 rounded-full bg-slate-200" />
-          <div className="mt-3 h-4 w-24 rounded-full bg-slate-200" />
-          <div className="mt-4 h-3 w-full rounded-full bg-slate-100" />
-          <div className="mt-2 h-3 w-[88%] rounded-full bg-slate-100" />
-        </div>
-      </div>
+  <div className="flex gap-3 py-4 first:pt-0 last:pb-0">
+    <div className="h-9 w-9 flex-shrink-0 animate-pulse rounded-full bg-slate-200" />
+    <div className="flex-1 animate-pulse">
+      <div className="h-3 w-32 rounded-full bg-slate-200" />
+      <div className="mt-2 h-3 w-full rounded-full bg-slate-100" />
+      <div className="mt-2 h-3 w-[80%] rounded-full bg-slate-100" />
     </div>
   </div>
 );
@@ -582,350 +573,213 @@ const MovieReviewSection = ({ movieId, movieTitle, onReviewSummaryChange }) => {
       ref={sectionRef}
       className="container mb-12 scroll-mt-24"
     >
-      <div className="overflow-hidden rounded-[12px] border border-[#d9e4f0] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_50%,#f1f6fb_100%)] shadow-[0_24px_70px_rgba(15,23,42,0.12)]">
-        <div className="border-b border-[#dde7f2] px-5 py-6 md:px-7 md:py-7">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-3xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#3b82b6]">
-                Movie Reviews
+      <div className="rounded-[12px] border border-slate-200 bg-white">
+        <header className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-[18px] font-semibold text-slate-800">
+            Đánh giá ({eligibility.reviewCount})
+          </h2>
+          <div className="flex items-center gap-2">
+            <span className="text-[20px] font-bold text-[#062d5c]">
+              {currentAverageRating}
+            </span>
+            <StarRow
+              value={Math.round(resolveNumber(eligibility.averageRating))}
+              sizeClassName="text-[16px]"
+            />
+            <span className="text-xs text-slate-500">/ 5</span>
+          </div>
+        </header>
+
+        <div className="px-5 py-4">
+          {!isViewerAuthenticated ? (
+            <div className="mb-5 flex flex-col gap-2 rounded-[10px] border border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-slate-600">
+                Đăng nhập để gửi đánh giá của bạn.
               </p>
-              <h2 className="mt-2 text-[28px] font-bold leading-tight text-[#15314b] md:text-[34px]">
-                Cảm nhận của khán giả về {movieTitle || 'bộ phim này'}
-              </h2>
+              <button
+                type="button"
+                onClick={handleRequireLogin}
+                className="inline-flex items-center gap-1.5 self-start rounded-md bg-[#0a4d9c] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#083d7c] sm:self-auto"
+              >
+                <LoginRounded sx={{ fontSize: 16 }} />
+                Đăng nhập
+              </button>
             </div>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-[12px] border border-[#ffe4a6] bg-[#fff9ea] px-5 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#b7791f]">
-                  Điểm trung bình
-                </p>
-                <div className="mt-2 flex items-end gap-2">
-                  <span className="text-[30px] font-extrabold text-[#9a5a00]">
-                    {currentAverageRating}
-                  </span>
-                  <span className="pb-1 text-sm font-medium text-[#9a5a00]">
-                    / 5
-                  </span>
-                </div>
-                <div className="mt-2">
-                  <StarRow
-                    value={Math.round(resolveNumber(eligibility.averageRating))}
-                  />
-                </div>
+          ) : canManageOwnReview ? (
+            <form
+              onSubmit={handleSubmitReview}
+              className="mb-5 rounded-[10px] border border-slate-200 px-4 py-3"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-slate-700">
+                  {hasExistingReview ? 'Đánh giá của bạn' : 'Đánh giá'}
+                </span>
+                <StarRow
+                  value={reviewForm.ratingScore}
+                  interactive
+                  onSelect={handleChangeRating}
+                  sizeClassName="text-[22px]"
+                />
               </div>
 
-              <div className="rounded-[12px] border border-[#d4e1ef] bg-white px-5 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
-                  Lượt đánh giá
+              <textarea
+                id="movie-review-comment"
+                rows={3}
+                maxLength={1000}
+                value={reviewForm.comment}
+                onChange={handleChangeComment}
+                placeholder="Chia sẻ cảm nhận của bạn..."
+                className="mt-3 w-full resize-none rounded-[8px] border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#0a4d9c]"
+              />
+
+              <div className="mt-2 flex items-center justify-between gap-3">
+                <p className="text-xs text-slate-400">
+                  {reviewForm.comment.length}/1000
                 </p>
-                <p className="mt-2 text-[30px] font-extrabold text-[#15314b]">
-                  {eligibility.reviewCount}
-                </p>
-                <p className="mt-2 text-sm text-slate-500">
-                  Tổng số nhận xét công khai hiện có cho phim này.
-                </p>
-              </div>
-
-              <div className="rounded-[12px] border border-[#d4e1ef] bg-[#f6fbff] px-5 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
-                  Quyền của bạn
-                </p>
-                <p className="mt-2 text-[22px] font-bold text-[#15314b]">
-                  {hasExistingReview
-                    ? 'Đã có review'
-                    : eligibility.canReview
-                      ? 'Có thể đánh giá'
-                      : 'Chỉ xem'}
-                </p>
-                <p className="mt-2 text-sm leading-6 text-slate-500">
-                  {hasExistingReview
-                    ? 'Bạn có thể cập nhật hoặc xóa review của chính mình.'
-                    : eligibility.canReview
-                      ? 'Backend xác nhận tài khoản của bạn đủ điều kiện gửi review.'
-                      : 'Bạn vẫn xem được toàn bộ đánh giá công khai của phim.'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-6 px-5 py-6 md:px-7 md:py-7 lg:grid-cols-[minmax(0,1.35fr)_380px]">
-          <div>
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#e7f1fb] text-[#1e5d8c]">
-                <ChatBubbleOutlineRounded />
-              </div>
-              <div>
-                <h3 className="text-[22px] font-bold text-[#15314b]">
-                  Đánh giá công khai
-                </h3>
-                <p className="text-sm text-slate-500">
-                  Danh sách review mới nhất từ cộng đồng Poly Cinemas.
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {isLoading ? (
-                <>
-                  <ReviewSkeletonCard />
-                  <ReviewSkeletonCard />
-                  <ReviewSkeletonCard />
-                </>
-              ) : reviewPage.reviews.length > 0 ? (
-                reviewPage.reviews.map((review, index) => {
-                  const gradientClass =
-                    FALLBACK_AVATAR_GRADIENTS[
-                      index % FALLBACK_AVATAR_GRADIENTS.length
-                    ];
-
-                  return (
-                    <article
-                      key={review.id || `${review.fullName}-${index}`}
-                      className="rounded-[12px] border border-slate-200 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
-                    >
-                      <div className="flex gap-4">
-                        {review.avatar ? (
-                          <img
-                            src={review.avatar}
-                            alt={review.fullName}
-                            className="h-12 w-12 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div
-                            className={`flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br ${gradientClass} text-sm font-bold text-white`}
-                          >
-                            {getInitials(review.fullName)}
-                          </div>
-                        )}
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-                            <div>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <h4 className="text-[17px] font-bold text-slate-800">
-                                  {review.fullName}
-                                </h4>
-                                {review.isMine ? (
-                                  <span className="rounded-full bg-[#e7f6ef] px-3 py-1 text-xs font-semibold text-[#127a47]">
-                                    Bạn
-                                  </span>
-                                ) : null}
-                              </div>
-                              <p className="mt-1 text-sm text-slate-500">
-                                {formatDateTime(
-                                  review.updatedAt || review.createdAt
-                                )}
-                              </p>
-                            </div>
-
-                            <div className="flex flex-col items-start gap-1 md:items-end">
-                              <StarRow value={review.ratingScore} />
-                              <span className="text-sm font-semibold text-[#a45e00]">
-                                {review.ratingScore}/5 sao
-                              </span>
-                            </div>
-                          </div>
-
-                          <p className="mt-4 whitespace-pre-line text-[15px] leading-7 text-slate-600">
-                            {review.comment ||
-                              'Người dùng chưa để lại bình luận.'}
-                          </p>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })
-              ) : (
-                <div className="rounded-[12px] border border-dashed border-slate-300 bg-white/80 px-5 py-10 text-center">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#eef6ff] text-[#1e5d8c]">
-                    <RateReviewRounded />
-                  </div>
-                  <h4 className="mt-4 text-[22px] font-bold text-[#15314b]">
-                    Chưa có đánh giá nào
-                  </h4>
-                  <p className="mx-auto mt-2 max-w-xl text-[15px] leading-7 text-slate-500">
-                    Bộ phim này vẫn chưa có review công khai. Người dùng đủ điều
-                    kiện có thể để lại nhận xét đầu tiên sau khi hoàn tất thanh
-                    toán vé.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {pageNumbers.length > 1 ? (
-              <div className="mt-6 flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage((prevState) => prevState - 1)}
-                  disabled={currentPageIndex <= 0}
-                  className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#1e5d8c] hover:text-[#1e5d8c] disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Trang trước
-                </button>
-
-                {pageNumbers.map((pageNumber) => {
-                  const isActive = pageNumber === currentPageIndex;
-
-                  return (
+                <div className="flex items-center gap-2">
+                  {hasExistingReview ? (
                     <button
-                      key={pageNumber}
                       type="button"
-                      onClick={() => setCurrentPage(pageNumber)}
-                      className={`h-10 min-w-10 rounded-full px-3 text-sm font-bold transition ${
-                        isActive
-                          ? 'bg-[#1e5d8c] text-white shadow-md'
-                          : 'border border-slate-300 bg-white text-slate-700 hover:border-[#1e5d8c] hover:text-[#1e5d8c]'
-                      }`}
+                      disabled={isSubmitting}
+                      onClick={handleDeleteReview}
+                      className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-[#c24141] transition hover:bg-[#fff6f6] disabled:opacity-60"
                     >
-                      {pageNumber + 1}
+                      <DeleteOutlineRounded sx={{ fontSize: 16 }} />
+                      Xóa
                     </button>
-                  );
-                })}
-
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage((prevState) => prevState + 1)}
-                  disabled={currentPageIndex >= totalPages - 1}
-                  className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#1e5d8c] hover:text-[#1e5d8c] disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Trang sau
-                </button>
-              </div>
-            ) : null}
-          </div>
-
-          <aside className="lg:sticky lg:top-0 lg:self-start">
-            <div className="rounded-[12px] border border-[#d6e3ef] bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
-              <div className="flex items-start gap-3">
-                <div className="mt-1 flex h-11 w-11 items-center justify-center rounded-full bg-[#edf5fd] text-[#1e5d8c]">
-                  <EditRounded />
-                </div>
-                <div>
-                  <h3 className="text-[22px] font-bold text-[#15314b]">
-                    Review của bạn
-                  </h3>
-                </div>
-              </div>
-
-              {!isViewerAuthenticated ? (
-                <div className="mt-5 rounded-[12px] border border-dashed border-[#cbd9e6] bg-[#f8fbff] p-5">
-                  <p className="text-[15px] leading-7 text-slate-600">
-                    Bạn đang ở chế độ xem. Hãy đăng nhập để hệ thống kiểm tra
-                    xem tài khoản của bạn có đủ điều kiện tạo review cho phim
-                    này hay không.
-                  </p>
+                  ) : null}
                   <button
-                    type="button"
-                    onClick={handleRequireLogin}
-                    className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#1e5d8c] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#16496f]"
+                    type="submit"
+                    disabled={
+                      isSubmitting || Boolean(profanityValidationMessage)
+                    }
+                    className="inline-flex items-center gap-1 rounded-md bg-[#0a4d9c] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#083d7c] disabled:opacity-60"
                   >
-                    <LoginRounded fontSize="small" />
-                    Đăng nhập để đánh giá
+                    {isSubmitting
+                      ? 'Đang lưu...'
+                      : hasExistingReview
+                        ? 'Cập nhật'
+                        : 'Gửi'}
                   </button>
                 </div>
-              ) : canManageOwnReview ? (
-                <form className="mt-5" onSubmit={handleSubmitReview}>
-                  <div className="rounded-[12px] border border-[#dce8f2] bg-[#f8fbff] p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#1e5d8c]">
-                        {hasExistingReview ? 'Chỉnh sửa review' : 'Tạo review'}
-                      </p>
-                      {hasExistingReview ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-[#e7f6ef] px-3 py-1 text-xs font-semibold text-[#127a47]">
-                          <VerifiedRounded sx={{ fontSize: 16 }} />
-                          Review của bạn
-                        </span>
-                      ) : null}
-                    </div>
+              </div>
+              {profanityValidationMessage ? (
+                <p className="mt-2 text-xs text-[#c24141]">
+                  {profanityValidationMessage}
+                </p>
+              ) : null}
+            </form>
+          ) : null}
 
-                    <p className="mt-3 text-sm leading-6 text-slate-500">
-                      {hasExistingReview
-                        ? 'Bạn có thể cập nhật nội dung hoặc xóa review hiện tại của mình.'
-                        : 'Hãy cho biết mức độ hài lòng của bạn sau khi xem phim.'}
-                    </p>
+          <div className="divide-y divide-slate-100">
+            {isLoading ? (
+              <>
+                <ReviewSkeletonCard />
+                <ReviewSkeletonCard />
+                <ReviewSkeletonCard />
+              </>
+            ) : reviewPage.reviews.length > 0 ? (
+              reviewPage.reviews.map((review, index) => {
+                const gradientClass =
+                  FALLBACK_AVATAR_GRADIENTS[
+                    index % FALLBACK_AVATAR_GRADIENTS.length
+                  ];
 
-                    <div className="mt-4">
-                      <p className="mb-2 text-sm font-semibold text-slate-700">
-                        Số sao đánh giá
-                      </p>
-                      <StarRow
-                        value={reviewForm.ratingScore}
-                        interactive
-                        onSelect={handleChangeRating}
-                        sizeClassName="text-[28px]"
+                return (
+                  <article
+                    key={review.id || `${review.fullName}-${index}`}
+                    className="flex gap-3 py-4 first:pt-0 last:pb-0"
+                  >
+                    {review.avatar ? (
+                      <img
+                        src={review.avatar}
+                        alt={review.fullName}
+                        className="h-9 w-9 flex-shrink-0 rounded-full object-cover"
                       />
-                    </div>
-
-                    <div className="mt-5">
-                      <label
-                        htmlFor="movie-review-comment"
-                        className="mb-2 block text-sm font-semibold text-slate-700"
+                    ) : (
+                      <div
+                        className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${gradientClass} text-xs font-bold text-white`}
                       >
-                        Bình luận
-                      </label>
-                      <textarea
-                        id="movie-review-comment"
-                        rows={6}
-                        maxLength={1000}
-                        value={reviewForm.comment}
-                        onChange={handleChangeComment}
-                        placeholder="Chia sẻ cảm nhận của bạn về phim, diễn xuất, cảm xúc hoặc chất lượng suất chiếu..."
-                        className="w-full rounded-[12px] border border-slate-300 bg-white px-4 py-3 text-[15px] leading-7 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#1e5d8c] focus:ring-4 focus:ring-[#d6e8f7]"
-                      />
-                      <div className="mt-2 flex items-center justify-between gap-3">
-                        <p className="text-xs text-slate-500">
-                          Bình luận tối đa 1000 ký tự.
-                        </p>
-                        <p className="text-xs font-semibold text-slate-500">
-                          {reviewForm.comment.length}/1000
-                        </p>
+                        {getInitials(review.fullName)}
                       </div>
-                      {profanityValidationMessage ? (
-                        <p className="mt-2 text-xs font-semibold text-[#c24141]">
-                          {profanityValidationMessage}
+                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="text-sm font-semibold text-slate-800">
+                          {review.fullName}
+                        </span>
+                        {review.isMine ? (
+                          <span className="rounded bg-[#e7f6ef] px-1.5 py-0.5 text-[10px] font-semibold text-[#127a47]">
+                            Bạn
+                          </span>
+                        ) : null}
+                        <StarRow
+                          value={review.ratingScore}
+                          sizeClassName="text-[14px]"
+                        />
+                        <span className="text-xs text-slate-400">
+                          · {formatDateTime(review.updatedAt || review.createdAt)}
+                        </span>
+                      </div>
+                      {review.comment ? (
+                        <p className="mt-1 whitespace-pre-line text-sm leading-6 text-slate-600">
+                          {review.comment}
                         </p>
                       ) : null}
                     </div>
-                  </div>
+                  </article>
+                );
+              })
+            ) : (
+              <div className="py-10 text-center">
+                <p className="text-sm text-slate-500">
+                  Chưa có đánh giá nào cho phim này.
+                </p>
+              </div>
+            )}
+          </div>
 
-                  <div className="mt-4 flex flex-wrap gap-3">
-                    <button
-                      type="submit"
-                      disabled={isSubmitting || Boolean(profanityValidationMessage)}
-                      className="inline-flex items-center gap-2 rounded-full bg-[#1e5d8c] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#16496f] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      <RateReviewRounded fontSize="small" />
-                      {isSubmitting
-                        ? 'Đang lưu...'
-                        : hasExistingReview
-                          ? 'Cập nhật đánh giá'
-                          : 'Gửi đánh giá'}
-                    </button>
+          {pageNumbers.length > 1 ? (
+            <div className="mt-4 flex items-center justify-center gap-1">
+              <button
+                type="button"
+                onClick={() => setCurrentPage((prevState) => prevState - 1)}
+                disabled={currentPageIndex <= 0}
+                className="rounded-md px-2.5 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                ‹
+              </button>
 
-                    {hasExistingReview ? (
-                      <button
-                        type="button"
-                        disabled={isSubmitting}
-                        onClick={handleDeleteReview}
-                        className="inline-flex items-center gap-2 rounded-full border border-[#efb1b1] bg-[#fff6f6] px-5 py-3 text-sm font-semibold text-[#c24141] transition hover:bg-[#feecec] disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        <DeleteOutlineRounded fontSize="small" />
-                        Xóa review
-                      </button>
-                    ) : null}
-                  </div>
-                </form>
-              ) : (
-                <div className="mt-5 rounded-[12px] border border-dashed border-[#cbd9e6] bg-[#f8fbff] p-5">
-                  <p className="text-[15px] leading-7 text-slate-600">
-                    Tài khoản của bạn hiện chỉ có quyền xem review công khai cho
-                    phim này.
-                  </p>
-                </div>
-              )}
+              {pageNumbers.map((pageNumber) => {
+                const isActive = pageNumber === currentPageIndex;
+
+                return (
+                  <button
+                    key={pageNumber}
+                    type="button"
+                    onClick={() => setCurrentPage(pageNumber)}
+                    className={`h-7 min-w-7 rounded-md px-2 text-xs font-semibold transition ${
+                      isActive
+                        ? 'bg-[#0a4d9c] text-white'
+                        : 'text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    {pageNumber + 1}
+                  </button>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={() => setCurrentPage((prevState) => prevState + 1)}
+                disabled={currentPageIndex >= totalPages - 1}
+                className="rounded-md px-2.5 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                ›
+              </button>
             </div>
-          </aside>
+          ) : null}
         </div>
       </div>
     </section>

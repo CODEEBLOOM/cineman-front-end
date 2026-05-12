@@ -1,4 +1,4 @@
-import {
+﻿import {
   deleteRole,
   changeRoleStatus,
   extractRoleDetail,
@@ -20,7 +20,7 @@ import { Button } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { MdOutlineDeleteSweep, MdOutlinePublishedWithChanges } from 'react-icons/md';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 const SummaryCard = ({ label, value, helper, accentClass }) => (
   <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">

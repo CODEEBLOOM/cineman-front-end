@@ -1,4 +1,4 @@
-import { findAllByUserId } from '@apis/invoiceService';
+﻿import { findAllByUserId } from '@apis/invoiceService';
 import {
   accountPrimaryButtonSx,
   accountSecondaryButtonSx,
@@ -27,7 +27,7 @@ import DateFormatter from '@utils/DateFormatter';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 const shellPaperSx = {
   borderRadius: '16px',
@@ -402,8 +402,8 @@ const TransactionHistory = () => {
           title="Tổng giao dịch"
           value={`${summary.total} đơn`}
           icon={<AssignmentRounded />}
-          color="#23486c"
-          bg={alpha('#23486c', 0.08)}
+          color="#083d7c"
+          bg={alpha('#083d7c', 0.08)}
         />
         <SummaryCard
           title="Đã thanh toán"
@@ -456,10 +456,10 @@ const TransactionHistory = () => {
                     fontSize: 13.5,
                     fontWeight: 700,
                     color: isActive ? '#fff' : '#334155',
-                    bgcolor: isActive ? '#23486c' : alpha('#23486c', 0.06),
+                    bgcolor: isActive ? '#083d7c' : alpha('#083d7c', 0.06),
                     boxShadow: 'none',
                     '&:hover': {
-                      bgcolor: isActive ? '#1f3f61' : alpha('#23486c', 0.12),
+                      bgcolor: isActive ? '#062d5c' : alpha('#083d7c', 0.12),
                       boxShadow: 'none',
                     },
                   }}
@@ -584,7 +584,7 @@ const TransactionHistory = () => {
                       sx={{
                         fontSize: { xs: 24, md: 28 },
                         fontWeight: 800,
-                        color: '#23486c',
+                        color: '#083d7c',
                         lineHeight: 1.2,
                       }}
                     >
@@ -594,7 +594,7 @@ const TransactionHistory = () => {
                     <Stack spacing={1}>
                       <Box sx={infoItemSx}>
                         <CalendarMonthRounded
-                          sx={{ color: '#23486c', fontSize: 22 }}
+                          sx={{ color: '#083d7c', fontSize: 22 }}
                         />
                         <Typography sx={{ fontSize: 15.5, color: '#1e293b' }}>
                           <strong>Ngày chiếu:</strong>{' '}
@@ -604,7 +604,7 @@ const TransactionHistory = () => {
 
                       <Box sx={infoItemSx}>
                         <AccessTimeRounded
-                          sx={{ color: '#23486c', fontSize: 22 }}
+                          sx={{ color: '#083d7c', fontSize: 22 }}
                         />
                         <Typography sx={{ fontSize: 15.5, color: '#1e293b' }}>
                           <strong>Giờ chiếu:</strong>{' '}
@@ -614,7 +614,7 @@ const TransactionHistory = () => {
 
                       <Box sx={infoItemSx}>
                         <TheaterComedyRounded
-                          sx={{ color: '#23486c', fontSize: 22 }}
+                          sx={{ color: '#083d7c', fontSize: 22 }}
                         />
                         <Typography sx={{ fontSize: 15.5, color: '#1e293b' }}>
                           <strong>Rạp chiếu:</strong>{' '}
@@ -667,12 +667,12 @@ const TransactionHistory = () => {
                       onClick={() => handleViewDetail(invoice)}
                       sx={{
                         ...accountSecondaryButtonSx,
-                        borderColor: alpha('#23486c', 0.28),
-                        color: '#23486c',
-                        backgroundColor: alpha('#23486c', 0.04),
+                        borderColor: alpha('#083d7c', 0.28),
+                        color: '#083d7c',
+                        backgroundColor: alpha('#083d7c', 0.04),
                         '&:hover': {
-                          borderColor: '#23486c',
-                          backgroundColor: alpha('#23486c', 0.08),
+                          borderColor: '#083d7c',
+                          backgroundColor: alpha('#083d7c', 0.08),
                         },
                       }}
                     >
@@ -707,8 +707,8 @@ const TransactionHistory = () => {
               mx: 'auto',
               width: 58,
               height: 58,
-              bgcolor: alpha('#23486c', 0.08),
-              color: '#23486c',
+              bgcolor: alpha('#083d7c', 0.08),
+              color: '#083d7c',
             }}
           >
             <AssignmentRounded />

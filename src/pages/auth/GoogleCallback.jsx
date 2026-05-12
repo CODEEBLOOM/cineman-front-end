@@ -1,10 +1,10 @@
-import Loading from '@component/Loading';
+﻿import Loading from '@component/Loading';
 import { GOOGLE_AUTH_POPUP_MESSAGE } from '@component/auth/useGoogleAuthPopup';
 import { loginGoogle } from '@redux/slices/authSlice';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { clearAuthRedirect, resolveAuthRedirect } from '@utils/authRedirect';
 
 const GoogleCallback = () => {

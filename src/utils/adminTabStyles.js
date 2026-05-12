@@ -8,7 +8,7 @@ export const adminTabsSx = {
   '.MuiTabs-indicator': {
     height: 3,
     borderRadius: 999,
-    backgroundColor: '#2d5f8d',
+    backgroundColor: '#0a4d9c',
   },
 };
 
@@ -24,10 +24,10 @@ export const adminTabSx = {
   letterSpacing: '0.02em',
   transition: 'all 0.2s ease',
   '&.Mui-selected': {
-    color: '#23486c',
+    color: '#083d7c',
   },
   '&:hover': {
-    color: '#23486c',
+    color: '#083d7c',
     backgroundColor: 'transparent',
   },
 };

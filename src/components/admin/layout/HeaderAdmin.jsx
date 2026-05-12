@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { RiMenu2Fill } from 'react-icons/ri';
 import { IoMdQrScanner } from 'react-icons/io';
 import { Avatar, IconButton, Menu, MenuItem } from '@mui/material';
 import { clearInfoAuth, fetchLogout } from '@redux/slices/authSlice.js';
 import { useDispatch, useSelector } from 'react-redux';
 import { BiLogOut } from 'react-icons/bi';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { clearInfoUser, fetchInfoUser } from '@redux/slices/userSlice';
 import { clearInvoice } from '@redux/slices/invoiceSlice';
 import { clearSnack } from '@redux/slices/snackSlice';

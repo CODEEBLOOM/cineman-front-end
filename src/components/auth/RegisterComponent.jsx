@@ -1,17 +1,13 @@
 import { register } from '@apis/authService';
-import CalendarMonthRounded from '@mui/icons-material/CalendarMonthRounded';
-import LocationOnOutlined from '@mui/icons-material/LocationOnOutlined';
 import LockOutlined from '@mui/icons-material/LockOutlined';
-import MailOutlineRounded from '@mui/icons-material/MailOutlineRounded';
-import PersonOutlineRounded from '@mui/icons-material/PersonOutlineRounded';
-import PhoneIphoneRounded from '@mui/icons-material/PhoneIphoneRounded';
 import VisibilityOffRounded from '@mui/icons-material/VisibilityOffRounded';
 import VisibilityRounded from '@mui/icons-material/VisibilityRounded';
-import WcRounded from '@mui/icons-material/WcRounded';
 import {
   Box,
   Button,
+  Checkbox,
   CircularProgress,
+  FormControlLabel,
   IconButton,
   InputAdornment,
   MenuItem,
@@ -19,7 +15,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { alpha } from '@mui/material/styles';
 import { useGoogleAuthPopup } from '@component/auth/useGoogleAuthPopup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { format } from 'date-fns';
@@ -28,98 +23,58 @@ import { Controller, useForm } from 'react-hook-form';
 import { FcGoogle } from 'react-icons/fc';
 import { useLocation } from 'react-router-dom';
 import { resolveAuthRedirect } from '@utils/authRedirect';
+import { toast } from 'sonner';
 import * as yup from 'yup';
 
-const registerFieldSx = {
+const fieldSx = {
   '& .MuiOutlinedInput-root': {
-    borderRadius: '18px',
-    color: '#f7fbff',
-    background:
-      'linear-gradient(180deg, rgba(8, 24, 58, 0.92) 0%, rgba(10, 31, 70, 0.86) 100%)',
-    backdropFilter: 'blur(10px)',
-    transition: 'border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
+    borderRadius: '4px',
+    backgroundColor: '#fff',
     '& fieldset': {
-      borderColor: 'rgba(255, 143, 180, 0.28)',
+      borderColor: '#d6dae0',
     },
     '&:hover fieldset': {
-      borderColor: 'rgba(101, 171, 235, 0.52)',
-    },
-    '&.Mui-focused': {
-      boxShadow: '0 0 0 3px rgba(74, 163, 240, 0.16)',
+      borderColor: '#0a4d9c',
     },
     '&.Mui-focused fieldset': {
-      borderColor: '#ff8fb4',
+      borderColor: '#0a4d9c',
+      borderWidth: '1px',
     },
   },
   '& .MuiInputBase-input': {
-    py: 1.05,
-    fontSize: 15.5,
-    color: '#f7fbff',
+    py: 1.3,
+    fontSize: 14.5,
+    color: '#1f2937',
     '&::placeholder': {
-      color: 'rgba(214, 228, 245, 0.5)',
+      color: '#9ca3af',
       opacity: 1,
     },
   },
   '& .MuiSelect-select': {
-    py: 1.05,
-    color: '#f7fbff',
+    py: 1.3,
+    color: '#1f2937',
   },
   '& .MuiFormHelperText-root': {
-    mt: 0.8,
-    mx: 0.2,
-    color: '#ff9dba',
+    mx: 0.5,
+    fontSize: 12.5,
   },
 };
 
-const fieldMeta = {
-  fullName: {
-    label: 'Họ tên',
-    placeholder: 'Nhập họ tên',
-    icon: <PersonOutlineRounded sx={{ color: '#ff8fb4' }} />,
-  },
-  email: {
-    label: 'Email',
-    placeholder: 'Nhập email',
-    icon: <MailOutlineRounded sx={{ color: '#ff8fb4' }} />,
-    type: 'email',
-  },
-  password: {
-    label: 'Mật khẩu',
-    placeholder: 'Tạo mật khẩu',
-    icon: <LockOutlined sx={{ color: '#ff8fb4' }} />,
-    type: 'password',
-  },
-  confirmPassword: {
-    label: 'Xác nhận mật khẩu',
-    placeholder: 'Nhập lại mật khẩu',
-    icon: <LockOutlined sx={{ color: '#ff8fb4' }} />,
-    type: 'password',
-  },
-  phoneNumber: {
-    label: 'Số điện thoại',
-    placeholder: 'Nhập số điện thoại',
-    icon: <PhoneIphoneRounded sx={{ color: '#ff8fb4' }} />,
-  },
-  address: {
-    label: 'Địa chỉ',
-    placeholder: 'Nhập địa chỉ',
-    icon: <LocationOnOutlined sx={{ color: '#ff8fb4' }} />,
-  },
-  dateOfBirth: {
-    label: 'Ngày sinh',
-    icon: <CalendarMonthRounded sx={{ color: '#ff8fb4' }} />,
-    type: 'date',
-  },
-  gender: {
-    label: 'Giới tính',
-    placeholder: 'Chọn giới tính',
-    icon: <WcRounded sx={{ color: '#ff8fb4' }} />,
-  },
-};
+const FieldLabel = ({ required, children }) => (
+  <Typography sx={{ mb: 0.7, fontSize: 13.5, color: '#374151' }}>
+    {required ? (
+      <Box component="span" sx={{ mr: 0.4, color: '#e23744' }}>
+        *
+      </Box>
+    ) : null}
+    {children}
+  </Typography>
+);
 
-const RegisterComponent = ({ dispatch, openSnackbar, navigate, setValue }) => {
+const RegisterComponent = ({ dispatch, navigate, setValue }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const location = useLocation();
   const [showPassword, setShowPassword] = useState({
     password: false,
@@ -151,7 +106,11 @@ const RegisterComponent = ({ dispatch, openSnackbar, navigate, setValue }) => {
       .string()
       .matches(/^0[0-9]{9,10}$/, 'Số điện thoại chưa đúng định dạng!')
       .required('Số điện thoại không được để trống!'),
-    dateOfBirth: yup.date().required('Ngày sinh không được để trống!'),
+    dateOfBirth: yup
+      .date()
+      .typeError('Ngày sinh không hợp lệ!')
+      .max(new Date(), 'Ngày sinh không được vượt quá ngày hiện tại!')
+      .required('Ngày sinh không được để trống!'),
     gender: yup.string().required('Giới tính không được để trống!'),
   });
 
@@ -170,7 +129,7 @@ const RegisterComponent = ({ dispatch, openSnackbar, navigate, setValue }) => {
       phoneNumber: '',
       address: '',
       dateOfBirth: format(new Date(), 'yyyy-MM-dd'),
-      gender: '',
+      gender: 'MALE',
     },
   });
 
@@ -180,181 +139,264 @@ const RegisterComponent = ({ dispatch, openSnackbar, navigate, setValue }) => {
       .then((res) => {
         setIsLoading(false);
         if (res.status === 201) {
-          alert('Vui lòng kiểm tra mail để kích hoạt tài khoản');
-          dispatch(openSnackbar({ message: 'Đăng kí thành công.' }));
+          toast.info('Vui lòng kiểm tra mail để kích hoạt tài khoản');
+          toast.success('Đăng kí thành công.');
           reset();
           navigate('/auth/login?auth=login');
           setValue(0);
         }
       })
       .catch((err) => {
-        dispatch(
-          openSnackbar({ message: err?.response?.data?.message, type: 'error' })
-        );
+        toast.error(err?.response?.data?.message);
         setIsLoading(false);
       });
   };
 
-  const renderAdornment = (name) => {
-    const meta = fieldMeta[name];
-
-    if (name === 'password' || name === 'confirmPassword') {
-      return {
-        startAdornment: <InputAdornment position="start">{meta.icon}</InputAdornment>,
-        endAdornment: (
-          <InputAdornment position="end">
-            <IconButton
-              edge="end"
-              onClick={() =>
-                setShowPassword((prev) => ({ ...prev, [name]: !prev[name] }))
-              }
-              sx={{ color: 'rgba(214, 228, 245, 0.72)' }}
-            >
-              {showPassword[name] ? <VisibilityOffRounded /> : <VisibilityRounded />}
-            </IconButton>
-          </InputAdornment>
-        ),
-      };
-    }
-
-    return {
-      startAdornment: <InputAdornment position="start">{meta.icon}</InputAdornment>,
-    };
-  };
-
-  const renderField = (name) => {
-    const meta = fieldMeta[name];
-    const error = registerErrors[name];
-    const isPasswordField = name === 'password' || name === 'confirmPassword';
-
-    return (
-      <Box key={name}>
-        <Typography
-          sx={{
-            mb: 0.9,
-            fontSize: 14,
-            fontWeight: 700,
-            color: '#edf6ff',
-          }}
-        >
-          {name !== 'address' ? (
-            <Box component="span" sx={{ mr: 0.5, color: '#ff8fb4' }}>
-              *
-            </Box>
-          ) : null}
-          {meta.label}
-        </Typography>
-
-        <Controller
-          name={name}
-          control={registerControl}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              fullWidth
-              select={name === 'gender'}
-              type={
-                isPasswordField
-                  ? showPassword[name]
-                    ? 'text'
-                    : 'password'
-                  : meta.type ?? 'text'
-              }
-              placeholder={meta.placeholder}
-              error={!!error}
-              helperText={error?.message}
-              sx={registerFieldSx}
-              InputLabelProps={meta.type === 'date' ? { shrink: true } : undefined}
-              InputProps={renderAdornment(name)}
-              SelectProps={{
-                displayEmpty: true,
-                MenuProps: {
-                  PaperProps: {
-                    sx: {
-                      borderRadius: '16px',
-                      color: '#edf6ff',
-                      background:
-                        'linear-gradient(180deg, rgba(10, 31, 70, 0.98) 0%, rgba(8, 24, 58, 0.98) 100%)',
-                      border: '1px solid rgba(101, 171, 235, 0.18)',
-                      '& .MuiMenuItem-root': {
-                        fontSize: 14.5,
-                      },
-                      '& .MuiMenuItem-root:hover': {
-                        backgroundColor: alpha('#4aa3f0', 0.12),
-                      },
-                      '& .Mui-selected': {
-                        backgroundColor: alpha('#ff8fb4', 0.14),
-                      },
-                    },
-                  },
-                },
-              }}
-            >
-              {name === 'gender' ? (
-                [
-                  <MenuItem key="placeholder" disabled value="">
-                    {meta.placeholder}
-                  </MenuItem>,
-                  <MenuItem key="male" value="MALE">
-                    Nam
-                  </MenuItem>,
-                  <MenuItem key="female" value="FEMALE">
-                    Nữ
-                  </MenuItem>,
-                  <MenuItem key="other" value="OTHER">
-                    Khác
-                  </MenuItem>,
-                ]
-              ) : null}
-            </TextField>
-          )}
-        />
-      </Box>
-    );
-  };
+  const passwordEndAdornment = (name) => (
+    <InputAdornment position="end">
+      <IconButton
+        edge="end"
+        onClick={() =>
+          setShowPassword((prev) => ({ ...prev, [name]: !prev[name] }))
+        }
+        sx={{ color: '#9ca3af' }}
+      >
+        {showPassword[name] ? <VisibilityOffRounded /> : <VisibilityRounded />}
+      </IconButton>
+    </InputAdornment>
+  );
 
   return (
     <Box component="form" onSubmit={handleRegisterSubmit(handleRegister)}>
       <Box
         sx={{
           display: 'grid',
-          gap: 1.5,
+          columnGap: 2.5,
+          rowGap: 1.8,
           gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
         }}
       >
-        {[
-          'fullName',
-          'email',
-          'password',
-          'confirmPassword',
-          'phoneNumber',
-          'address',
-          'dateOfBirth',
-          'gender',
-        ].map(renderField)}
+        <Box>
+          <FieldLabel required>Họ tên</FieldLabel>
+          <Controller
+            name="fullName"
+            control={registerControl}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                placeholder="Họ tên"
+                error={!!registerErrors.fullName}
+                helperText={registerErrors.fullName?.message}
+                sx={fieldSx}
+              />
+            )}
+          />
+        </Box>
+
+        <Box>
+          <FieldLabel required>Email</FieldLabel>
+          <Controller
+            name="email"
+            control={registerControl}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                type="email"
+                placeholder="Email"
+                error={!!registerErrors.email}
+                helperText={registerErrors.email?.message}
+                sx={fieldSx}
+              />
+            )}
+          />
+        </Box>
+
+        <Box>
+          <FieldLabel required>Mật khẩu</FieldLabel>
+          <Controller
+            name="password"
+            control={registerControl}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                type={showPassword.password ? 'text' : 'password'}
+                placeholder="Mật khẩu"
+                error={!!registerErrors.password}
+                helperText={registerErrors.password?.message}
+                sx={fieldSx}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockOutlined sx={{ color: '#9ca3af', fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: passwordEndAdornment('password'),
+                }}
+              />
+            )}
+          />
+        </Box>
+
+        <Box>
+          <FieldLabel required>Xác nhận lại mật khẩu</FieldLabel>
+          <Controller
+            name="confirmPassword"
+            control={registerControl}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                type={showPassword.confirmPassword ? 'text' : 'password'}
+                placeholder="Xác nhận lại mật khẩu"
+                error={!!registerErrors.confirmPassword}
+                helperText={registerErrors.confirmPassword?.message}
+                sx={fieldSx}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockOutlined sx={{ color: '#9ca3af', fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: passwordEndAdornment('confirmPassword'),
+                }}
+              />
+            )}
+          />
+        </Box>
+
+        <Box>
+          <FieldLabel required>Ngày sinh</FieldLabel>
+          <Controller
+            name="dateOfBirth"
+            control={registerControl}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                type="date"
+                error={!!registerErrors.dateOfBirth}
+                helperText={registerErrors.dateOfBirth?.message}
+                sx={fieldSx}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ max: format(new Date(), 'yyyy-MM-dd') }}
+              />
+            )}
+          />
+        </Box>
+
+        <Box>
+          <FieldLabel>Giới tính</FieldLabel>
+          <Controller
+            name="gender"
+            control={registerControl}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                select
+                error={!!registerErrors.gender}
+                helperText={registerErrors.gender?.message}
+                sx={fieldSx}
+              >
+                <MenuItem value="MALE">Nam</MenuItem>
+                <MenuItem value="FEMALE">Nữ</MenuItem>
+                <MenuItem value="OTHER">Khác</MenuItem>
+              </TextField>
+            )}
+          />
+        </Box>
+
+        <Box>
+          <FieldLabel required>Số điện thoại</FieldLabel>
+          <Controller
+            name="phoneNumber"
+            control={registerControl}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                placeholder="Số điện thoại"
+                error={!!registerErrors.phoneNumber}
+                helperText={registerErrors.phoneNumber?.message}
+                sx={fieldSx}
+              />
+            )}
+          />
+        </Box>
+
+        <Box>
+          <FieldLabel>Địa chỉ</FieldLabel>
+          <Controller
+            name="address"
+            control={registerControl}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                placeholder="Địa chỉ"
+                error={!!registerErrors.address}
+                helperText={registerErrors.address?.message}
+                sx={fieldSx}
+              />
+            )}
+          />
+        </Box>
       </Box>
 
-      <Stack spacing={1.4} sx={{ mt: 2.6 }}>
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={agreed}
+            onChange={(e) => setAgreed(e.target.checked)}
+            sx={{
+              color: '#9ca3af',
+              '&.Mui-checked': { color: '#0a4d9c' },
+            }}
+          />
+        }
+        label={
+          <Typography sx={{ fontSize: 14, color: '#374151' }}>
+            Tôi cam kết tuân theo{' '}
+            <Box component="span" sx={{ color: '#0a4d9c', fontWeight: 600 }}>
+              chính sách bảo mật
+            </Box>{' '}
+            và{' '}
+            <Box component="span" sx={{ color: '#0a4d9c', fontWeight: 600 }}>
+              điều khoản sử dụng
+            </Box>{' '}
+            của Poly Cinemas.
+          </Typography>
+        }
+        sx={{ mt: 2.5, ml: -0.5, alignItems: 'flex-center' }}
+      />
+
+      <Stack spacing={1.4} sx={{ mt: 2, alignItems: 'center' }}>
         <Button
           type="submit"
           variant="contained"
-          disabled={isLoading}
+          disabled={isLoading || !agreed}
           sx={{
-            minHeight: 54,
+            width: { xs: '100%', sm: 240 },
+            minHeight: 46,
             borderRadius: '999px',
-            color: '#f8fbff',
-            fontSize: 16,
-            fontWeight: 800,
-            textTransform: 'none',
-            background:
-              'linear-gradient(180deg, #f173a2 0%, #df5d91 55%, #c84b7c 100%)',
-            boxShadow: `0 18px 36px ${alpha('#c84b7c', 0.32)}`,
+            color: '#fff',
+            fontSize: 15,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.02em',
+            backgroundColor: '#0a4d9c',
+            boxShadow: 'none',
+            '&:hover': { backgroundColor: '#083d7c', boxShadow: 'none' },
+            '&.Mui-disabled': { backgroundColor: '#c5cad2', color: '#fff' },
           }}
         >
           {isLoading ? (
-            <CircularProgress size={22} sx={{ color: '#f8fbff', mr: 1.2 }} />
+            <CircularProgress size={20} sx={{ color: '#fff', mr: 1 }} />
           ) : null}
-          Đăng kí tài khoản
+          Đăng ký
         </Button>
 
         <Button
@@ -363,23 +405,25 @@ const RegisterComponent = ({ dispatch, openSnackbar, navigate, setValue }) => {
           onClick={startGoogleAuth}
           disabled={isGoogleLoading}
           sx={{
-            minHeight: 54,
+            width: { xs: '100%', sm: 280 },
+            minHeight: 46,
             borderRadius: '999px',
-            color: '#f8fbff',
-            fontSize: 16,
-            fontWeight: 800,
-            textTransform: 'none',
-            background:
-              'linear-gradient(180deg, #132f66 0%, #0f2552 52%, #0a1938 100%)',
-            boxShadow: `0 18px 36px ${alpha('#09162d', 0.34)}`,
+            color: '#fff',
+            fontSize: 15,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.02em',
+            backgroundColor: '#f08aa6',
+            boxShadow: 'none',
+            '&:hover': { backgroundColor: '#e36e8e', boxShadow: 'none' },
           }}
         >
           {isGoogleLoading ? (
-            <CircularProgress size={22} sx={{ color: '#f8fbff', mr: 1.2 }} />
+            <CircularProgress size={20} sx={{ color: '#fff', mr: 1 }} />
           ) : (
-            <FcGoogle size={24} style={{ marginRight: 12 }} />
+            <FcGoogle size={20} style={{ marginRight: 10 }} />
           )}
-          Đăng kí bằng Google
+          Tiếp tục với Google
         </Button>
       </Stack>
     </Box>

@@ -1,4 +1,4 @@
-import { findAllSnacks } from '@apis/snackService';
+﻿import { findAllSnacks } from '@apis/snackService';
 import { getAllSnackType } from '@apis/snackType';
 import DataGridTable from '@component/DataGridTable';
 import ImageComponent from '@component/ImageComponent';
@@ -7,7 +7,7 @@ import { setSnack } from '@redux/slices/snackSlice';
 import { useEffect, useMemo, useState } from 'react';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 const DEFAULT_PAGINATION_MODEL = {
   page: 0,

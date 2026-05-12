@@ -1,4 +1,4 @@
-import { extractGenreList, getAllGenre } from '@apis/genreService';
+﻿import { extractGenreList, getAllGenre } from '@apis/genreService';
 import {
   createMovieTheaterMapping,
   deleteMovieTheaterMapping,
@@ -32,7 +32,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import DateFormatter from '@utils/DateFormatter';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import * as yup from 'yup';
 
 const statusOptions = [

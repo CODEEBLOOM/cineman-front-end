@@ -5,21 +5,24 @@ export default {
   content: ['./index.html', './src/**/*.{js,jsx,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Montserrat', 'sans-serif'],
+      },
       colors: {
-        primary: '#337ab7',
+        primary: '#0a4d9c',
       },
       backgroundImage: {
         'gradient-custom-blue-hover':
-          'linear-gradient(to right, #007bff, #00c6ff)',
+          'linear-gradient(to right, #0a4d9c, #1f7bd9)',
         'gradient-custom-blue':
-          'linear-gradient(to right, #0a64a7 0%, #258dcf 51%, #1f85c7 100%)',
+          'linear-gradient(to right, #083d7c 0%, #0a4d9c 51%, #1f6dbf 100%)',
       },
       backgroundColor: {
         'custom-transparent': 'rgba(0,0,0,.5)',
       },
       borderImage: {
         'custom-border-image':
-          'linear-gradient(to right, #39adf0 0%, #075fa3 100%);',
+          'linear-gradient(to right, #1f7bd9 0%, #0a4d9c 100%);',
       },
       animation: {
         'fade-in': 'fadeIn 1s ease-in-out forwards',

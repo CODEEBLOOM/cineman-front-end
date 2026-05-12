@@ -1,12 +1,13 @@
-import { updateInfoUser } from '@apis/userService';
+﻿import { updateInfoUser } from '@apis/userService';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, InputAdornment, MenuItem, TextField } from '@mui/material';
 import {
   accountFieldFlatSx,
   accountUpdateButtonSx,
 } from '@component/account-customer/accountUiStyles';
-import ChangePasswordPanel from '@component/account-customer/ChangePasswordPanel';
+import ChangePasswordModal from '@component/auth/ChangePasswordModal';
 import UploadAvatar from '@component/account-customer/UploadAvatar';
+import { useModelContext } from '@context/ModalContext.jsx';
 import { updateUser } from '@redux/slices/userSlice';
 import DateFormatter from '@utils/DateFormatter';
 import { Controller, useForm } from 'react-hook-form';
@@ -18,9 +19,9 @@ import {
   FiUser,
   FiUsers,
 } from 'react-icons/fi';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import * as yup from 'yup';
 
 const resolveDateValue = (dateOfBirth) => {
@@ -168,8 +169,8 @@ const SelectFieldControl = ({
 
 const FormInfoUser = ({ avatar, onAvatarChange }) => {
   const dispatch = useDispatch();
+  const { openPopup } = useModelContext();
   const { user } = useSelector((state) => state.user);
-  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   const {
     control,
@@ -315,7 +316,9 @@ const FormInfoUser = ({ avatar, onAvatarChange }) => {
         <div className="mt-2">
           <button
             type="button"
-            onClick={() => setIsChangePasswordOpen((prev) => !prev)}
+            onClick={() =>
+              openPopup(<ChangePasswordModal email={user?.email || ''} />)
+            }
             className="text-[13px] font-normal text-[#1f5fa0] underline-offset-2 hover:underline"
           >
             Đổi mật khẩu?
@@ -334,15 +337,6 @@ const FormInfoUser = ({ avatar, onAvatarChange }) => {
         </div>
       </form>
 
-      {isChangePasswordOpen ? (
-        <div className="mt-6">
-          <ChangePasswordPanel
-            email={user?.email || ''}
-            open
-            onClose={() => setIsChangePasswordOpen(false)}
-          />
-        </div>
-      ) : null}
     </div>
   );
 };

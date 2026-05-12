@@ -47,7 +47,7 @@ const Header = () => {
           <li key={item.id}>
             <a
               href={item.link}
-              className="text-[16px] font-bold uppercase hover:text-[#337ab7]"
+              className="text-[16px] font-bold uppercase hover:text-[#0a4d9c]"
             >
               {item.name}
             </a>

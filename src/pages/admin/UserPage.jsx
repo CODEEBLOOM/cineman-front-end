@@ -1,4 +1,4 @@
-import {
+﻿import {
   disableUserAdmin,
   extractUserDetail,
   extractUserList,
@@ -22,7 +22,7 @@ import DateFormatter from '@utils/DateFormatter';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { MdOutlineDeleteSweep } from 'react-icons/md';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 const defaultPaginationModel = {
   page: 0,

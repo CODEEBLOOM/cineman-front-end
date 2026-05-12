@@ -1,88 +1,133 @@
-import React, { useEffect, useState } from 'react';
-import { parse } from 'date-fns';
+import EmptyList from '@component/cinema_showtime/EmptyList';
+import Loading from '@component/Loading';
 import { findAllShowTimeByMovieIdAndMovieTheaterId } from '@apis/showTimeService';
+import { parse } from 'date-fns';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import ShowTimeDetail from './ShowTimeDetail';
-import Loading from '@component/Loading';
+
+const formatWeekdayLabel = (dateValue) => {
+  const weekday = dateValue.getDay();
+
+  if (weekday === 0) {
+    return 'Chủ nhật';
+  }
+
+  return `Thứ ${weekday + 1}`;
+};
+
+const formatDateFilterLabel = (dateValue) => {
+  const weekdayLabel = formatWeekdayLabel(dateValue);
+  const day = String(dateValue.getDate()).padStart(2, '0');
+  const month = String(dateValue.getMonth() + 1).padStart(2, '0');
+
+  return `${weekdayLabel} - ${day}/${month}`;
+};
 
 const ShowTimeComponent = ({ movieId }) => {
   const [showTimeSelected, setShowTimeSelected] = useState();
   const [showTimes, setShowTimes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { movieTheater } = useSelector((state) => state.movieTheater);
+  const movieTheater = useSelector(
+    (state) => state.movieTheater?.movieTheater ?? { id: null }
+  );
 
   useEffect(() => {
+    if (!movieId || !movieTheater?.id) {
+      setShowTimes([]);
+      setShowTimeSelected(undefined);
+      return;
+    }
+
     setIsLoading(true);
     findAllShowTimeByMovieIdAndMovieTheaterId({
-      movieId: movieId,
+      movieId,
       movieTheaterId: movieTheater.id,
     })
       .then((res) => {
         const seen = new Set();
-        const result = [];
-        if (res.data === null) {
+        const nextShowTimes = [];
+
+        if (!res?.data) {
           setShowTimes([]);
+          setShowTimeSelected(undefined);
           return;
         }
+
         for (const item of res.data) {
           if (!seen.has(item.showDate)) {
             seen.add(item.showDate);
-            result.push({ showDate: item.showDate, id: item.id });
+            nextShowTimes.push({
+              showDate: item.showDate,
+              id: item.id,
+            });
           }
         }
-        setShowTimes(result);
-        setShowTimeSelected(result[0]);
+
+        setShowTimes(nextShowTimes);
+        setShowTimeSelected(nextShowTimes[0]);
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((error) => {
+        console.log(error);
+        setShowTimes([]);
+        setShowTimeSelected(undefined);
       })
       .finally(() => {
         setIsLoading(false);
       });
-  }, [movieId, movieTheater.id]);
+  }, [movieId, movieTheater?.id]);
 
-  /* Hàm thay đổi show time */
-  const handleChangeShowTimeSelected = (id) => {
-    setShowTimeSelected(id);
-  };
+  const showTimeOptions = useMemo(() => {
+    return (showTimes || []).map((showTime) => ({
+      ...showTime,
+      parsedDate: parse(showTime.showDate, 'yyyy-MM-dd', new Date()),
+    }));
+  }, [showTimes]);
 
-  // Hiệu ứng loading khi vẫn còn gọi API //
   if (isLoading) {
-    return <Loading />;
+    return <Loading content="Đang tải lịch chiếu..." />;
+  }
+
+  if (showTimeOptions.length === 0) {
+    return <div></div>;
   }
 
   return (
-    <>
-      <div className={'mb-2'}>
-        <ul className="flex flex-wrap justify-start gap-10 border-b-2">
-          {(showTimes || []).map((showTime) => {
-            const dateShowTime = parse(
-              showTime?.showDate,
-              'yyyy-MM-dd',
-              new Date()
-            );
-            return (
-              <li
-                key={showTime.id}
-                className={`${showTimeSelected?.id === showTime?.id ? 'border-b-2 border-b-primary' : ''}`}
-                onClick={() => handleChangeShowTimeSelected(showTime)}
-              >
-                <a
-                  href="#1"
-                  className={`${showTimeSelected?.id === showTime?.id ? 'text-primary' : ''} font-bold`}
-                >
-                  <span className={'text-[35px]'}>
-                    {dateShowTime.getDate()}
-                  </span>
-                  <span>{`/${dateShowTime.getMonth() + 1} - ${dateShowTime.getDay() === 0 ? 'CN' : `T${dateShowTime.getDay() + 1}`}`}</span>
-                </a>
-              </li>
-            );
-          })}
-        </ul>
+    <section className="my-8 rounded-[16px] bg-white shadow-sm">
+      <div className="border-b border-slate-200 pb-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+          Lịch chiếu
+        </p>
+        <h2 className="mt-2 text-xl font-bold text-slate-900 md:text-2xl">
+          Chọn ngày để xem suất chiếu theo phòng
+        </h2>
       </div>
-      <ShowTimeDetail showTimeSelected={showTimeSelected} movieId={movieId} />
-    </>
+
+      <div className="mt-5 flex flex-wrap gap-3">
+        {showTimeOptions.map((showTime) => {
+          const isActive = showTimeSelected?.id === showTime.id;
+
+          return (
+            <button
+              type="button"
+              key={showTime.id}
+              onClick={() => setShowTimeSelected(showTime)}
+              className={`rounded-full border px-7 py-3 text-sm font-semibold transition ${
+                isActive
+                  ? 'border-primary bg-primary text-white shadow-md shadow-primary/20'
+                  : 'border-[#9fc7f0] bg-white text-[#2d78bf] hover:border-primary hover:text-primary'
+              }`}
+            >
+              {formatDateFilterLabel(showTime.parsedDate)}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-6">
+        <ShowTimeDetail showTimeSelected={showTimeSelected} movieId={movieId} />
+      </div>
+    </section>
   );
 };
 

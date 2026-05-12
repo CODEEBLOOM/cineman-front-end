@@ -1,145 +1,356 @@
-import { findAllCombos } from '@apis/snackService';
+import { findAllSnacks } from '@apis/snackService';
+import { getAllSnackType } from '@apis/snackType';
+import DataGridTable from '@component/DataGridTable';
+import ImageComponent from '@component/ImageComponent';
 import { currencyFormatter } from '@libs/Utils';
 import { setSnack } from '@redux/slices/snackSlice';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+
+const DEFAULT_PAGINATION_MODEL = {
+  page: 0,
+  pageSize: 5,
+};
+
+const resolveImageSrc = (image) => {
+  if (!image) {
+    return '';
+  }
+
+  if (/^https?:\/\//i.test(image)) {
+    return image;
+  }
+
+  return `${import.meta.env.VITE_STORAGES}/${image}`;
+};
+
+const normalizeSnack = (snack, fallbackType) => {
+  const snackType = snack?.snackTypes ?? snack?.snackType ?? fallbackType ?? {};
+
+  return {
+    ...snack,
+    snackTypeId: snack?.snackTypeId ?? snackType?.id ?? null,
+    snackTypeName:
+      snack?.snackTypeName ??
+      snackType?.name ??
+      (snackType?.id ? `Loại đồ ăn vặt #${snackType.id}` : 'Chưa phân loại'),
+  };
+};
 
 const ComboComponent = () => {
   const dispatch = useDispatch();
-  const [combos, setCombos] = useState([]);
+  const [snacks, setSnacks] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [paginationModel, setPaginationModel] = useState(
+    DEFAULT_PAGINATION_MODEL
+  );
   const { snackSelected } = useSelector((state) => state.snack);
 
-  /* Fetch danh sách combo */
+  const snackItems = Array.isArray(snackSelected) ? snackSelected : [];
+
   useEffect(() => {
-    findAllCombos()
-      .then((res) => {
-        setCombos(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    let isMounted = true;
+
+    const fetchSnacks = async () => {
+      setIsLoading(true);
+
+      try {
+        const snackTypeResponse = await getAllSnackType();
+        const snackTypes = Array.isArray(snackTypeResponse?.data)
+          ? snackTypeResponse.data
+          : [];
+
+        const snackResults = await Promise.allSettled(
+          snackTypes.map((snackType) => findAllSnacks(snackType.id))
+        );
+
+        const snackMap = new Map();
+
+        snackResults.forEach((result, index) => {
+          if (result.status !== 'fulfilled') {
+            return;
+          }
+
+          const items = Array.isArray(result.value?.data) ? result.value.data : [];
+          const fallbackType = snackTypes[index];
+
+          items
+            .map((item) => normalizeSnack(item, fallbackType))
+            .filter((item) => item?.id && item?.isActive !== false)
+            .forEach((item) => {
+              snackMap.set(item.id, item);
+            });
+        });
+
+        const nextSnacks = Array.from(snackMap.values()).sort((left, right) => {
+          const typeCompare = (left.snackTypeName || '').localeCompare(
+            right.snackTypeName || '',
+            'vi'
+          );
+
+          if (typeCompare !== 0) {
+            return typeCompare;
+          }
+
+          return (left.snackName || '').localeCompare(right.snackName || '', 'vi');
+        });
+
+        if (!isMounted) {
+          return;
+        }
+
+        setSnacks(nextSnacks);
+        setPaginationModel((prev) => ({
+          ...prev,
+          page: 0,
+        }));
+
+        if (
+          snackResults.length > 0 &&
+          snackResults.every((result) => result.status !== 'fulfilled')
+        ) {
+          toast.error('Không thể tải danh sách đồ ăn kèm!');
+        }
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        console.log(error);
+        setSnacks([]);
+        toast.error('Không thể tải danh sách đồ ăn kèm!');
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchSnacks();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  /**
-   * Handle select combo
-   * @param {object} combo - Combo info
-   * @description
-   * If the combo does not exist in snackSelected, create a new snackSelected with quantity equal to 1.
-   * Otherwise, increase the quantity of the combo in snackSelected by 1.
-   */
+  const getSelectedQuantity = (snack) =>
+    snackItems.find((item) => item.id === snack.id)?.quantity || 0;
+
+  const selectedSnackCount = useMemo(
+    () => snackItems.reduce((total, item) => total + (Number(item.quantity) || 0), 0),
+    [snackItems]
+  );
+
+  const selectedSnackAmount = useMemo(
+    () =>
+      snackItems.reduce(
+        (total, item) =>
+          total + (Number(item.unitPrice) || 0) * (Number(item.quantity) || 0),
+        0
+      ),
+    [snackItems]
+  );
+
   const handleSelectCombo = (combo) => {
-    const foundSnackSelected = snackSelected.find(
-      (item) => item.id === combo.id
-    );
+    const foundSnackSelected = snackItems.find((item) => item.id === combo.id);
+
     if (!foundSnackSelected) {
-      const createSnackSelected = {
-        ...combo,
-        quantity: 1,
-      };
-      dispatch(setSnack([...snackSelected, createSnackSelected]));
-    } else {
-      const findIndex = snackSelected.findIndex((item) => item.id === combo.id);
-      if (findIndex !== -1) {
-        const updatedSnacks = snackSelected.map((item) =>
-          item.id === combo.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-        dispatch(setSnack(updatedSnacks));
-      }
+      dispatch(
+        setSnack([
+          ...snackItems,
+          {
+            ...combo,
+            quantity: 1,
+          },
+        ])
+      );
+      return;
     }
+
+    const updatedSnacks = snackItems.map((item) =>
+      item.id === combo.id ? { ...item, quantity: item.quantity + 1 } : item
+    );
+    dispatch(setSnack(updatedSnacks));
   };
 
-  /**
-   * Handle remove combo
-   * @param {object} combo - Combo info
-   * @description
-   * If the quantity of the combo is 1, remove the combo from the snackSelected array.
-   * Otherwise, minus the quantity of the combo by 1.
-   */
   const handleRemoveCombo = (combo) => {
-    const findIndex = snackSelected.findIndex((item) => item.id === combo.id);
-    if (findIndex !== -1) {
-      if (snackSelected[findIndex].quantity === 1) {
-        const updatedSnacks = snackSelected.filter(
-          (item) => item.id !== combo.id
-        );
-        dispatch(setSnack(updatedSnacks));
-        return;
-      }
-      const updatedSnacks = snackSelected.map((item) =>
-        item.id === combo.id ? { ...item, quantity: item.quantity - 1 } : item
-      );
-      dispatch(setSnack(updatedSnacks));
+    const foundSnackSelected = snackItems.find((item) => item.id === combo.id);
+
+    if (!foundSnackSelected) {
+      return;
     }
+
+    if (foundSnackSelected.quantity === 1) {
+      dispatch(setSnack(snackItems.filter((item) => item.id !== combo.id)));
+      return;
+    }
+
+    const updatedSnacks = snackItems.map((item) =>
+      item.id === combo.id ? { ...item, quantity: item.quantity - 1 } : item
+    );
+    dispatch(setSnack(updatedSnacks));
   };
+
+  const rows = useMemo(
+    () =>
+      snacks.map((item, index) => ({
+        ...item,
+        gridIndex: index + 1,
+      })),
+    [snacks]
+  );
+
+  const columns = [
+    {
+      field: 'gridIndex',
+      headerName: 'STT',
+      width: 80,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'image',
+      headerName: 'Ảnh',
+      width: 120,
+      sortable: false,
+      renderCell: (params) => (
+        <div className="py-2">
+          <ImageComponent
+            src={resolveImageSrc(params.row.image)}
+            width={72}
+            height={72}
+            className="h-[72px] w-[72px] rounded-xl object-cover"
+          />
+        </div>
+      ),
+    },
+    {
+      field: 'snackName',
+      headerName: 'Sản phẩm',
+      minWidth: 240,
+      flex: 1,
+      renderCell: (params) => (
+        <div className="py-2">
+          <span className="font-semibold text-slate-800">
+            {params.value || 'Chưa có tên'}
+          </span>
+          <div className="mt-1 text-[16px] font-semibold text-pink-500">
+            {currencyFormatter(params.row.unitPrice)}
+          </div>
+        </div>
+      ),
+    },
+    {
+      field: 'snackTypeName',
+      headerName: 'Loại',
+      width: 160,
+      renderCell: (params) => (
+        <span className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+          {params.value}
+        </span>
+      ),
+    },
+    {
+      field: 'description',
+      headerName: 'Mô tả',
+      flex: 1,
+      minWidth: 260,
+      renderCell: (params) => (
+        <p className="whitespace-normal break-words text-sm leading-6 text-slate-600">
+          {params.value?.trim() || 'Chưa có mô tả'}
+        </p>
+      ),
+    },
+    {
+      field: 'quantity',
+      headerName: 'Chọn mua',
+      width: 190,
+      sortable: false,
+      renderCell: (params) => (
+        <div className="flex items-center gap-3 py-2">
+          <span className="inline-flex min-w-[44px] justify-center rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">
+            {getSelectedQuantity(params.row)}
+          </span>
+          <div className="flex overflow-hidden rounded-full border border-slate-200 shadow-sm">
+            <button
+              type="button"
+              className="flex h-9 w-9 items-center justify-center bg-slate-100 text-slate-700 transition hover:bg-slate-200"
+              onClick={() => handleRemoveCombo(params.row)}
+            >
+              <FaMinus size={12} />
+            </button>
+            <button
+              type="button"
+              className="flex h-9 w-9 items-center justify-center bg-primary text-white transition hover:brightness-110"
+              onClick={() => handleSelectCombo(params.row)}
+            >
+              <FaPlus size={12} />
+            </button>
+          </div>
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div>
-      <div className={'mt-5 flex h-[35px] items-center gap-3 leading-[35px]'}>
-        <img src="ic-combo.png" alt="" className={'h-[100%]'} />
-        <h2 className={'text-[20px] font-bold uppercase'}>Combo ưu đãi</h2>
+    <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50">
+            <img src="ic-combo.png" alt="" className="h-7 w-7 object-contain" />
+          </div>
+          <div>
+            <h2 className="text-[20px] font-bold uppercase text-slate-800">
+              Đồ ăn kèm
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Chọn nhanh bắp, nước và các sản phẩm bán kèm cho đơn hàng.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <div className="rounded-2xl bg-slate-50 px-4 py-2 text-sm">
+            <p className="text-slate-500">Tổng sản phẩm</p>
+            <p className="font-semibold text-slate-800">{rows.length}</p>
+          </div>
+          <div className="rounded-2xl bg-slate-50 px-4 py-2 text-sm">
+            <p className="text-slate-500">Đã chọn</p>
+            <p className="font-semibold text-slate-800">{selectedSnackCount}</p>
+          </div>
+          <div className="rounded-2xl bg-amber-50 px-4 py-2 text-sm">
+            <p className="text-amber-700">Tạm tính snack</p>
+            <p className="font-semibold text-amber-800">
+              {currencyFormatter(selectedSnackAmount)}
+            </p>
+          </div>
+        </div>
       </div>
-      <div className={'mt-5'}>
-        <table className={'w-full'}>
-          <thead>
-            <tr className={'border-b-2'}>
-              <th className={'w-[100px] pb-3'}></th>
-              <th className={'pb-3'}>Tên Combo</th>
-              <th className={'pb-3'}>Mô tả</th>
-              <th className={'pb-3'}>Số lượng</th>
-            </tr>
-          </thead>
-          <tbody>
-            {combos.map((item) => {
-              return (
-                <tr key={item.id}>
-                  <td className={'flex w-[100px] justify-center px-3 py-5'}>
-                    <img
-                      src="/combo-online-03.png"
-                      className="h-[80px] w-[80px] rounded-full"
-                    />
-                  </td>
-                  <td className={'px-3 py-5'}>
-                    <span className={'font-medium'}> {item.snackName}</span>
-                    <span className="text-[18px] font-medium text-pink-400">
-                      <FaMinus />
-                      {currencyFormatter(item.unitPrice)}
-                    </span>
-                  </td>
-                  <td className={'px-3 py-5'}>
-                    <p className="whitespace-normal break-words text-justify">
-                      {item.description}
-                    </p>
-                  </td>
-                  <td className={'px-3 py-5'}>
-                    <div
-                      className={
-                        'flex select-none items-center justify-between gap-2'
-                      }
-                    >
-                      <span className="text-[18px] font-medium">
-                        {snackSelected.find((snack) => snack.id === item.id)
-                          ?.quantity || 0}
-                      </span>
-                      <span
-                        className={'cursor-pointer bg-primary p-1'}
-                        onClick={() => handleSelectCombo(item)}
-                      >
-                        <FaPlus fill={'white'} />
-                      </span>
-                      <span
-                        className={'cursor-pointer bg-gray-400 p-1'}
-                        onClick={() => handleRemoveCombo(item)}
-                      >
-                        <FaMinus />
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+
+      <div className="mt-4">
+        <DataGridTable
+          rows={rows}
+          columns={columns}
+          loading={isLoading}
+          pagination
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          pageSizeOptions={[5, 10, 20]}
+          minWidth={1020}
+          getRowId={(row) => row.id}
+          loadingContent="Đang tải danh sách đồ ăn kèm..."
+          emptyContent="Chưa có sản phẩm bán kèm nào"
+          sx={{
+            '& .MuiDataGrid-columnHeaders': {
+              backgroundColor: '#f8fafc',
+            },
+            '& .MuiDataGrid-cell:focus, & .MuiDataGrid-columnHeader:focus': {
+              outline: 'none',
+            },
+          }}
+        />
       </div>
     </div>
   );

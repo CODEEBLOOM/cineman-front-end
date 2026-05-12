@@ -1,57 +1,64 @@
-import Breadcrumb from '@component/Breakcrumb';
-import FormMovie from './FormMovie';
+import CustomBreadcrumb from '@component/CustomBreakcrumb';
+import TabPanel from '@component/Tabpanel';
+import { Box, Tab, Tabs } from '@mui/material';
+import { adminTabSx, adminTabsSx } from '@utils/adminTabStyles';
 import { useState } from 'react';
-import { Button, Switch } from '@mui/material';
+import FormMovie from './FormMovie';
+import MovieTable from './MovieTable';
 
 const ListMovie = () => {
-  const [checked, setChecked] = useState(false);
-  const handleChange = (event) => {
-    setChecked(event.target.checked);
+  const [value, setValue] = useState(1);
+  const [isEdit, setIsEdit] = useState(false);
+  const [editingMovie, setEditingMovie] = useState(null);
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
   };
+
+  const a11yProps = (index) => ({
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  });
 
   return (
     <div>
-      <div className="mb-5 flex justify-between bg-white px-5 py-2 shadow-sm">
-        <p className="font-bold uppercase">Quản lý phim</p>
-        <Breadcrumb current={'Danh sách phim'} />
-      </div>
-      <div className="mx-5 grid gap-5 lg:grid-cols-12">
-        <div className="col-span-9 rounded-sm bg-white px-4 py-3">
-          <h2 className="mb-3 border-b-2 pb-2 font-medium capitalize">
-            Thông tin bộ phim
-          </h2>
-          <FormMovie />
-        </div>
-        <div className="col-span-3">
-          <div className="rounded-sm bg-white px-4 py-3">
-            <h2 className="mb-3 border-b-2 pb-2 font-medium capitalize">
-              Thêm mới
+      <CustomBreadcrumb
+        items={[{ label: 'Quản lý bộ phim', href: '/admin/danh-sach-phim' }]}
+        title="Quản lý bộ phim"
+      />
+      <div className="mx-5 mt-3 grid overflow-auto">
+        <div className="rounded-sm bg-white px-4 py-3">
+          <Box>
+            <Tabs
+              value={value}
+              onChange={handleChange}
+              aria-label="Quản lý bộ phim"
+              sx={adminTabsSx}
+            >
+              <Tab sx={adminTabSx} label="Thêm bộ phim" {...a11yProps(0)} />
+              <Tab sx={adminTabSx} label="Danh sách" {...a11yProps(1)} />
+            </Tabs>
+          </Box>
+          <TabPanel value={value} index={0}>
+            <h2 className="mb-3 border-b-2 pb-2 font-semibold capitalize">
+              Thông tin bộ phim
             </h2>
-            <p>
-              <span>Nổi bật</span>
-              <Switch
-                checked={checked}
-                onChange={handleChange}
-                inputProps={{ 'aria-label': 'controlled' }}
-              />
-            </p>
-            <div className="flex">
-              <Button variant="contained" className="!mx-auto">
-                Xuất bản
-              </Button>
-            </div>
-          </div>
-
-          <div className="mt-3 rounded-sm bg-white px-4 py-3">
-            <h2 className="mb-3 border-b-2 pb-2 font-medium capitalize">
-              <span className="text-red-500">* </span>
-              Hình ảnh
-            </h2>
-            inp
-          </div>
+            <FormMovie
+              setEditingMovie={setEditingMovie}
+              editingMovie={editingMovie}
+            />
+          </TabPanel>
+          <TabPanel value={value} index={1}>
+            <MovieTable
+              setValue={setValue}
+              setIsEdit={setIsEdit}
+              setEditingMovie={setEditingMovie}
+            />
+          </TabPanel>
         </div>
       </div>
     </div>
   );
 };
+
 export default ListMovie;

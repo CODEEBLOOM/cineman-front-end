@@ -1,138 +1,121 @@
-import { useEffect, useState } from 'react';
-import { useModelContext } from '@context/ModalContext.jsx';
-import { IoClose } from 'react-icons/io5';
-import CustomButton from '@component/CustomButton.jsx';
-import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import { getShowTimeDetail } from '@apis/showTimeService';
+import CustomButton from '@component/CustomButton.jsx';
+import DataGridTable from '@component/DataGridTable';
+import EmptyList from '@component/cinema_showtime/EmptyList';
+import Loading from '@component/Loading';
+import { useModelContext } from '@context/ModalContext.jsx';
+import { useEffect, useMemo, useState } from 'react';
+import { IoClose } from 'react-icons/io5';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
+
+const groupShowtimesByTheater = (list = []) => {
+  return list.reduce((accumulator, item) => {
+    const cinemaTheaterId =
+      item?.cinemaTheater?.cinemaTheaterId ?? item?.cinemaTheater?.id;
+
+    if (!cinemaTheaterId) {
+      return accumulator;
+    }
+
+    if (!accumulator[cinemaTheaterId]) {
+      accumulator[cinemaTheaterId] = {
+        theater: item.cinemaTheater,
+        items: [],
+      };
+    }
+
+    accumulator[cinemaTheaterId].items.push(item);
+    return accumulator;
+  }, {});
+};
 
 const ShowTimeDetail = ({ showTimeSelected, movieId }) => {
-  const { movieTheater } = useSelector((state) => state.movieTheater);
-  const [showTimeDetails, setShowTimeDetails] = useState();
+  const movieTheater = useSelector(
+    (state) => state.movieTheater?.movieTheater ?? { id: null }
+  );
+  const { openPopup, closeTopModal, resetModal } = useModelContext();
+  const [showTimeDetails, setShowTimeDetails] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
-  const groupShowtimesByTheater = (list) => {
-    return list.reduce((acc, item) => {
-      const id = item.cinemaTheater.cinemaTheaterId;
-
-      // Nếu chưa có phòng này thì tạo mới
-      if (!acc[id]) {
-        acc[id] = {
-          theater: item.cinemaTheater, // thông tin phòng
-          items: [], // danh sách suất chiếu thuộc phòng đó
-        };
-      }
-
-      // Thêm lịch chiếu vào phòng tương ứng
-      acc[id].items.push(item);
-      return acc;
-    }, {});
-  };
-
-  // Lấy danh sách tất cả các lịch chiếu theo showTimeSelected, movieId, movieTheaterId //
   useEffect(() => {
-    if (!showTimeSelected) return;
+    if (!showTimeSelected || !movieId || !movieTheater?.id) {
+      setShowTimeDetails({});
+      return;
+    }
+
+    setIsLoading(true);
     getShowTimeDetail({
-      movieId: movieId,
+      movieId,
       movieTheaterId: movieTheater.id,
-      showDate: showTimeSelected?.showDate,
+      showDate: showTimeSelected.showDate,
     })
       .then((res) => {
-        const grouped = groupShowtimesByTheater(res.data);
-        Object.values(grouped).forEach((g) => {
-          g.items.sort((a, b) =>
-            a.showTime.startTime.localeCompare(b.showTime.startTime)
+        const grouped = groupShowtimesByTheater(res?.data || []);
+
+        Object.values(grouped).forEach((group) => {
+          group.items.sort((firstItem, secondItem) =>
+            String(firstItem?.showTime?.startTime || '').localeCompare(
+              String(secondItem?.showTime?.startTime || '')
+            )
           );
         });
+
         setShowTimeDetails(grouped);
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((error) => {
+        console.log(error);
+        setShowTimeDetails({});
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
-  }, [showTimeSelected, movieTheater.id, movieId]);
+  }, [movieId, movieTheater?.id, showTimeSelected]);
 
-  // /* Get unique cinemas */
-  // useEffect(() => {
-  //   const seenIds = new Set();
-  //   const uniqueTheaters = [];
-  //   if (!showTimeDetails) return;
-  //   showTimeDetails.forEach((item) => {
-  //     const theater = item.cinemaTheater;
-  //     if (!seenIds.has(theater.cinemaTheaterId)) {
-  //       seenIds.add(theater.cinemaTheaterId);
-  //       uniqueTheaters.push(theater);
-  //     }
-  //   });
-  //   setCinemas(uniqueTheaters);
-  //   // Chỉ chạy lại khi showTimeDetails thay đổi //
-  // }, [showTimeDetails]);
-
-  const { openPopup, closeTopModal, resetModal } = useModelContext();
+  const groupedShowTimes = useMemo(() => {
+    return Object.values(showTimeDetails || {});
+  }, [showTimeDetails]);
 
   const renderPopup = (showTime) => {
+    const rows = [
+      {
+        id: showTime.showTime.id,
+        cinemaTheaterName: showTime.cinemaTheater.name,
+        showDate: showTime.showTime.showDate,
+        startTime: showTime.showTime.startTime,
+      },
+    ];
+
+    const columns = [
+      { field: 'cinemaTheaterName', headerName: 'Rạp chiếu', flex: 1, minWidth: 180 },
+      { field: 'showDate', headerName: 'Ngày chiếu', flex: 1, minWidth: 160 },
+      { field: 'startTime', headerName: 'Giờ chiếu', flex: 1, minWidth: 140 },
+    ];
+
     return (
       <div
-        className={
-          'relative flex aspect-video w-full flex-col justify-between rounded-md bg-white p-5 sm:w-[80vw] md:w-[50vw]'
-        }
+        data-modal-placement="center"
+        className="relative flex aspect-video w-full flex-col justify-between rounded-md bg-white p-5 sm:w-[80vw] md:w-[50vw]"
       >
         <span
-          className={'absolute right-3 top-3 hover:cursor-pointer'}
+          className="absolute right-3 top-3 hover:cursor-pointer"
           onClick={() => closeTopModal()}
         >
           <IoClose size={25} />
         </span>
-        <div className={'border-b-2 px-4'}>
-          <p className={'font-bold uppercase lg:text-[25px]'}>
-            bạn đang đặt vé xem phim
-          </p>
+        <div className="border-b-2 px-4">
+          <p className="font-bold uppercase lg:text-[25px]">Bạn đang đặt vé xem phim</p>
         </div>
-        <div className={'flex-grow border-b-2 px-4 text-center'}>
-          <h1
-            className={
-              'border-b-2 py-6 font-bold uppercase text-primary lg:text-[25px]'
-            }
-          >
+        <div className="flex-grow border-b-2 px-4 text-center">
+          <h1 className="border-b-2 py-6 font-bold uppercase text-primary lg:text-[25px]">
             {showTime.movie.title}
           </h1>
-          <table className={'w-full'}>
-            <thead>
-              <tr className={'h-[50px]'}>
-                <td className={'w-[30%]'}>
-                  <h4 className={'lg:text-[20px]'}>Rạp chiếu</h4>
-                </td>
-                <td className={'w-[30%]'}>
-                  <h4 className={'lg:text-[20px]'}>Ngày chiếu</h4>
-                </td>
-                <td className={'w-[30%]'}>
-                  <h4 className={'lg:text-[20px]'}>Giờ Chiếu</h4>
-                </td>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className={'h-[50px]'}>
-                <td>
-                  <h3 className={'font-bold lg:text-[25px]'}>
-                    {showTime.cinemaTheater.name}
-                  </h3>
-                </td>
-                <td>
-                  <h3 className={'font-bold lg:text-[25px]'}>
-                    {showTime.showTime.showDate}
-                  </h3>
-                </td>
-                <td>
-                  <h3 className={'font-bold lg:text-[25px]'}>
-                    {showTime.showTime.startTime}
-                  </h3>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <DataGridTable rows={rows} columns={columns} hideFooter minWidth={520} />
         </div>
-        <div className={'mx-auto p-2 px-4'} onClick={() => resetModal()}>
+        <div className="mx-auto p-2 px-4" onClick={() => resetModal()}>
           <Link to={`/choose-seat?st=${showTime.showTime.id}`}>
             <div className="min-w-[150px] max-w-[150px]">
-              <CustomButton title={'Đồng ý'} />
+              <CustomButton title="Đồng ý" />
             </div>
           </Link>
         </div>
@@ -140,39 +123,49 @@ const ShowTimeDetail = ({ showTimeSelected, movieId }) => {
     );
   };
 
+  if (isLoading) {
+    return <Loading content="Đang tải suất chiếu..." />;
+  }
+
+  if (groupedShowTimes.length === 0) {
+    return <EmptyList content="Ngày này hiện chưa có suất chiếu khả dụng." />;
+  }
+
   return (
-    <div>
-      {showTimeDetails &&
-        Object.values(showTimeDetails)?.map((showTimeGroup) => (
-          <div
-            className="flex flex-col flex-wrap gap-2 md:gap-3"
-            key={showTimeGroup.theater.id}
+    <div className="space-y-5">
+      {groupedShowTimes.map((showTimeGroup) => {
+        const movieVariationName =
+          showTimeGroup.items[0]?.movieVariation?.name ||
+          showTimeGroup.items[0]?.movieVariationName ||
+          '';
+
+        return (
+          <section
+            key={showTimeGroup.theater?.cinemaTheaterId ?? showTimeGroup.theater?.id}
+            className="border-b border-slate-200 pb-5 last:border-b-0 last:pb-0"
           >
-            <div>
-              <p className="font-semibold">{`${showTimeGroup.theater.name} - ${showTimeGroup.items[0].movieVariation.name}`}</p>
+            <div className="mb-3">
+              <p className="text-xl font-bold leading-tight text-slate-900 md:text-2xl">
+                {`${showTimeGroup.theater?.name || 'Phòng chiếu'}${movieVariationName ? ` - ${movieVariationName}` : ''}`}
+              </p>
             </div>
-            <div className="flex flex-wrap gap-2 md:gap-3">
+
+            <div className="flex flex-wrap gap-2.5">
               {showTimeGroup.items.map((showTimeDetail) => (
-                <div
-                  className={'flex flex-col text-center'}
+                <button
+                  type="button"
                   key={showTimeDetail.showTime.id}
+                  title={`${showTimeDetail.totalSeatEmpty ?? '--'} ghế trống`}
                   onClick={() => openPopup(renderPopup(showTimeDetail))}
+                  className="min-w-[88px] rounded-[16px] border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-medium text-slate-900 shadow-sm transition hover:border-primary hover:text-primary"
                 >
-                  <p
-                    className={
-                      'inline-block bg-[#e5e5e5] px-10 py-2 transition-colors duration-200 hover:cursor-pointer hover:bg-slate-300'
-                    }
-                  >
-                    {showTimeDetail.showTime.startTime}
-                  </p>
-                  <small>
-                    <span>{showTimeDetail.totalSeatEmpty}</span> ghế trống
-                  </small>
-                </div>
+                  {showTimeDetail.showTime.startTime}
+                </button>
               ))}
             </div>
-          </div>
-        ))}
+          </section>
+        );
+      })}
     </div>
   );
 };

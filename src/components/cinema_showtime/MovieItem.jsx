@@ -6,7 +6,6 @@ import {
   CardContent,
   CardHeader as MUICardHeader,
   Button as MUIButton,
-  Typography,
   Box,
 } from '@mui/material';
 import TimeBadge from './TimeBagde';
@@ -18,7 +17,9 @@ import { useModelContext } from '@context/ModalContext';
 import { IoClose } from 'react-icons/io5';
 
 const MovieItem = ({ movie }) => {
-  const { movieTheater } = useSelector((state) => state.movieTheater);
+  const movieTheater = useSelector(
+    (state) => state.movieTheater?.movieTheater ?? { id: null }
+  );
   const { showDateActive } = useSelector((state) => state.cinemaShowTime);
   const [showTimeDetails, setShowTimeDetails] = useState();
 
@@ -26,7 +27,7 @@ const MovieItem = ({ movie }) => {
 
   const renderPopup = (movie) => {
     return openPopup(
-      <div className={'relative bg-white p-5'}>
+      <div data-modal-placement="center" className={'relative bg-white p-5'}>
         <span
           className={'absolute right-3 top-3 hover:cursor-pointer'}
           onClick={() => closeTopModal()}
@@ -50,8 +51,8 @@ const MovieItem = ({ movie }) => {
       // Nếu chưa có phòng này thì tạo mới
       if (!acc[id]) {
         acc[id] = {
-          theater: item.cinemaTheater, // thông tin phòng
-          items: [], // danh sách suất chiếu thuộc phòng đó
+          theater: item.cinemaTheater,
+          items: [],
         };
       }
 
@@ -63,7 +64,7 @@ const MovieItem = ({ movie }) => {
 
   // Lấy danh sách tất cả các lịch chiếu theo showTimeSelected, movieId, movieTheaterId //
   useEffect(() => {
-    if (!showDateActive && movie) return;
+    if (!showDateActive || !movie?.movieId || !movieTheater?.id) return;
     getShowTimeDetail({
       movieId: movie.movieId,
       movieTheaterId: movieTheater.id,
@@ -81,7 +82,7 @@ const MovieItem = ({ movie }) => {
       .catch((err) => {
         console.log(err);
       });
-  }, [showDateActive, movieTheater.id, movie]);
+  }, [showDateActive, movieTheater?.id, movie]);
 
   return (
     <motion.div
@@ -93,7 +94,6 @@ const MovieItem = ({ movie }) => {
     >
       <Card className="overflow-hidden border border-transparent shadow-sm transition hover:shadow-md">
         <div className="grid grid-cols-12 gap-4 p-4">
-          {/* Poster */}
           <div className="col-span-12 sm:col-span-3 md:col-span-2">
             <div className="aspect-[2/3] overflow-hidden rounded-xl bg-gray-100">
               <img
@@ -105,7 +105,6 @@ const MovieItem = ({ movie }) => {
             </div>
           </div>
 
-          {/* Content */}
           <div className="col-span-12 flex flex-col gap-3 sm:col-span-9 md:col-span-10">
             <MUICardHeader
               title={

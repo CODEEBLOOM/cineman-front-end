@@ -8,6 +8,7 @@ import invoiceReducer from '@redux/slices/invoiceSlice.js';
 import snackReducer from '@redux/slices/snackSlice.js';
 import movieTheaterReducer from '@redux/slices/movieTheaterSlice.js';
 import cinemaShowtimeReducer from '@redux/slices/cinemaShowtimeSlice.js';
+import invoiceASliceReducer from '@redux/slices/invoiceASlide.js';
 import {
   FLUSH,
   PAUSE,
@@ -42,6 +43,7 @@ const persistedReducer = persistReducer(
     invoice: invoiceReducer,
     snack: snackReducer,
     cinemaShowTime: cinemaShowtimeReducer,
+    invoiceASlice: invoiceASliceReducer,
   })
 );
 

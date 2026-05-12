@@ -9,19 +9,4 @@ export const menuHeader = [
     link: '/movie',
     name: 'Phim',
   },
-  {
-    id: 3,
-    link: '#3',
-    name: 'Rạp',
-  },
-  {
-    id: 4,
-    link: '#4',
-    name: 'Giá vé',
-  },
-  {
-    id: 5,
-    link: '#5',
-    name: 'Tin tức',
-  },
 ];

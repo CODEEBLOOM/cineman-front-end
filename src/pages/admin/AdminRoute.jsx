@@ -1,4 +1,5 @@
 import React, { Suspense, useState } from 'react';
+import Loading from '@component/Loading';
 import Sidebar from '@component/admin/layout/sidebar/index.jsx';
 import { Navigate, Outlet } from 'react-router-dom';
 import HeaderAdmin from '@component/admin/layout/HeaderAdmin.jsx';
@@ -20,7 +21,7 @@ const AdminRoute = () => {
   }
 
   return (
-    <Suspense fallback={<p>Loading ...</p>}>
+    <Suspense fallback={<Loading minHeight="55vh" />}>
       <div className={'flex bg-[rgba(237,237,240,0.8)]'}>
         <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} isMobile={isMobile} />
         <div className="grid h-screen flex-grow grid-rows-[auto_1fr_auto]">

@@ -1,88 +1,29 @@
-import VIPSeat from '@component/seat/VIPSeat';
-import RegularSeat from '@component/seat/RegularSeat';
-import DoubleSeat from '@component/seat/DoubleSeat';
-import { COLOR_SEAT } from '@utils/colorSeatConstant';
+import CloseRounded from '@mui/icons-material/CloseRounded';
+import {
+  seatStatusAppearance,
+  seatTypeAppearance,
+} from './seatVisualConfig';
 
-const RenderSeat = ({
-  ticket,
-  cinemaTheater,
-  message,
-  sendMessageChooseSeat,
-}) => {
-  const render = () => {
-    const colorSeat = () => {
-      if (ticket.status) {
-        switch (ticket.status) {
-          case 'SELECTED':
-            return COLOR_SEAT.SEAT_SELECTED;
-          case 'HOLDED':
-            return COLOR_SEAT.SEAT_HOLDED;
-          case 'SOLD':
-            return COLOR_SEAT.SEAT_SOLD;
-          case 'BOOKED':
-            return COLOR_SEAT.SEAT_BOOKED;
-          default:
-            return COLOR_SEAT.SEAT_EMPTY;
-        }
-      } else {
-        return COLOR_SEAT.SEAT_EMPTY;
-      }
-    };
+const RenderSeat = ({ ticket, message, sendMessageChooseSeat }) => {
+  const seatType =
+    typeof ticket?.seat?.seatType === 'string'
+      ? ticket.seat.seatType
+      : ticket?.seat?.seatType?.id;
+  const appearance = seatTypeAppearance[seatType] ?? seatTypeAppearance.REGULAR;
+  const stateStyle =
+    seatStatusAppearance[ticket.status] ?? seatStatusAppearance.EMPTY;
+  const SeatIcon = appearance.icon;
+  const isDoubleSeat = seatType === 'DOUBLE';
+  const isInactive = ticket.seat.status === 'INACTIVE';
+  const isDisabled =
+    isInactive ||
+    ticket.status === 'HOLDED' ||
+    ticket.status === 'SOLD' ||
+    ticket.status === 'BOOKED';
 
-    /* Check ghế đang không hoạt động tạm thời tại rạp */
-    if (ticket.seat.status === 'INACTIVE') {
-      return (
-        <>
-          <div className="h-[60px] w-[60px] bg-white"></div>
-        </>
-      );
-    }
-    if (ticket.seat.rowIndex < cinemaTheater.regularSeatRow) {
-      return (
-        <>
-          <RegularSeat size={'50px'} color={colorSeat()} />
-          <div className="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2">
-            {ticket.seat.label}
-          </div>
-        </>
-      );
-    } else if (
-      ticket.seat.rowIndex <
-      cinemaTheater.regularSeatRow + cinemaTheater.vipSeatRow
-    ) {
-      return (
-        <>
-          <VIPSeat size={'50px'} color={colorSeat()} />
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            {ticket.seat.label}
-          </div>
-        </>
-      );
-    } else {
-      return (
-        <>
-          <DoubleSeat size={'70px'} color={colorSeat()} />
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            {ticket.seat.label}
-          </div>
-        </>
-      );
-    }
-  };
-
-  /* Handle choose seat */
   const handleChooseSeat = () => {
-    // chỉ xử lý các trường hợp của chính người đang chọn ghế:
-    // Nghĩa là những ghế trống --> người dùng có thể chọn để đặt vé
-    // Ghế đã chọn --> hủy chọn vé
-    if (
-      ticket.seat.status === 'INACTIVE' ||
-      ticket.status === 'HOLDED' ||
-      ticket.status === 'SOLD' ||
-      ticket.status === 'BOOKED'
-    )
-      return;
-    // TODO: xử lý api đặt vé của người dùng
+    if (isDisabled) return;
+
     const newMessage = {
       ...message,
       content: {
@@ -91,18 +32,68 @@ const RenderSeat = ({
       },
       ticketId: ticket.id,
     };
+
     sendMessageChooseSeat(newMessage);
   };
 
   return (
-    <>
+    <div
+      className={`${isDoubleSeat ? 'col-span-2' : 'col-span-1'} flex items-center justify-center`}
+    >
       <div
-        className={`${ticket?.seat?.seatType?.id === 'DOUBLE' ? 'col-span-2' : ''} flex justify-center hover:cursor-pointer ${ticket.status !== 'EMPTY' && ticket.status !== 'SELECTED' ? '!hover:cursor-not-allowed' : ''} ${ticket.seat.status === 'INACTIVE' ? '!cursor-default' : ''} relative`}
-        onClick={() => handleChooseSeat()}
+        onClick={handleChooseSeat}
+        className={`relative flex min-h-[64px] min-w-[58px] items-center justify-center rounded-[18px] border px-3 py-2 transition ${
+          isDoubleSeat ? 'w-full' : ''
+        } ${
+          isDisabled && ticket.status !== 'SELECTED'
+            ? 'cursor-not-allowed'
+            : 'cursor-pointer'
+        } ${
+          !isDisabled || ticket.status === 'SELECTED'
+            ? 'hover:-translate-y-[1px] hover:shadow-[0_10px_24px_rgba(15,23,42,0.08)]'
+            : ''
+        }`}
+        style={{
+          borderColor: isInactive
+            ? appearance.border
+            : stateStyle.borderColor || appearance.border,
+          backgroundColor: isInactive
+            ? appearance.surface
+            : stateStyle.backgroundColor || appearance.surface,
+          paddingInline: isDoubleSeat ? '0.9rem' : '0.75rem',
+        }}
       >
-        {render()}
+        <SeatIcon
+          size={isDoubleSeat ? '48px' : '42px'}
+          color={stateStyle.iconColor || appearance.baseColor}
+        />
+
+        <div
+          className="pointer-events-none absolute inset-0 flex items-center justify-center select-none"
+          style={{
+            color: isInactive ? '#475569' : stateStyle.textColor,
+          }}
+        >
+          <span className="translate-y-[1px] text-[11px] font-semibold tracking-[0.02em]">
+            {ticket.seat.label}
+          </span>
+        </div>
+
+        {isInactive && (
+          <CloseRounded
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              fontSize: 28,
+              color: '#dc2626',
+            }}
+          />
+        )}
       </div>
-    </>
+    </div>
   );
 };
+
 export default RenderSeat;

@@ -1,4 +1,4 @@
-import { FaBuildingColumns, FaUserGear, FaUsersGear } from 'react-icons/fa6';
+﻿import { FaBuildingColumns, FaUserGear, FaUsersGear } from 'react-icons/fa6';
 import { GrMap } from 'react-icons/gr';
 import {
   MdMovieEdit,
@@ -6,8 +6,8 @@ import {
   MdOutlinePriceChange,
   MdOutlineTheaters,
 } from 'react-icons/md';
-import { LuTheater, LuTicketsPlane } from 'react-icons/lu';
-import { BsDiagram3 } from 'react-icons/bs';
+import { LuAppWindow, LuTheater, LuTicketsPlane } from 'react-icons/lu';
+import { BsDiagram3, BsTags } from 'react-icons/bs';
 import { FaRegAddressCard, FaShieldAlt } from 'react-icons/fa';
 import {
   RiMovie2AiLine,
@@ -38,15 +38,21 @@ export const listMenuAdmin = [
         role: ['ADMIN'],
       },
       {
+        name: 'Loại phòng chiếu',
+        icon: LuAppWindow,
+        path: '/admin/cinema-type',
+        role: ['ADMIN', 'CADMIN'],
+      },
+      {
         name: 'Quản lý phòng chiếu',
         icon: LuTheater,
         path: '/admin/phong-chieu',
-        role: ['CADMIN'],
+        role: ['ADMIN', 'CADMIN'],
       },
       {
         name: 'Thẻ thành viên',
         icon: FaRegAddressCard,
-        path: 'the-thanh-vien',
+        path: '/admin/the-thanh-vien',
         role: ['ADMIN'],
       },
     ],
@@ -62,16 +68,52 @@ export const listMenuAdmin = [
         role: ['ADMIN'],
       },
       {
-        name: 'Quản lý xuất chiếu',
+        name: 'Thể loại phim',
+        path: '/admin/the-loai-phim',
+        icon: BsTags,
+        role: ['ADMIN'],
+      },
+      {
+        name: 'Trạng thái phim',
+        path: '/admin/trang-thai-phim',
+        icon: BsTags,
+        role: ['ADMIN'],
+      },
+      {
+        name: 'Người tham gia',
+        path: '/admin/nguoi-tham-gia',
+        icon: FaUsersGear,
+        role: ['ADMIN'],
+      },
+      {
+        name: 'Vai trò phim',
+        path: '/admin/vai-tro-phim',
+        icon: BsDiagram3,
+        role: ['ADMIN'],
+      },
+      {
+        name: 'Người tham gia phim',
+        path: '/admin/nguoi-tham-gia-phim',
+        icon: FaUsersGear,
+        role: ['ADMIN'],
+      },
+      {
+        name: 'Quản lý suất chiếu',
         icon: RiSlideshow2Line,
         path: '/admin/xuat-chieu',
+        role: ['CADMIN'],
+      },
+      {
+        name: 'Biến thể suất chiếu',
+        icon: BsDiagram3,
+        path: '/admin/bien-the-xuat-chieu',
         role: ['CADMIN'],
       },
       {
         name: 'Quản lý hóa đơn',
         icon: PiInvoiceBold,
         path: '/admin/invoice',
-        role: ['CADMIN', 'RCP'],
+        role: ['RCP'],
       },
       {
         name: 'Quản lý xuất vé',
@@ -92,23 +134,35 @@ export const listMenuAdmin = [
         role: ['CADMIN'],
       },
       {
+        name: 'Loại đồ ăn vặt',
+        path: '/admin/loai-snack',
+        icon: BsTags,
+        role: ['CADMIN'],
+      },
+      {
         name: 'Quản lý Combo',
         icon: AiOutlineProduct,
         path: '/admin/combo',
         role: ['CADMIN'],
       },
       {
-        name: 'Quản lý mã giảm giá',
+        name: 'Loại khuyến mãi',
+        icon: BsTags,
+        path: '/admin/loai-khuyen-mai',
+        role: ['ADMIN', 'CADMIN'],
+      },
+      {
+        name: 'Quản lý khuyến mãi',
         icon: MdOutlineDiscount,
-        path: '/admin/ma-giam-gia',
+        path: '/admin/khuyen-mai',
+        role: ['ADMIN', 'CADMIN'],
+      },
+      {
+        name: 'Quản lý loại vé',
+        icon: MdOutlinePriceChange,
+        path: '/admin/gia-ve',
         role: ['CADMIN'],
       },
-      // {
-      //   name: 'Quản lý giá vé',
-      //   icon: MdOutlinePriceChange,
-      //   path: '/admin/gia-ve',
-      //   role: ['CADMIN'],
-      // },
     ],
   },
   {

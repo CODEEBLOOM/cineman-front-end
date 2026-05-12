@@ -1,5 +1,6 @@
 import React from 'react';
 import RenderSeat from './RenderSeat';
+import { getSeatRowLabel } from '@utils/seatPosition';
 
 const SeatMapRenderer = React.memo(
   ({ ticketMap, showTime, message, sendMessageChooseSeat }) => {
@@ -8,39 +9,40 @@ const SeatMapRenderer = React.memo(
     const theater = showTime?.cinemaTheater;
     if (!theater) return null;
 
+    const totalSeatRows =
+      theater.regularSeatRow + theater.vipSeatRow + theater.doubleSeatRow;
+    const maxSeatRows = Math.min(theater.numberOfRows ?? 0, totalSeatRows);
     const allSeats = [];
 
-    for (let row = 0; row < theater.numberOfRows; row++) {
-      if (
-        row >=
-        theater.regularSeatRow + theater.vipSeatRow + theater.doubleSeatRow
-      ) {
-        break;
-      }
+    for (let row = 1; row <= maxSeatRows; row++) {
+      const isDoubleRow =
+        row > theater.regularSeatRow + theater.vipSeatRow;
 
-      // Hiển thị tên hàng (A, B, C,...)
       allSeats.push(
         <div
-          className="flex items-center justify-center"
-          key={String.fromCharCode(65 + row)}
+          className="flex min-h-[64px] items-center justify-center"
+          key={getSeatRowLabel(row)}
         >
-          {String.fromCharCode(65 + row)}
+          <span className="text-sm font-bold tracking-[0.08em] text-slate-500">
+            {getSeatRowLabel(row)}
+          </span>
         </div>
       );
 
-      for (let col = 0; col < theater.numberOfColumns; col++) {
+      for (let col = 1; col <= theater.numberOfColumns; col++) {
         const seatKey = `${row}-${col}`;
         const ticket = ticketMap.get(seatKey);
 
         if (!ticket) {
           allSeats.push(
             <div
-              className={`h-[60px] w-[60px] bg-white ${row >= theater.regularSeatRow + theater.vipSeatRow ? 'col-span-2' : ''}`}
+              className={`min-h-[64px] min-w-[58px] ${isDoubleRow ? 'col-span-2' : 'col-span-1'}`}
               key={seatKey}
             />
           );
-          if (row >= theater.regularSeatRow + theater.vipSeatRow) {
-            col++; // ghế đôi
+
+          if (isDoubleRow) {
+            col++;
           }
           continue;
         }

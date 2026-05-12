@@ -11,7 +11,7 @@ const CustomSelect = ({
   disabled,
 }) => {
   return (
-    <Box>
+    <Box className="min-w-[150px]">
       <TextField
         name={name}
         label=""

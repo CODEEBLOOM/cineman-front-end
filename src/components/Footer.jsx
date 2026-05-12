@@ -1,184 +1,249 @@
-import { MdKeyboardArrowRight } from 'react-icons/md';
-import { TfiYoutube } from 'react-icons/tfi';
-import { RiFacebookBoxLine } from 'react-icons/ri';
+import {
+  extractMovieTheaterList,
+  findAllClientMovieTheater,
+} from '@apis/movieTheaterService';
+import { useEffect, useMemo, useState } from 'react';
 import { AiFillTikTok } from 'react-icons/ai';
-import { FaInstagramSquare } from 'react-icons/fa';
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaRegCheckCircle,
+  FaYoutube,
+} from 'react-icons/fa';
+import { MdKeyboardArrowRight } from 'react-icons/md';
+
+const companyLinks = [
+  'Giới thiệu',
+  'Tuyển dụng',
+  'Liên hệ',
+  'F.A.Q',
+  'Hoạt động xã hội',
+  'Điều khoản sử dụng',
+  'Chính sách thanh toán, đổi trả - hoàn vé',
+  'Liên hệ quảng cáo',
+  'Điều khoản bảo mật',
+  'Hướng dẫn đặt vé online',
+];
+
+const appLinks = ['Cineman cho iOS', 'Cineman cho Android'];
+
+const socialLinks = [
+  { label: 'Facebook', href: 'https://facebook.com', icon: FaFacebookF },
+  { label: 'YouTube', href: 'https://youtube.com', icon: FaYoutube },
+  { label: 'TikTok', href: 'https://tiktok.com', icon: AiFillTikTok },
+  { label: 'Instagram', href: 'https://instagram.com', icon: FaInstagram },
+];
+
+const sectionTitleClass =
+  'inline-block border-b-4 border-[#f48fb1] pb-2 text-[18px] font-extrabold uppercase tracking-[0.02em] text-[#ff8fb4] md:text-[20px]';
+
+const ListLink = ({ children }) => (
+  <li className="flex items-start gap-1.5 text-[15px] leading-7 text-white">
+    <MdKeyboardArrowRight className="mt-1 shrink-0 text-[18px] text-white" />
+    <a href="#!" className="block !text-white transition hover:opacity-85">
+      {children}
+    </a>
+  </li>
+);
+
+const buildMovieTheaterLabel = (theater) => {
+  const segments = [theater?.name].filter(Boolean);
+
+  if (theater?.province?.name) {
+    segments.push(theater.province.name);
+  }
+
+  const label = segments.join(', ');
+
+  if (theater?.hotline) {
+    return `${label} - Hotline ${theater.hotline}`;
+  }
+
+  return label;
+};
 
 const Footer = () => {
+  const [movieTheaters, setMovieTheaters] = useState([]);
+  const [isLoadingMovieTheaters, setIsLoadingMovieTheaters] = useState(true);
+  const [movieTheaterError, setMovieTheaterError] = useState('');
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadMovieTheaters = async () => {
+      setIsLoadingMovieTheaters(true);
+      setMovieTheaterError('');
+
+      try {
+        const response = await findAllClientMovieTheater();
+
+        if (!isMounted) {
+          return;
+        }
+
+        const theaters = extractMovieTheaterList(response).filter(
+          (item) => item?.status !== false
+        );
+
+        setMovieTheaters(theaters);
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+
+        setMovieTheaterError('Chưa tải được danh sách cụm rạp.');
+        setMovieTheaters([]);
+      } finally {
+        if (isMounted) {
+          setIsLoadingMovieTheaters(false);
+        }
+      }
+    };
+
+    loadMovieTheaters();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const movieTheaterLabels = useMemo(
+    () => movieTheaters.map(buildMovieTheaterLabel).filter(Boolean),
+    [movieTheaters]
+  );
+
   return (
-    <div className="border-t-2 pb-10">
-      <footer className="container pt-10">
-        <div className="md:flex-wrap lg:flex lg:flex-nowrap">
-          <div className="basic-[200px]">
-            <div className="max-w-[120px] overflow-hidden">
+    <footer className="bg-primary text-white">
+      <div className="container py-10 lg:py-12">
+        <div className="grid gap-x-8 gap-y-10 md:grid-cols-[220px_minmax(0,1fr)] lg:grid-cols-[180px_minmax(0,1fr)_320px] xl:grid-cols-[190px_minmax(0,1fr)_360px]">
+          <div className="md:max-w-[220px]">
+            <div className="mb-8 max-w-[170px]">
               <img
-                src="/logo-new-v01.png"
-                alt="cineman"
-                className="mb-4 w-full object-cover"
+                src="/logo-new.png"
+                alt="Cineman"
+                className="h-auto w-full object-contain brightness-0 invert"
               />
             </div>
-            <ul className="flex flex-col space-y-1 text-left">
-              <li className="flex items-start justify-start gap-1">
-                <MdKeyboardArrowRight />
-                <a href="#1" className="font-bold">
-                  Giới thiệu
-                </a>
-              </li>
-              <li className="flex items-start justify-start gap-1">
-                <MdKeyboardArrowRight />
-                <a href="#1" className="font-bold">
-                  Tuyển dụng
-                </a>
-              </li>
-              <li className="flex items-start justify-start gap-1">
-                <MdKeyboardArrowRight />
-                <a href="#1" className="font-bold">
-                  Liên hệ
-                </a>
-              </li>
 
-              <li className="flex items-start justify-start gap-1">
-                <MdKeyboardArrowRight />
-                <a href="#1" className="font-bold">
-                  Điều khoản sử dụng
-                </a>
-              </li>
-
-              <li className="flex items-start justify-start gap-1">
-                <MdKeyboardArrowRight />
-                <a href="#1" className="font-bold">
-                  Chính sách thanh toán và hoàn đổi trả - hoàn vé
-                </a>
-              </li>
-
-              <li className="flex items-start justify-start gap-1">
-                <MdKeyboardArrowRight />
-                <a href="#1" className="font-bold">
-                  Điều khoản bảo mật
-                </a>
-              </li>
-              <li className="flex items-start justify-start gap-1">
-                <MdKeyboardArrowRight />
-                <a href="#1" className="font-bold">
-                  Hướng dẫn đặt vé
-                </a>
-              </li>
+            <ul className="space-y-0.5">
+              {companyLinks.map((item) => (
+                <ListLink key={item}>{item}</ListLink>
+              ))}
             </ul>
+
+            <div className="mt-8">
+              <p className={sectionTitleClass}>Tải ứng dụng</p>
+              <ul className="mt-3 space-y-0.5">
+                {appLinks.map((item) => (
+                  <ListLink key={item}>{item}</ListLink>
+                ))}
+              </ul>
+            </div>
           </div>
-          <div className="grow-1 gap-6 px-4 pb-2 md:flex-wrap lg:flex lg:flex-nowrap">
-            <div className="flex-shrink-1 w-[80%] text-justify">
-              <p className="custom-border mb-4 inline-block border-b-4 pb-2 text-[20px] font-bold uppercase">
-                Cụm rạp cineman
-              </p>
-              <ul className="flex flex-col space-y-1">
-                <li className="flex items-center justify-start gap-1">
-                  <MdKeyboardArrowRight />
-                  <a href="#1" className="font-bold">
-                    Beta Cinemas Xuân Thủy, Hà Nội - Hotline 0333 023 183
-                  </a>
-                </li>
-                <li className="flex items-center justify-start gap-1">
-                  <MdKeyboardArrowRight />
-                  <a href="#1" className="font-bold">
-                    Beta Cinemas Tây Sơn, Hà Nội - Hotline 0976 894 773
-                  </a>
-                </li>
-                <li className="flex items-center justify-start gap-1">
-                  <MdKeyboardArrowRight />
-                  <a href="#1" className="font-bold">
-                    Beta Cinemas Vĩnh Yên, Vĩnh Phúc - Hotline 0977 632 215
-                  </a>
-                </li>
 
-                <li className="flex items-center justify-start gap-1">
-                  <MdKeyboardArrowRight />
-                  <a href="#1" className="font-bold">
-                    Beta Cinemas Ung Văn Khiêm, TP Hồ Chí Minh - Hotline 0969
-                    874 873
-                  </a>
-                </li>
+          <div className="min-w-0">
+            <p className={sectionTitleClass}>Cụm rạp Cineman</p>
 
-                <li className="flex items-center justify-start gap-1">
-                  <MdKeyboardArrowRight />
-                  <a href="#1" className="font-bold">
-                    Beta Cinemas Lào Cai - Hotline 0358 968 970
-                  </a>
-                </li>
+            <div className="mt-4">
+              {isLoadingMovieTheaters ? (
+                <p className="text-[15px] leading-7 text-white/90">
+                  Đang tải danh sách cụm rạp...
+                </p>
+              ) : null}
 
-                <li className="flex items-center justify-start gap-1">
-                  <MdKeyboardArrowRight />
-                  <a href="#1" className="font-bold">
-                    Beta Cinemas Tân Uyên, Bình Dương - Hotline 0937 905 925
-                  </a>
-                </li>
-                <li className="flex items-center justify-start gap-1">
-                  <MdKeyboardArrowRight />
-                  <a href="#1" className="font-bold">
-                    Beta Cinemas Nha Trang, Khánh Hòa - Hotline 0399 475 165
-                  </a>
-                </li>
-                <li className="flex items-center justify-start gap-1">
-                  <MdKeyboardArrowRight />
-                  <a href="#1" className="font-bold">
-                    Beta Cinemas Biên Hòa, Đồng Nai - Hotline 0979 460 002
-                  </a>
-                </li>
-                <li className="flex items-center justify-start gap-1">
-                  <MdKeyboardArrowRight />
-                  <a href="#1" className="font-bold">
-                    Beta Cinemas Thanh Hóa - Hotline 0325 360 249
-                  </a>
-                </li>
-              </ul>
+              {!isLoadingMovieTheaters && movieTheaterError ? (
+                <p className="text-[15px] leading-7 text-white/90">
+                  {movieTheaterError}
+                </p>
+              ) : null}
+
+              {!isLoadingMovieTheaters && !movieTheaterError ? (
+                <ul className="space-y-0.5">
+                  {movieTheaterLabels.map((label) => (
+                    <ListLink key={label}>{label}</ListLink>
+                  ))}
+                </ul>
+              ) : null}
             </div>
-            <div className="">
-              <p className="custom-border mb-4 inline-block border-b-4 pb-2 text-[20px] font-bold uppercase">
-                Kết nối với chúng tôi
-              </p>
-              <ul className="flex">
-                <li>
-                  <a href="#1">
-                    <RiFacebookBoxLine size={40} />
-                  </a>
-                </li>
-                <li>
-                  <a href="#1">
-                    <TfiYoutube size={40} />
-                  </a>
-                </li>
-                <li>
-                  <a href="#1">
-                    <AiFillTikTok size={40} />
-                  </a>
-                </li>
-                <li>
-                  <a href="#1">
-                    <FaInstagramSquare size={40} />
-                  </a>
-                </li>
-              </ul>
+          </div>
+
+          <div className="md:col-span-2 lg:col-span-1 lg:max-w-[360px]">
+            <p className={sectionTitleClass}>Liên hệ</p>
+
+            <div className="mt-5 space-y-6 text-[15px] leading-7 text-white">
+              <div>
+                <p className="font-extrabold uppercase">
+                  Công ty cổ phần Cineman
+                </p>
+                <p className="mt-2 text-white/95">
+                  Giấy chứng nhận ĐKKD số: 0106633482 - Đăng ký lần đầu ngày
+                  08/09/2014 tại Sở Kế hoạch và Đầu tư Thành phố Hà Nội
+                </p>
+                <p className="mt-2 text-white/95">
+                  Địa chỉ trụ sở: Tầng 3, số 595, đường Giải Phóng, phường Tương
+                  Mai, Thành phố Hà Nội, Việt Nam
+                </p>
+              </div>
+
+              <div>
+                <p className="font-extrabold uppercase">
+                  Liên hệ chăm sóc khách hàng:
+                </p>
+                <p className="mt-2">Hotline: 1900 636807</p>
+                <p>Email: mkt@betacinemas.vn</p>
+              </div>
+
+              <div>
+                <p className="font-extrabold uppercase">Liên hệ quảng cáo:</p>
+                <p className="mt-2">Hotline: 0934 632 682</p>
+                <p>Email: ad@betagroup.vn</p>
+              </div>
+
+              <div>
+                <p className="font-extrabold uppercase">
+                  Liên hệ hợp tác kinh doanh:
+                </p>
+                <p className="mt-2">Hotline: 1800 646420</p>
+                <p>Email: bachtx@betagroup.vn</p>
+              </div>
             </div>
-            <div className="">
-              <p className="custom-border mb-4 inline-block border-b-4 pb-2 text-[20px] font-bold uppercase">
-                Liên hệ
-              </p>
-              <p className="text-[16px] uppercase">CÔNG TY CỔ PHẦN CINEMAN</p>
-              <p className="mb-3">
-                Địa chỉ trụ sở: Tân Chánh Hiệp - Quận 12 - Thành Phố Hồ Chí Minh
-              </p>
-              <p className="mb-3">
-                <span>Hotline: </span>
-                1900 636807 / 1900 636808
-              </p>
-              <p className="mb-3">
-                <span>Email: </span>
-                ad@cineman.vn
-              </p>
+
+            <div className="mt-8">
+              <p className={sectionTitleClass}>Kết nối với chúng tôi</p>
+
+              <ul className="mt-5 flex items-center gap-2.5">
+                {socialLinks.map(({ label, href, icon: Icon }) => (
+                  <li key={label}>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={label}
+                      className="flex h-11 w-11 items-center justify-center rounded-md bg-white text-primary transition hover:translate-y-[-1px] hover:bg-[#e8f2fb]"
+                    >
+                      <Icon size={22} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-5 inline-flex items-center gap-3 rounded-full bg-[#1c8ed8] px-4 py-2.5 text-white">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-[#1c8ed8]">
+                  <FaRegCheckCircle size={30} />
+                </div>
+                <div className="leading-tight">
+                  <p className="text-[22px] font-extrabold uppercase">
+                    Đã thông báo
+                  </p>
+                  <p className="text-[15px] uppercase">Bộ Công Thương</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </footer>
-    </div>
+      </div>
+    </footer>
   );
 };
+
 export default Footer;

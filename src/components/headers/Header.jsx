@@ -63,7 +63,7 @@ const Header = () => {
       <div
         className={`z-50 transition-all duration-500 ${isSticky ? 'fixed left-0 right-0 top-0 bg-white/50 backdrop-blur-xl' : ''}`}
       >
-        <header className={`container flex items-center justify-between`}>
+        <header className={`container flex items-center justify-between p-2`}>
           <div className="flex items-center">
             <Link
               to={'/'}

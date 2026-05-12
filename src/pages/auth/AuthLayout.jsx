@@ -1,13 +1,28 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import { Suspense } from 'react';
+import Loading from '@component/Loading';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Suspense, useEffect } from 'react';
 import Header from '@component/headers/Header';
 import Footer from '@component/Footer';
 import { useSelector } from 'react-redux';
+import { clearAuthRedirect, resolveAuthRedirect } from '@utils/authRedirect';
 
 const AuthLayout = () => {
   const { isAuthentication } = useSelector((state) => state.auth);
-  if (isAuthentication) {
-    return <Navigate to={'/'} replace />;
+  const location = useLocation();
+  const isRecoveryRoute =
+    location.pathname === '/auth/forgot-password' ||
+    location.pathname === '/auth/reset-password';
+
+  const redirectUrl = resolveAuthRedirect(location.state?.from, '/');
+
+  useEffect(() => {
+    if (isAuthentication) {
+      clearAuthRedirect();
+    }
+  }, [isAuthentication]);
+
+  if (isAuthentication && !isRecoveryRoute) {
+    return <Navigate to={redirectUrl} replace />;
   }
   return (
     // <div className="bg-dark-200 flex h-screen items-center justify-center">
@@ -15,7 +30,7 @@ const AuthLayout = () => {
     //     <img className="mx-auto mb-6" src="/weconnect-logo.png" alt="" />
     <>
       <Header />
-      <Suspense fallback={<p>Loading ...</p>}>
+      <Suspense fallback={<Loading minHeight="45vh" />}>
         <Outlet />
       </Suspense>
       <Footer />

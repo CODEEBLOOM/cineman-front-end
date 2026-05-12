@@ -1,1 +1,0 @@
-import{j as e}from"./index-fawYB1tI.js";const c=({content:t="Danh sách lịch chiếu trống"})=>e.jsxs("div",{className:"flex h-64 flex-col items-center justify-center text-center",children:[e.jsx("div",{className:"animate-bounce text-6xl",children:"🎬"}),e.jsx("p",{className:"mt-4 text-lg font-medium text-gray-600",children:t})]});export{c as E};

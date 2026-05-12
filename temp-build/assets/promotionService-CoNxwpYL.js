@@ -1,1 +1,0 @@
-import{K as n}from"./index-fawYB1tI.js";const s=async({code:t,amount:o})=>{const r=`/promotion/${t}/amount/${o}/apply`;return await n.put(r)},e=async t=>{const o=`/promotion/revert-quantity/invoice/${t}`;return await n.put(o)},i=async(t,o)=>{const r=`/promotion/user/${t}/all`;return await n.get(r,{params:o})};export{s as a,i as f,e as r};

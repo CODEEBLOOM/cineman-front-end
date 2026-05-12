@@ -1,4 +1,4 @@
-﻿import { extractGenreList, getAllGenre } from '@apis/genreService';
+import { extractGenreList, getAllGenre } from '@apis/genreService';
 import {
   createMovieTheaterMapping,
   deleteMovieTheaterMapping,
@@ -32,7 +32,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import DateFormatter from '@utils/DateFormatter';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 import * as yup from 'yup';
 
 const statusOptions = [
@@ -980,7 +980,7 @@ const FormMovie = ({ editingMovie, setEditingMovie }) => {
               control={control}
               Component={TextInput}
               type="text"
-              placeHolder=": Vietnamese"
+              placeHolder="Ví dụ: Vietnamese"
               error={errors.language}
             />
           </div>

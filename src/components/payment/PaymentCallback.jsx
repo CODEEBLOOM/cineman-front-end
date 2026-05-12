@@ -1,4 +1,4 @@
-﻿import { updateInvoiceStatusSuccess } from '@apis/invoiceService';
+import { updateInvoiceStatusSuccess } from '@apis/invoiceService';
 import { revertApplyVoucher } from '@apis/promotionService';
 import Loading from '@component/Loading';
 import { clearInvoice } from '@redux/slices/invoiceSlice';
@@ -7,7 +7,7 @@ import { clearSelectedSeats } from '@redux/slices/ticketSlice';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 
 const PaymentCallback = () => {
   const [searchParams] = useSearchParams();

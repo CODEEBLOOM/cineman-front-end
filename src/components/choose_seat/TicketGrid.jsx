@@ -1,10 +1,10 @@
-﻿import { getAllTicketByShowTime } from '@apis/ticketService';
+import { getAllTicketByShowTime } from '@apis/ticketService';
 import { Client } from '@stomp/stompjs';
 import { setSelectedSeats } from '@redux/slices/ticketSlice';
 import { resolveRealtimeBrokerUrl } from '@utils/promotionRealtime';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 import SeatMapRenderer from './SeatMapRenderer';
 
 const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {

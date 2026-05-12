@@ -1,4 +1,4 @@
-﻿import {
+import {
   deletePromotionType,
   extractPromotionTypeList,
   findAllPromotionTypesAdmin,
@@ -12,7 +12,7 @@ import { Button } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { MdOutlineDeleteSweep, MdOutlineDiscount } from 'react-icons/md';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 
 const PromotionTypePage = () => {
   const { openPopup } = useModelContext();

@@ -1,4 +1,7 @@
-﻿import { createTicketType, updateTicketType } from '@apis/ticketTypeService';
+﻿import {
+  createTicketType,
+  updateTicketType,
+} from '@apis/ticketTypeService';
 import AdminModal from '@component/admin/common/AdminModal';
 import FormField from '@component/FormField';
 import CustomSelect from '@component/form_field/CustomSelect';
@@ -9,7 +12,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 import * as yup from 'yup';
 
 const TICKET_TYPE_OPTIONS = [
@@ -42,11 +45,7 @@ const formSchema = yup.object({
     .min(0, 'Giá vé phải lớn hơn hoặc bằng 0!'),
 });
 
-const TicketTypeFormModal = ({
-  ticketType,
-  onSuccess,
-  placement = 'top-center',
-}) => {
+const TicketTypeFormModal = ({ ticketType, onSuccess, placement = 'top-center' }) => {
   const { closeTopModal } = useModelContext();
   const isEditing = Boolean(ticketType?.id);
   const formId = 'ticket-type-form';
@@ -123,28 +122,13 @@ const TicketTypeFormModal = ({
       placement={placement}
       actions={
         <>
-          <Button
-            type="button"
-            variant="outlined"
-            color="info"
-            onClick={handleReset}
-          >
+          <Button type="button" variant="outlined" color="info" onClick={handleReset}>
             Làm mới
           </Button>
-          <Button
-            type="button"
-            variant="outlined"
-            color="warning"
-            onClick={closeTopModal}
-          >
+          <Button type="button" variant="outlined" color="warning" onClick={closeTopModal}>
             Hủy bỏ
           </Button>
-          <Button
-            type="submit"
-            form={formId}
-            variant="contained"
-            disabled={isSubmitting}
-          >
+          <Button type="submit" form={formId} variant="contained" disabled={isSubmitting}>
             {isEditing ? 'Cập nhật' : 'Tạo mới'}
           </Button>
         </>
@@ -169,7 +153,7 @@ const TicketTypeFormModal = ({
           control={control}
           Component={TextInput}
           type="number"
-          placeHolder=": 90000"
+          placeHolder="Ví dụ: 90000"
           error={errors.price}
         />
 

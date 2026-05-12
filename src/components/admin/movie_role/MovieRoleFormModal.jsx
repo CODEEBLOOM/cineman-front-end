@@ -8,7 +8,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 import * as yup from 'yup';
 
 const formSchema = yup.object({
@@ -23,11 +23,7 @@ const formSchema = yup.object({
     .max(250, 'Mô tả phải nhỏ hơn hoặc bằng 250 ký tự!'),
 });
 
-const MovieRoleFormModal = ({
-  movieRole,
-  onSuccess,
-  placement = 'top-center',
-}) => {
+const MovieRoleFormModal = ({ movieRole, onSuccess, placement = 'top-center' }) => {
   const { closeTopModal } = useModelContext();
   const movieRoleId = movieRole?.movieRoleId ?? movieRole?.id;
   const isEditing = Boolean(movieRoleId);
@@ -87,9 +83,7 @@ const MovieRoleFormModal = ({
       }
 
       toast.error(
-        isEditing
-          ? 'Cập nhật vai trò phim thất bại!'
-          : 'Thêm vai trò phim thất bại!'
+        isEditing ? 'Cập nhật vai trò phim thất bại!' : 'Thêm vai trò phim thất bại!'
       );
     }
   };
@@ -97,34 +91,19 @@ const MovieRoleFormModal = ({
   return (
     <AdminModal
       title={isEditing ? 'Cập nhật vai trò phim' : 'Tạo vai trò phim'}
-      description="Danh mục vai trò được dùng để gắn người tham gia vào từng bộ phim,  đạo diễn, diễn viên hoặc biên kịch."
+      description="Danh mục vai trò được dùng để gắn người tham gia vào từng bộ phim, ví dụ đạo diễn, diễn viên hoặc biên kịch."
       onClose={closeTopModal}
       size="sm"
       placement={placement}
       actions={
         <>
-          <Button
-            type="button"
-            variant="outlined"
-            color="info"
-            onClick={handleReset}
-          >
+          <Button type="button" variant="outlined" color="info" onClick={handleReset}>
             Làm mới
           </Button>
-          <Button
-            type="button"
-            variant="outlined"
-            color="warning"
-            onClick={closeTopModal}
-          >
+          <Button type="button" variant="outlined" color="warning" onClick={closeTopModal}>
             Hủy bỏ
           </Button>
-          <Button
-            type="submit"
-            form={formId}
-            variant="contained"
-            disabled={isSubmitting}
-          >
+          <Button type="submit" form={formId} variant="contained" disabled={isSubmitting}>
             {isEditing ? 'Cập nhật' : 'Tạo mới'}
           </Button>
         </>
@@ -137,7 +116,7 @@ const MovieRoleFormModal = ({
           label="Tên vai trò"
           control={control}
           Component={TextInput}
-          placeHolder=": Đạo diễn, Diễn viên, Biên kịch"
+          placeHolder="Ví dụ: Đạo diễn, Diễn viên, Biên kịch"
           error={errors.name}
         />
 

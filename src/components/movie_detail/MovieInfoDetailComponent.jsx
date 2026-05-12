@@ -3,16 +3,8 @@ import ChatBubbleOutlineRounded from '@mui/icons-material/ChatBubbleOutlineRound
 import StarRounded from '@mui/icons-material/StarRounded';
 import VerifiedRounded from '@mui/icons-material/VerifiedRounded';
 import { IoIosArrowForward } from 'react-icons/io';
-import { Link } from 'react-router-dom';
-
-const toTitleCase = (value) =>
-  (value ?? '')
-    .toString()
-    .toLocaleLowerCase('vi-VN')
-    .replace(/(^|\s)\S/g, (char) => char.toLocaleUpperCase('vi-VN'));
 
 const MovieInfoDetailComponent = ({ movie = {} }) => {
-  const displayTitle = toTitleCase(movie?.title);
   const averageRating = Number(movie?.averageRating ?? 0);
   const reviewCount = Number(movie?.reviewCount ?? 0);
   const reviewBadgeLabel = movie?.hasReviewed
@@ -23,21 +15,13 @@ const MovieInfoDetailComponent = ({ movie = {} }) => {
 
   return (
     <div className="container pb-10">
-      <nav
-        aria-label="breadcrumb"
-        className="my-4 flex items-center gap-2 text-sm md:text-base"
-      >
-        <Link
-          to="/"
-          className="font-semibold text-gray-700 transition-colors hover:text-primary"
-        >
-          Trang chủ
-        </Link>
-        <IoIosArrowForward className="text-gray-400" />
-        <span className="font-semibold text-primary line-clamp-1">
-          {displayTitle}
+      <div className="my-4 flex items-center gap-2 md:text-[25px]">
+        <p className="font-bold">Trang chủ</p>
+        <span>
+          <IoIosArrowForward />
         </span>
-      </nav>
+        <p className="font-bold text-primary">{movie?.title}</p>
+      </div>
 
       <div className="gap-8 md:flex">
         <div className="w-[260px] flex-none rounded-2xl">
@@ -50,8 +34,8 @@ const MovieInfoDetailComponent = ({ movie = {} }) => {
         </div>
 
         <div className="flex-1">
-          <h1 className="mb-2 text-[25px] font-bold text-primary md:text-4xl">
-            {displayTitle}
+          <h1 className="mb-2 text-[25px] font-bold md:text-4xl">
+            {movie?.title}
           </h1>
 
           <div className="mb-5 flex flex-wrap gap-3">
@@ -62,7 +46,7 @@ const MovieInfoDetailComponent = ({ movie = {} }) => {
                 : 'Chưa có đánh giá'}
             </div>
 
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#d6e4f2] bg-[#f6fbff] px-4 py-2 text-sm font-semibold text-[#0a4d9c]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#d6e4f2] bg-[#f6fbff] px-4 py-2 text-sm font-semibold text-[#1e5d8c]">
               <ChatBubbleOutlineRounded sx={{ fontSize: 20 }} />
               {reviewCount} nhận xét công khai
             </div>
@@ -77,28 +61,30 @@ const MovieInfoDetailComponent = ({ movie = {} }) => {
 
           <div className="space-y-1.5">
             <div className="flex">
-              <p className="w-[200px] flex-none font-bold">Đạo diễn:</p>
+              <p className="w-[200px] flex-none font-bold uppercase">
+                đạo diễn
+              </p>
               {(movie?.directors || [])
                 .map((director) => director.nickname)
                 .join(', ')}
             </div>
 
             <div className="flex">
-              <p className="w-[200px] flex-none font-bold">
+              <p className="w-[200px] flex-none font-bold uppercase">
                 Diễn viên:
               </p>
               {(movie?.casts || []).map((cast) => cast.nickname).join(', ')}
             </div>
 
             <div className="flex">
-              <p className="w-[200px] flex-none font-bold">
+              <p className="w-[200px] flex-none font-bold uppercase">
                 Thể loại:
               </p>
               {(movie?.genres || []).map((genre) => genre.name).join(', ')}
             </div>
 
             <div className="flex">
-              <p className="w-[200px] flex-none font-bold">
+              <p className="w-[200px] flex-none font-bold uppercase">
                 Thời lượng:
               </p>
               <p>
@@ -107,14 +93,14 @@ const MovieInfoDetailComponent = ({ movie = {} }) => {
             </div>
 
             <div className="flex">
-              <p className="w-[200px] flex-none font-bold">
+              <p className="w-[200px] flex-none font-bold uppercase">
                 Ngôn ngữ:
               </p>
               <p>{movie?.language}</p>
             </div>
 
             <div className="flex">
-              <p className="w-[200px] flex-none font-bold">
+              <p className="w-[200px] flex-none font-bold uppercase">
                 Ngày khởi chiếu:
               </p>
               <p>{movie?.releaseDate}</p>

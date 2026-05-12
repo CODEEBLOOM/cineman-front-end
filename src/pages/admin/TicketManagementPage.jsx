@@ -1,4 +1,4 @@
-﻿import { findByQRCode } from '@apis/invoiceService';
+import { findByQRCode } from '@apis/invoiceService';
 import BookingSnack from '@component/admin/invoice/BookingSnack';
 import RenderInvoice from '@component/admin/invoice/RenderInvoice';
 import CustomBreadcrumb from '@component/CustomBreakcrumb';
@@ -22,7 +22,7 @@ import TheatersRounded from '@mui/icons-material/TheatersRounded';
 import AlternateEmailRounded from '@mui/icons-material/AlternateEmailRounded';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { TfiTicket } from 'react-icons/tfi';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 

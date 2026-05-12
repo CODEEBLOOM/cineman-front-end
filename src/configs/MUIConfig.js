@@ -3,7 +3,7 @@ import { createTheme } from '@mui/material';
 export const theme = {
   palette: {
     primary: {
-      main: '#0a4d9c',
+      main: '#337ab7',
     },
   },
   breakpoints: {
@@ -17,7 +17,7 @@ export const theme = {
     },
   },
   typography: {
-    fontFamily: ['Montserrat', 'sans-serif'].join(','),
+    fontFamily: ['Roboto Condensed Variable', 'sans-serif'].join(','),
     fontSize: 14,
   },
   components: {

@@ -1,4 +1,4 @@
-﻿import { findUserByEmail } from '@apis/userService';
+import { findUserByEmail } from '@apis/userService';
 import { Button, CircularProgress, TextField } from '@mui/material';
 import {
   setCustomer,
@@ -7,7 +7,7 @@ import {
 } from '@redux/slices/invoiceSlice';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 
 const InfoUserComponent = ({ showTime }) => {
   const { user } = useSelector((state) => state.user);
@@ -129,7 +129,7 @@ const InfoUserComponent = ({ showTime }) => {
     <>
       <div className={''}>
         <div className={'flex h-[35px] items-center gap-3 leading-[35px]'}>
-          <img src="ic-inforpayment.webp" alt="" className={'h-[100%]'} />
+          <img src="ic-inforpayment.png" alt="" className={'h-[100%]'} />
           <h2 className={'text-[20px] font-bold uppercase'}>
             Thông tin thanh toán
           </h2>

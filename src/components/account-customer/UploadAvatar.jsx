@@ -1,7 +1,5 @@
-import { Button } from '@mui/material';
-import { accountPrimaryButtonSx } from '@component/account-customer/accountUiStyles';
 import axios from 'axios';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
@@ -33,87 +31,133 @@ const buildInitials = (fullName) => {
 const UploadAvatar = ({ setAvatar, avatar = '' }) => {
   const { accessToken } = useSelector((state) => state.auth);
   const { user } = useSelector((state) => state.user);
+  const fileInputRef = useRef(null);
+  const [pendingFile, setPendingFile] = useState(null);
+  const [pendingPreview, setPendingPreview] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
-  const avatarSrc = useMemo(() => resolveAvatarSrc(avatar), [avatar]);
-  const initials = useMemo(() => buildInitials(user?.fullName), [user?.fullName]);
+  const persistedSrc = useMemo(() => resolveAvatarSrc(avatar), [avatar]);
+  const initials = useMemo(
+    () => buildInitials(user?.fullName),
+    [user?.fullName]
+  );
+  const displayedSrc = pendingPreview || persistedSrc;
 
-  const handleFileChange = (event) => {
+  useEffect(() => {
+    return () => {
+      if (pendingPreview) {
+        URL.revokeObjectURL(pendingPreview);
+      }
+    };
+  }, [pendingPreview]);
+
+  const handlePickFile = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = (event) => {
     const file = event.target.files?.[0];
+    event.target.value = '';
 
     if (!file) {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', file);
+    if (pendingPreview) {
+      URL.revokeObjectURL(pendingPreview);
+    }
 
-    axios
-      .post(`${import.meta.env.VITE_HOST}/files/photo/upload`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-      .then((res) => {
-        setAvatar(res.data.data);
-        toast.success('Tải ảnh đại diện thành công!');
-      })
-      .catch((error) => {
-        toast.error(
-          error?.response?.data?.message || 'Tải ảnh đại diện thất bại!'
-        );
-      })
-      .finally(() => {
-        event.target.value = '';
-      });
+    setPendingFile(file);
+    setPendingPreview(URL.createObjectURL(file));
+  };
+
+  const handleSaveAvatar = async () => {
+    if (!pendingFile) {
+      toast.info('Hãy chọn ảnh trước khi lưu.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', pendingFile);
+
+    try {
+      setIsUploading(true);
+      const res = await axios.post(
+        `${import.meta.env.VITE_HOST}/files/photo/upload`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      setAvatar(res.data.data);
+      if (pendingPreview) {
+        URL.revokeObjectURL(pendingPreview);
+      }
+      setPendingPreview('');
+      setPendingFile(null);
+      toast.success('Lưu ảnh đại diện thành công!');
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || 'Lưu ảnh đại diện thất bại!'
+      );
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      <div className="relative">
-        <div className="absolute inset-4 rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.25),transparent_70%)] blur-2xl" />
-        <div className="relative flex h-[220px] w-[220px] items-center justify-center overflow-hidden rounded-full border-[4px] border-[#d3b06b] bg-[linear-gradient(180deg,#041320_0%,#06293a_45%,#0c4056_100%)] shadow-[0_16px_38px_rgba(15,23,42,0.18)] md:h-[240px] md:w-[240px]">
-          {avatarSrc ? (
-            <img
-              src={avatarSrc}
-              alt="Ảnh đại diện"
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top,#0a3448_0%,#071a2b_42%,#05111c_100%)]">
-              <div className="text-center">
-                <p className="text-[48px] font-bold tracking-[0.12em] text-white/95 md:text-[54px]">
-                  {initials}
-                </p>
-                <p className="mt-2 text-sm uppercase tracking-[0.45em] text-cyan-200/75">
-                  Poly Cinemas
-                </p>
-              </div>
+    <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+      <div className="h-[150px] w-[120px] flex-shrink-0 overflow-hidden rounded-md border border-slate-200 bg-slate-100 shadow-sm">
+        {displayedSrc ? (
+          <img
+            src={displayedSrc}
+            alt="Ảnh đại diện"
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(180deg,#0a3448_0%,#06293a_55%,#041320_100%)]">
+            <div className="text-center">
+              <p className="text-[26px] font-bold tracking-[0.1em] text-white/95">
+                {initials}
+              </p>
+              <p className="mt-1 text-[10px] uppercase tracking-[0.3em] text-cyan-200/80">
+                Poly
+              </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      <Button
-        variant="contained"
-        color="warning"
-        component="label"
-        sx={accountPrimaryButtonSx}
-      >
-        Tải ảnh đại diện
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={handlePickFile}
+          disabled={isUploading}
+          className="rounded-md border border-slate-300 bg-white px-5 py-2 text-[13px] font-semibold uppercase tracking-wide text-slate-600 transition hover:border-slate-400 hover:text-slate-800 disabled:opacity-60"
+        >
+          Thay đổi
+        </button>
+        <button
+          type="button"
+          onClick={handleSaveAvatar}
+          disabled={!pendingFile || isUploading}
+          className="rounded-md bg-[#3fb8af] px-5 py-2 text-[13px] font-semibold uppercase tracking-wide text-white shadow-sm transition hover:bg-[#36a59c] disabled:cursor-not-allowed disabled:bg-[#a8d8d3]"
+        >
+          {isUploading ? 'Đang lưu...' : 'Lưu ảnh'}
+        </button>
         <input
+          ref={fileInputRef}
           type="file"
           hidden
-          onChange={handleFileChange}
+          onChange={handleFileSelected}
           accept="image/*"
           multiple={false}
         />
-      </Button>
-
-      <p className="max-w-[240px] text-center text-[13px] leading-5 text-slate-500">
-        Ảnh đại diện sẽ được cập nhật ngay sau khi tải lên. Nên dùng ảnh vuông,
-        rõ mặt để hiển thị đẹp hơn trong hồ sơ thành viên.
-      </p>
+      </div>
     </div>
   );
 };

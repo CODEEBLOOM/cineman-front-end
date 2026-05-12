@@ -16,6 +16,10 @@ export const resetPassword = async (data) => {
   return await axios.post('/auth/reset-password', data);
 };
 
+export const changePassword = async (data) => {
+  return await axios.put('/auth/change-pwd', data);
+};
+
 export const loginWithGoogle = async () => {
   return await axios.get('/auth/social-login', {
     params: {

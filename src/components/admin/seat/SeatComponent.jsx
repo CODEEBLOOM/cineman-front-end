@@ -1,4 +1,4 @@
-﻿import { changeStatusSeat, create, deleteSeat } from '@apis/seatService';
+import { changeStatusSeat, create, deleteSeat } from '@apis/seatService';
 import DoubleSeat from '@component/seat/DoubleSeat';
 import RegularSeat from '@component/seat/RegularSeat';
 import VIPSeat from '@component/seat/VIPSeat';
@@ -8,7 +8,7 @@ import CloseRounded from '@mui/icons-material/CloseRounded';
 import { Box, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 
 const seatAppearance = {
   REGULAR: {

@@ -70,3 +70,71 @@ export const accountFieldSx = {
     mt: 1,
   },
 };
+
+export const accountFieldFlatSx = {
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '6px',
+    backgroundColor: '#f3f4f6',
+    transition: 'background-color 0.2s ease, border-color 0.2s ease',
+    '& fieldset': {
+      borderColor: '#e5e7eb',
+    },
+    '&:hover fieldset': {
+      borderColor: '#cbd5e1',
+    },
+    '&.Mui-focused': {
+      backgroundColor: '#ffffff',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#1f5fa0',
+      borderWidth: '1px',
+    },
+    '&.Mui-disabled': {
+      backgroundColor: '#eef2f7',
+    },
+  },
+  '& .MuiInputBase-input': {
+    py: 1.4,
+    fontSize: '14px',
+    color: '#1f2937',
+    '&::placeholder': {
+      color: '#9ca3af',
+      opacity: 1,
+    },
+  },
+  '& .MuiInputBase-input.Mui-disabled': {
+    WebkitTextFillColor: '#6b7280',
+  },
+  '& .MuiFormHelperText-root': {
+    mx: 0.25,
+    mt: 0.5,
+    fontSize: '12px',
+    minHeight: '16px',
+  },
+  '& .MuiSvgIcon-root': {
+    color: '#9ca3af',
+  },
+};
+
+export const accountUpdateButtonSx = {
+  minWidth: 200,
+  borderRadius: '6px',
+  px: 5,
+  py: 1.35,
+  textTransform: 'uppercase',
+  fontSize: '0.95rem',
+  fontWeight: 700,
+  letterSpacing: '0.04em',
+  color: '#ffffff',
+  background: 'linear-gradient(180deg, #2c6cb0 0%, #1f5fa0 100%)',
+  boxShadow: '0 10px 22px rgba(31, 95, 160, 0.25)',
+  '&:hover': {
+    background: 'linear-gradient(180deg, #2f74bd 0%, #1d588f 100%)',
+    boxShadow: '0 14px 28px rgba(31, 95, 160, 0.32)',
+  },
+  '&:disabled': {
+    color: 'rgba(255, 255, 255, 0.75)',
+    background: '#9bb6d3',
+    boxShadow: 'none',
+  },
+};

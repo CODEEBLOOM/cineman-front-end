@@ -8,7 +8,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 import * as yup from 'yup';
 
 const formSchema = yup.object({
@@ -138,7 +138,7 @@ const SnackTypeFormModal = ({
           label="Tên loại đồ ăn vặt"
           control={control}
           Component={TextInput}
-          placeHolder=": Bắp rang, Nước uống, Combo"
+          placeHolder="Ví dụ: Bắp rang, Nước uống, Combo"
           error={errors.name}
         />
 

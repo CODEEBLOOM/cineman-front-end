@@ -1,4 +1,7 @@
-﻿import { createProvince, updateProvince } from '@apis/provinceService';
+import {
+  createProvince,
+  updateProvince,
+} from '@apis/provinceService';
 import AdminModal from '@component/admin/common/AdminModal';
 import FormField from '@component/FormField';
 import TextInput from '@component/form_field/TextInput';
@@ -7,7 +10,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 import * as yup from 'yup';
 
 const formSchema = yup.object({
@@ -26,11 +29,7 @@ const formSchema = yup.object({
     .max(150, 'Tên tỉnh/thành tối đa 150 ký tự!'),
 });
 
-const ProvinceFormModal = ({
-  province,
-  onSuccess,
-  placement = 'top-center',
-}) => {
+const ProvinceFormModal = ({ province, onSuccess, placement = 'top-center' }) => {
   const { closeTopModal } = useModelContext();
   const isEditing = Boolean(province?.id);
   const formId = 'province-form';
@@ -88,9 +87,7 @@ const ProvinceFormModal = ({
         return toast.error(error?.response?.data?.message);
       }
 
-      toast.error(
-        isEditing ? 'Cập nhật chi nhánh thất bại!' : 'Tạo chi nhánh thất bại!'
-      );
+      toast.error(isEditing ? 'Cập nhật chi nhánh thất bại!' : 'Tạo chi nhánh thất bại!');
     }
   };
 
@@ -103,28 +100,13 @@ const ProvinceFormModal = ({
       placement={placement}
       actions={
         <>
-          <Button
-            type="button"
-            variant="outlined"
-            color="info"
-            onClick={handleReset}
-          >
+          <Button type="button" variant="outlined" color="info" onClick={handleReset}>
             Làm mới
           </Button>
-          <Button
-            type="button"
-            variant="outlined"
-            color="warning"
-            onClick={closeTopModal}
-          >
+          <Button type="button" variant="outlined" color="warning" onClick={closeTopModal}>
             Hủy bỏ
           </Button>
-          <Button
-            type="submit"
-            form={formId}
-            variant="contained"
-            disabled={isSubmitting}
-          >
+          <Button type="submit" form={formId} variant="contained" disabled={isSubmitting}>
             {isEditing ? 'Cập nhật' : 'Tạo mới'}
           </Button>
         </>
@@ -138,7 +120,7 @@ const ProvinceFormModal = ({
           control={control}
           Component={TextInput}
           type="number"
-          placeHolder=": 48"
+          placeHolder="Ví dụ: 48"
           error={errors.code}
         />
 
@@ -148,7 +130,7 @@ const ProvinceFormModal = ({
           label="Tên tỉnh/thành"
           control={control}
           Component={TextInput}
-          placeHolder=": Đà Nẵng"
+          placeHolder="Ví dụ: Đà Nẵng"
           error={errors.name}
         />
       </form>

@@ -2,22 +2,23 @@ import { updateInfoUser } from '@apis/userService';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, InputAdornment, MenuItem, TextField } from '@mui/material';
 import {
-  accountFieldSx,
-  accountPrimaryButtonSx,
-  accountSecondaryButtonSx,
+  accountFieldFlatSx,
+  accountUpdateButtonSx,
 } from '@component/account-customer/accountUiStyles';
+import ChangePasswordPanel from '@component/account-customer/ChangePasswordPanel';
+import UploadAvatar from '@component/account-customer/UploadAvatar';
 import { updateUser } from '@redux/slices/userSlice';
 import DateFormatter from '@utils/DateFormatter';
 import { Controller, useForm } from 'react-hook-form';
 import {
   FiCalendar,
+  FiCreditCard,
   FiMail,
-  FiMapPin,
   FiPhone,
   FiUser,
   FiUsers,
 } from 'react-icons/fi';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import * as yup from 'yup';
@@ -31,7 +32,7 @@ const resolveDateValue = (dateOfBirth) => {
 };
 
 const formSchema = yup.object({
-  fullName: yup.string().trim().required('Họ và tên không được để trống!'),
+  fullName: yup.string().trim().required('Họ tên không được để trống!'),
   email: yup
     .string()
     .trim()
@@ -43,23 +44,23 @@ const formSchema = yup.object({
     .matches(/^0[0-9]{9,10}$/, 'Số điện thoại chưa đúng định dạng!')
     .required('Số điện thoại không được để trống!'),
   dateOfBirth: yup.string().required('Ngày sinh không được để trống!'),
-  gender: yup.string().required('Giới tính không được để trống!'),
-  address: yup.string().trim().required('Địa chỉ không được để trống!'),
+  gender: yup.string().nullable(),
+  idCard: yup.string().trim().nullable(),
+  province: yup.string().nullable(),
+  district: yup.string().nullable(),
+  address: yup.string().trim().nullable(),
 });
 
-const labelClass = 'mb-2 block text-[15px] font-medium text-slate-800';
-const iconClass = 'text-[18px] text-slate-500';
-
-const FieldLabel = ({ children }) => (
-  <label className={labelClass}>
-    <span className="mr-1 text-[#b45309]">*</span>
+const RequiredLabel = ({ children, required = false }) => (
+  <label className="mb-1.5 block text-[13px] font-normal text-slate-700">
+    {required ? <span className="mr-1 text-red-500">*</span> : null}
     {children}
   </label>
 );
 
-const getStartAdornment = (icon) => (
+const adornment = (icon) => (
   <InputAdornment position="start">
-    <span className={iconClass}>{icon}</span>
+    <span className="text-[16px] text-slate-400">{icon}</span>
   </InputAdornment>
 );
 
@@ -70,10 +71,12 @@ const TextFieldControl = ({
   placeholder,
   icon,
   type = 'text',
+  required = false,
+  disabled = false,
   error,
 }) => (
   <div>
-    <FieldLabel>{label}</FieldLabel>
+    <RequiredLabel required={required}>{label}</RequiredLabel>
     <Controller
       name={name}
       control={control}
@@ -81,15 +84,19 @@ const TextFieldControl = ({
         <TextField
           {...field}
           fullWidth
+          size="small"
           type={type}
           placeholder={placeholder}
+          disabled={disabled}
           error={!!error}
-          helperText={error?.message || ' '}
-          sx={accountFieldSx}
+          helperText={error?.message || ''}
+          sx={accountFieldFlatSx}
           slotProps={{
-            input: {
-              startAdornment: getStartAdornment(icon),
-            },
+            input: icon
+              ? {
+                  startAdornment: adornment(icon),
+                }
+              : undefined,
             htmlInput: type === 'date' ? { max: '9999-12-31' } : undefined,
           }}
         />
@@ -98,9 +105,18 @@ const TextFieldControl = ({
   </div>
 );
 
-const SelectFieldControl = ({ control, name, label, icon, error, options }) => (
+const SelectFieldControl = ({
+  control,
+  name,
+  label,
+  icon,
+  placeholder,
+  required = false,
+  options,
+  error,
+}) => (
   <div>
-    <FieldLabel>{label}</FieldLabel>
+    <RequiredLabel required={required}>{label}</RequiredLabel>
     <Controller
       name={name}
       control={control}
@@ -109,16 +125,36 @@ const SelectFieldControl = ({ control, name, label, icon, error, options }) => (
           {...field}
           select
           fullWidth
+          size="small"
+          displayEmpty
           error={!!error}
-          helperText={error?.message || ' '}
-          sx={accountFieldSx}
+          helperText={error?.message || ''}
+          sx={accountFieldFlatSx}
           slotProps={{
-            input: {
-              startAdornment: getStartAdornment(icon),
+            input: icon
+              ? {
+                  startAdornment: adornment(icon),
+                }
+              : undefined,
+            select: {
+              displayEmpty: true,
+              renderValue: (value) => {
+                if (!value) {
+                  return (
+                    <span className="text-[14px] text-slate-400">
+                      {placeholder}
+                    </span>
+                  );
+                }
+                const match = options.find((opt) => opt.value === value);
+                return match ? match.label : value;
+              },
             },
           }}
         >
-          <MenuItem value="">Chọn giới tính</MenuItem>
+          <MenuItem value="">
+            <span className="text-slate-400">{placeholder}</span>
+          </MenuItem>
           {options.map((option) => (
             <MenuItem key={option.value} value={option.value}>
               {option.label}
@@ -130,15 +166,15 @@ const SelectFieldControl = ({ control, name, label, icon, error, options }) => (
   </div>
 );
 
-const FormInfoUser = ({ avatar }) => {
+const FormInfoUser = ({ avatar, onAvatarChange }) => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   const {
     control,
     handleSubmit,
     setValue,
-    reset,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(formSchema),
@@ -149,6 +185,9 @@ const FormInfoUser = ({ avatar }) => {
       phoneNumber: user?.phoneNumber || '',
       gender: user?.gender || '',
       address: user?.address || '',
+      idCard: user?.idCard || '',
+      province: user?.province || '',
+      district: user?.district || '',
       dateOfBirth: resolveDateValue(user?.dateOfBirth),
       avatar: avatar || '',
     },
@@ -157,19 +196,6 @@ const FormInfoUser = ({ avatar }) => {
   useEffect(() => {
     setValue('avatar', avatar || '');
   }, [avatar, setValue]);
-
-  const handleResetForm = () => {
-    reset({
-      userId: user?.userId || '',
-      fullName: user?.fullName || '',
-      email: user?.email || '',
-      phoneNumber: user?.phoneNumber || '',
-      gender: user?.gender || '',
-      address: user?.address || '',
-      dateOfBirth: resolveDateValue(user?.dateOfBirth),
-      avatar: avatar || '',
-    });
-  };
 
   const handleSubmitForm = async (data) => {
     try {
@@ -183,30 +209,24 @@ const FormInfoUser = ({ avatar }) => {
       toast.error(
         error?.response?.data?.message || 'Cập nhật thông tin thất bại!'
       );
-      handleResetForm();
     }
   };
 
   return (
     <div>
-      <div className="mb-4 max-w-3xl">
-        <h1 className="text-[24px] font-semibold text-slate-900 md:text-[28px]">
-          Hồ sơ thành viên
-        </h1>
-        <p className="mt-1 text-[14px] leading-6 text-slate-500 md:text-[15px]">
-          Cập nhật thông tin cá nhân để đồng bộ tài khoản, lịch sử giao dịch và
-          quyền lợi tích điểm của bạn tại Poly Cinemas.
-        </p>
+      <div className="mb-6">
+        <UploadAvatar setAvatar={onAvatarChange} avatar={avatar} />
       </div>
 
-      <form onSubmit={handleSubmit(handleSubmitForm)}>
-        <div className="grid gap-x-4 gap-y-2 md:grid-cols-2">
+      <form onSubmit={handleSubmit(handleSubmitForm)} noValidate>
+        <div className="grid gap-x-6 gap-y-3 md:grid-cols-2">
           <TextFieldControl
             control={control}
             name="fullName"
-            label="Họ và tên"
-            placeholder="Lê Văn Huy"
+            label="Họ tên"
+            placeholder="Nguyễn Văn A"
             icon={<FiUser />}
+            required
             error={errors.fullName}
           />
 
@@ -214,8 +234,9 @@ const FormInfoUser = ({ avatar }) => {
             control={control}
             name="email"
             label="Email"
-            placeholder="huy@gmail.com"
             icon={<FiMail />}
+            required
+            disabled
             error={errors.email}
           />
 
@@ -223,22 +244,19 @@ const FormInfoUser = ({ avatar }) => {
             control={control}
             name="phoneNumber"
             label="Số điện thoại"
-            placeholder="0993333225"
+            placeholder="Số điện thoại"
             icon={<FiPhone />}
+            required
             error={errors.phoneNumber}
           />
 
-          <SelectFieldControl
+          <TextFieldControl
             control={control}
-            name="gender"
-            label="Giới tính"
-            icon={<FiUsers />}
-            options={[
-              { label: 'Nam', value: 'MALE' },
-              { label: 'Nữ', value: 'FEMALE' },
-              { label: 'Khác', value: 'OTHER' },
-            ]}
-            error={errors.gender}
+            name="idCard"
+            label="CMND/Hộ chiếu"
+            placeholder="CMND/Hộ chiếu"
+            icon={<FiCreditCard />}
+            error={errors.idCard}
           />
 
           <TextFieldControl
@@ -247,48 +265,84 @@ const FormInfoUser = ({ avatar }) => {
             label="Ngày sinh"
             type="date"
             icon={<FiCalendar />}
+            required
             error={errors.dateOfBirth}
           />
 
-          <TextFieldControl
+          <SelectFieldControl
             control={control}
-            name="address"
-            label="Địa chỉ"
-            placeholder="Quảng Ngãi"
-            icon={<FiMapPin />}
-            error={errors.address}
+            name="gender"
+            label="Giới tính"
+            icon={<FiUsers />}
+            placeholder="Giới tính"
+            options={[
+              { label: 'Nam', value: 'MALE' },
+              { label: 'Nữ', value: 'FEMALE' },
+              { label: 'Khác', value: 'OTHER' },
+            ]}
+            error={errors.gender}
           />
+
+          <SelectFieldControl
+            control={control}
+            name="province"
+            label="Tỉnh/Thành phố"
+            placeholder="Tỉnh/Thành phố"
+            options={[]}
+            error={errors.province}
+          />
+
+          <SelectFieldControl
+            control={control}
+            name="district"
+            label="Quận/Huyện"
+            placeholder=""
+            options={[]}
+            error={errors.district}
+          />
+
+          <div className="md:col-span-2">
+            <TextFieldControl
+              control={control}
+              name="address"
+              label="Địa chỉ"
+              placeholder="Địa chỉ"
+              error={errors.address}
+            />
+          </div>
         </div>
 
-        <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="mt-2">
           <button
             type="button"
-            className="text-left text-[15px] font-medium text-[#23486c] transition hover:text-[#17324d] hover:underline"
+            onClick={() => setIsChangePasswordOpen((prev) => !prev)}
+            className="text-[13px] font-normal text-[#1f5fa0] underline-offset-2 hover:underline"
           >
             Đổi mật khẩu?
           </button>
+        </div>
 
-          <div className="flex flex-wrap justify-end gap-3">
-            <Button
-              type="button"
-              variant="outlined"
-              onClick={handleResetForm}
-              sx={accountSecondaryButtonSx}
-            >
-              Khôi phục
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="warning"
-              disabled={isSubmitting}
-              sx={accountPrimaryButtonSx}
-            >
-              Lưu thay đổi
-            </Button>
-          </div>
+        <div className="mt-6 flex justify-center">
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={isSubmitting}
+            sx={accountUpdateButtonSx}
+          >
+            Cập nhật
+          </Button>
         </div>
       </form>
+
+      {isChangePasswordOpen ? (
+        <div className="mt-6">
+          <ChangePasswordPanel
+            email={user?.email || ''}
+            open
+            onClose={() => setIsChangePasswordOpen(false)}
+          />
+        </div>
+      ) : null}
     </div>
   );
 };

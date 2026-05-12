@@ -92,13 +92,13 @@ const MyAccount = () => {
                     onClick={() => handleChangeTab(tab.key)}
                     className={`relative pb-4 text-left text-[14px] font-semibold uppercase tracking-[0.02em] transition md:text-[15px] ${
                       isActive
-                        ? 'text-[#083d7c]'
-                        : 'text-slate-700 hover:text-[#083d7c]'
+                        ? 'text-[#23486c]'
+                        : 'text-slate-700 hover:text-[#23486c]'
                     }`}
                   >
                     {tab.label}
                     <span
-                      className={`absolute bottom-0 left-0 h-[3px] rounded-full bg-[#0a4d9c] transition-all duration-300 ${
+                      className={`absolute bottom-0 left-0 h-[3px] rounded-full bg-[#2d5f8d] transition-all duration-300 ${
                         isActive ? 'w-full opacity-100' : 'w-10 opacity-0'
                       }`}
                     />

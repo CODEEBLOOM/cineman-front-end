@@ -41,7 +41,7 @@ const PaymentMethod = ({ showTimeId }) => {
   return (
     <div>
       <div className={'my-5 flex h-[35px] items-center gap-3 leading-[35px]'}>
-        <img src="ic-payment.webp" alt="" className={'h-[100%]'} />
+        <img src="ic-payment.png" alt="" className={'h-[100%]'} />
         <h2 className={'text-[20px] font-bold uppercase'}>Thanh toán</h2>
       </div>
       <div>
@@ -63,7 +63,7 @@ const PaymentMethod = ({ showTimeId }) => {
               />
               <div className="h-[50px] w-[50px] rounded-sm border">
                 <img
-                  src="/vnpay-logo.webp"
+                  src="/vnpay-logo.png"
                   alt="vnpay logo payment"
                   className="h-full w-full object-cover"
                 />

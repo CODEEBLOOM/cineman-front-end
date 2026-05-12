@@ -1,14 +1,14 @@
 :where(.theater-picker, .theater-onboarding) {
-  --theater-blue-900: #062d5c;
-  --theater-blue-800: #083d7c;
-  --theater-blue-700: #0a4d9c;
-  --theater-blue-100: #d4e2f3;
-  --theater-blue-050: #ecf2fa;
+  --theater-blue-900: #1f5e92;
+  --theater-blue-800: #2a699f;
+  --theater-blue-700: #337ab7;
+  --theater-blue-100: #d9ebf9;
+  --theater-blue-050: #eef6fd;
   --theater-pink-400: #ff8fb4;
   --theater-pink-200: #ffd5e3;
-  --theater-text: #0a4d9c;
+  --theater-text: #184a73;
   --theater-muted: #5f7f9e;
-  --theater-border: rgba(10, 77, 156, 0.24);
+  --theater-border: rgba(51, 122, 183, 0.24);
 }
 
 .theater-picker {
@@ -38,12 +38,12 @@
     ),
     linear-gradient(
       180deg,
-      rgba(10, 77, 156, 0.08),
+      rgba(51, 122, 183, 0.08),
       rgba(244, 143, 177, 0.04)
     );
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.82),
-    0 10px 24px rgba(10, 77, 156, 0.12);
+    0 10px 24px rgba(51, 122, 183, 0.12);
   color: var(--theater-text);
   text-align: left;
   transition:
@@ -55,17 +55,17 @@
 
 .theater-picker__trigger:hover {
   transform: translateY(-1px);
-  border-color: rgba(10, 77, 156, 0.4);
+  border-color: rgba(51, 122, 183, 0.4);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 14px 28px rgba(10, 77, 156, 0.16);
+    0 14px 28px rgba(51, 122, 183, 0.16);
 }
 
 .theater-picker__trigger.is-open {
   box-shadow:
-    0 0 0 1px rgba(10, 77, 156, 0.16),
+    0 0 0 1px rgba(51, 122, 183, 0.16),
     0 0 0 2px rgba(255, 143, 180, 0.32),
-    0 16px 30px rgba(10, 77, 156, 0.18);
+    0 16px 30px rgba(31, 94, 146, 0.18);
 }
 
 .theater-picker__trigger-copy {
@@ -120,11 +120,11 @@
   z-index: 60;
   width: 100%;
   overflow: hidden;
-  border: 1px solid rgba(10, 77, 156, 0.18);
+  border: 1px solid rgba(51, 122, 183, 0.18);
   border-radius: 1rem;
   background: linear-gradient(180deg, #ffffff 0%, var(--theater-blue-050) 100%);
   box-shadow:
-    0 26px 54px rgba(10, 77, 156, 0.2),
+    0 26px 54px rgba(28, 88, 138, 0.2),
     0 8px 18px rgba(255, 143, 180, 0.12);
   animation: theater-picker-panel-in 180ms ease;
 }
@@ -139,7 +139,7 @@
       rgba(255, 143, 180, 0.16),
       transparent 34%
     ),
-    radial-gradient(circle at top left, rgba(10, 77, 156, 0.12), transparent 36%);
+    radial-gradient(circle at top left, rgba(51, 122, 183, 0.12), transparent 36%);
   pointer-events: none;
 }
 
@@ -162,7 +162,7 @@
   border: 2px solid transparent;
   border-radius: 999px;
   background-clip: padding-box;
-  background-color: rgba(10, 77, 156, 0.34);
+  background-color: rgba(51, 122, 183, 0.34);
 }
 
 .theater-picker__group + .theater-picker__group {
@@ -261,7 +261,7 @@
 .theater-onboarding__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(6, 45, 92, 0.56);
+  background: rgba(17, 50, 80, 0.56);
   backdrop-filter: blur(8px);
 }
 
@@ -270,15 +270,15 @@
   width: min(100%, 56rem);
   max-height: min(88vh, 46rem);
   overflow: hidden;
-  border: 1px solid rgba(10, 77, 156, 0.18);
+  border: 1px solid rgba(51, 122, 183, 0.18);
   border-radius: 1rem;
   background: linear-gradient(180deg, #ffffff 0%, var(--theater-blue-050) 100%);
-  box-shadow: 0 28px 80px rgba(6, 45, 92, 0.28);
+  box-shadow: 0 28px 80px rgba(20, 67, 107, 0.28);
 }
 
 .theater-onboarding__header {
   padding: 1.55rem 1.7rem 1.1rem;
-  border-bottom: 1px solid rgba(10, 77, 156, 0.14);
+  border-bottom: 1px solid rgba(51, 122, 183, 0.14);
 }
 
 .theater-onboarding__eyebrow {
@@ -317,7 +317,7 @@
 }
 
 .theater-onboarding__column--theaters {
-  border-left: 1px solid rgba(10, 77, 156, 0.12);
+  border-left: 1px solid rgba(51, 122, 183, 0.12);
   background: rgba(255, 255, 255, 0.4);
 }
 
@@ -339,7 +339,7 @@
 .theater-onboarding__province-item,
 .theater-onboarding__theater-item {
   width: 100%;
-  border: 1px solid rgba(10, 77, 156, 0.14);
+  border: 1px solid rgba(51, 122, 183, 0.14);
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.82);
   color: var(--theater-text);
@@ -365,8 +365,8 @@
 .theater-onboarding__theater-item.is-current,
 .theater-onboarding__province-item:hover,
 .theater-onboarding__theater-item:hover {
-  border-color: rgba(10, 77, 156, 0.34);
-  box-shadow: 0 12px 24px rgba(10, 77, 156, 0.12);
+  border-color: rgba(51, 122, 183, 0.34);
+  box-shadow: 0 12px 24px rgba(31, 94, 146, 0.12);
   transform: translateY(-1px);
 }
 
@@ -412,11 +412,11 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 1rem 1.35rem 1.4rem;
-  border-top: 1px solid rgba(10, 77, 156, 0.14);
+  border-top: 1px solid rgba(51, 122, 183, 0.14);
 }
 
 .theater-onboarding__secondary {
-  border: 1px solid rgba(10, 77, 156, 0.22);
+  border: 1px solid rgba(51, 122, 183, 0.22);
   border-radius: 999px;
   padding: 0.78rem 1.25rem;
   background: linear-gradient(180deg, #ffffff, var(--theater-blue-050));
@@ -431,7 +431,7 @@
 .theater-onboarding__secondary:hover {
   transform: translateY(-1px);
   border-color: rgba(255, 143, 180, 0.42);
-  box-shadow: 0 12px 20px rgba(10, 77, 156, 0.12);
+  box-shadow: 0 12px 20px rgba(31, 94, 146, 0.12);
 }
 
 @keyframes theater-picker-panel-in {
@@ -540,7 +540,7 @@
 
   .theater-onboarding__column--theaters {
     border-left: none;
-    border-top: 1px solid rgba(10, 77, 156, 0.12);
+    border-top: 1px solid rgba(51, 122, 183, 0.12);
   }
 
   .theater-onboarding__province-list,

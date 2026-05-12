@@ -9,7 +9,7 @@ import ImageComponent from '@component/ImageComponent';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { MdOutlineDeleteSweep } from 'react-icons/md';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 
 const defaultPaginationModel = {
   page: 0,

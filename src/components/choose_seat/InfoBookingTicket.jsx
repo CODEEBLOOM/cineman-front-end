@@ -1,4 +1,4 @@
-﻿import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
+import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
 import PaymentsRoundedIcon from '@mui/icons-material/PaymentsRounded';
@@ -26,7 +26,7 @@ import { clearSelectedSeats } from '@redux/slices/ticketSlice';
 import { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 import { IoClose } from 'react-icons/io5';
 
 const currencyFormatter = new Intl.NumberFormat('vi-VN');
@@ -34,11 +34,11 @@ const currencyFormatter = new Intl.NumberFormat('vi-VN');
 const primaryButtonSx = {
   minHeight: 50,
   borderRadius: '16px',
-  backgroundColor: '#0a4d9c',
+  backgroundColor: '#2d5f8d',
   fontWeight: 800,
   boxShadow: 'none',
   '&:hover': {
-    backgroundColor: '#083d7c',
+    backgroundColor: '#23486c',
     boxShadow: 'none',
   },
 };
@@ -46,12 +46,12 @@ const primaryButtonSx = {
 const secondaryButtonSx = {
   minHeight: 50,
   borderRadius: '16px',
-  borderColor: 'rgba(10,77,156,0.24)',
-  color: '#083d7c',
+  borderColor: 'rgba(45,95,141,0.24)',
+  color: '#23486c',
   fontWeight: 800,
   '&:hover': {
-    borderColor: 'rgba(10,77,156,0.4)',
-    backgroundColor: 'rgba(10,77,156,0.04)',
+    borderColor: 'rgba(45,95,141,0.4)',
+    backgroundColor: 'rgba(45,95,141,0.04)',
   },
 };
 
@@ -312,8 +312,8 @@ const InfoBookingTicket = ({ showTime }) => {
                 label={showTime?.startTime || '--:--'}
                 sx={{
                   borderRadius: '999px',
-                  bgcolor: 'rgba(10,77,156,0.08)',
-                  color: '#083d7c',
+                  bgcolor: 'rgba(45,95,141,0.08)',
+                  color: '#23486c',
                   fontWeight: 800,
                 }}
               />
@@ -333,7 +333,7 @@ const InfoBookingTicket = ({ showTime }) => {
               </Typography>
               <Typography
                 variant="subtitle1"
-                sx={{ mt: 1, fontWeight: 700, color: '#083d7c' }}
+                sx={{ mt: 1, fontWeight: 700, color: '#23486c' }}
               >
                 {showTime?.cinemaTheater?.name || 'Đang cập nhật phòng chiếu'}
               </Typography>
@@ -352,7 +352,7 @@ const InfoBookingTicket = ({ showTime }) => {
               key={item.label}
               className="flex items-start gap-3 rounded-[18px] border border-slate-200 bg-slate-50 px-3 py-3"
             >
-              <div className="rounded-2xl bg-[rgba(10,77,156,0.08)] p-2 text-[#0a4d9c]">
+              <div className="rounded-2xl bg-[rgba(45,95,141,0.08)] p-2 text-[#2d5f8d]">
                 {item.icon}
               </div>
               <div className="min-w-0 flex-1">
@@ -385,7 +385,7 @@ const InfoBookingTicket = ({ showTime }) => {
               <Typography
                 variant="overline"
                 sx={{
-                  color: '#083d7c',
+                  color: '#23486c',
                   fontWeight: 800,
                   letterSpacing: '0.16em',
                 }}
@@ -402,18 +402,18 @@ const InfoBookingTicket = ({ showTime }) => {
               </Typography>
             </div>
 
-            <div className="rounded-full bg-white px-3 py-1 text-sm font-bold text-[#083d7c] border border-slate-200">
+            <div className="rounded-full bg-white px-3 py-1 text-sm font-bold text-[#23486c] border border-slate-200">
               {selectedSeats.length} ghế
             </div>
           </div>
 
           <div className="mt-4 flex items-center gap-3 rounded-[16px] border border-slate-200 bg-white px-3 py-3">
-            <PaymentsRoundedIcon sx={{ color: '#0a4d9c' }} fontSize="small" />
+            <PaymentsRoundedIcon sx={{ color: '#2d5f8d' }} fontSize="small" />
             <div>
               <Typography variant="caption" sx={{ color: '#64748b' }}>
                 Tạm tính
               </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 900, color: '#083d7c' }}>
+              <Typography variant="h6" sx={{ fontWeight: 900, color: '#23486c' }}>
                 {currencyFormatter.format(totalMoneyTicket)} đ
               </Typography>
             </div>

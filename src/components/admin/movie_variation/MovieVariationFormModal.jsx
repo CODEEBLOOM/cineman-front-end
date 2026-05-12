@@ -10,7 +10,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 import * as yup from 'yup';
 
 const formSchema = yup.object({
@@ -21,11 +21,7 @@ const formSchema = yup.object({
     .max(60, 'Tên biến thể phải nhỏ hơn hoặc bằng 60 ký tự!'),
 });
 
-const MovieVariationFormModal = ({
-  movieVariation,
-  onSuccess,
-  placement = 'top-center',
-}) => {
+const MovieVariationFormModal = ({ movieVariation, onSuccess, placement = 'top-center' }) => {
   const { closeTopModal } = useModelContext();
   const isEditing = Boolean(movieVariation?.id);
   const formId = 'movie-variation-form';
@@ -87,37 +83,20 @@ const MovieVariationFormModal = ({
 
   return (
     <AdminModal
-      title={
-        isEditing ? 'Cập nhật biến thể suất chiếu' : 'Tạo biến thể suất chiếu'
-      }
+      title={isEditing ? 'Cập nhật biến thể suất chiếu' : 'Tạo biến thể suất chiếu'}
       description="Dùng màn hình này để quản lý các định dạng như 2D, 3D, IMAX, phụ đề hoặc lồng tiếng."
       onClose={closeTopModal}
       size="sm"
       placement={placement}
       actions={
         <>
-          <Button
-            type="button"
-            variant="outlined"
-            color="info"
-            onClick={handleReset}
-          >
+          <Button type="button" variant="outlined" color="info" onClick={handleReset}>
             Làm mới
           </Button>
-          <Button
-            type="button"
-            variant="outlined"
-            color="warning"
-            onClick={closeTopModal}
-          >
+          <Button type="button" variant="outlined" color="warning" onClick={closeTopModal}>
             Hủy bỏ
           </Button>
-          <Button
-            type="submit"
-            form={formId}
-            variant="contained"
-            disabled={isSubmitting}
-          >
+          <Button type="submit" form={formId} variant="contained" disabled={isSubmitting}>
             {isEditing ? 'Cập nhật' : 'Tạo mới'}
           </Button>
         </>
@@ -130,7 +109,7 @@ const MovieVariationFormModal = ({
           label="Tên biến thể"
           control={control}
           Component={TextInput}
-          placeHolder=": 2D Phụ đề, IMAX, Lồng tiếng"
+          placeHolder="Ví dụ: 2D Phụ đề, IMAX, Lồng tiếng"
           error={errors.name}
         />
       </form>

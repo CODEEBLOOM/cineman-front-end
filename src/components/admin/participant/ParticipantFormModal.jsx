@@ -11,7 +11,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 import * as yup from 'yup';
 
 const formSchema = yup.object({
@@ -294,7 +294,7 @@ const ParticipantFormModal = ({
             label="Quốc tịch"
             control={control}
             Component={TextInput}
-            placeHolder=": Việt Nam, Hàn Quốc, Mỹ"
+            placeHolder="Ví dụ: Việt Nam, Hàn Quốc, Mỹ"
             error={errors.nationality}
           />
         </div>

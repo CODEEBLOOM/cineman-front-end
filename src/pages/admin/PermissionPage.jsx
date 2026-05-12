@@ -1,4 +1,4 @@
-﻿import {
+import {
   deletePermission,
   extractPermissionDetail,
   extractPermissionList,
@@ -22,7 +22,7 @@ import {
   MdOutlineRefresh,
   MdSecurity,
 } from 'react-icons/md';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 
 const defaultFilters = {
   category: '',
@@ -76,9 +76,7 @@ const PermissionPage = () => {
   });
   const [draftFilters, setDraftFilters] = useState(defaultFilters);
   const [appliedFilters, setAppliedFilters] = useState(defaultFilters);
-  const [paginationModel, setPaginationModel] = useState(
-    defaultPaginationModel
-  );
+  const [paginationModel, setPaginationModel] = useState(defaultPaginationModel);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isFallbackMode, setIsFallbackMode] = useState(false);
@@ -86,8 +84,7 @@ const PermissionPage = () => {
   const loadFilterOptions = useCallback(async () => {
     try {
       const response = await findAllPermissionsAdmin();
-      const allPermissions =
-        extractPermissionList(response).map(normalizePermission);
+      const allPermissions = extractPermissionList(response).map(normalizePermission);
       const categories = Array.from(
         new Set(
           allPermissions
@@ -233,7 +230,9 @@ const PermissionPage = () => {
     async (permission = null) => {
       if (!permission?.id) {
         openPopup(
-          <PermissionFormModal onSuccess={() => refreshPermissionData()} />
+          <PermissionFormModal
+            onSuccess={() => refreshPermissionData()}
+          />
         );
         return;
       }
@@ -248,9 +247,7 @@ const PermissionPage = () => {
           permissionDetail = normalizePermission(extractedPermission);
         }
       } catch {
-        toast.warning(
-          'Không thể tải chi tiết quyền hạn, đang dùng dữ liệu hiện có.'
-        );
+        toast.warning('Không thể tải chi tiết quyền hạn, đang dùng dữ liệu hiện có.');
       }
 
       openPopup(
@@ -318,8 +315,7 @@ const PermissionPage = () => {
     const methodsOnPage = new Set(
       permissions.map((permission) => permission.method).filter(Boolean)
     ).size;
-    const activeFilterCount =
-      Object.values(appliedFilters).filter(Boolean).length;
+    const activeFilterCount = Object.values(appliedFilters).filter(Boolean).length;
 
     return {
       total: totalCount,
@@ -358,13 +354,10 @@ const PermissionPage = () => {
         width: 130,
         renderCell: (params) => {
           const method = params.value || 'N/A';
-          const className =
-            methodColorMap[params.value] ?? 'bg-slate-100 text-slate-700';
+          const className = methodColorMap[params.value] ?? 'bg-slate-100 text-slate-700';
 
           return (
-            <span
-              className={`rounded-full px-3 py-1 text-xs font-bold ${className}`}
-            >
+            <span className={`rounded-full px-3 py-1 text-xs font-bold ${className}`}>
               {method}
             </span>
           );
@@ -469,8 +462,7 @@ const PermissionPage = () => {
             <div>
               <h2 className="text-lg font-semibold">Danh sách quyền hạn</h2>
               <p className="mt-1 text-sm text-slate-500">
-                Theo dõi permission theo nhóm, method và endpoint để phục vụ
-                phân quyền quản trị.
+                Theo dõi permission theo nhóm, method và endpoint để phục vụ phân quyền quản trị.
               </p>
             </div>
 
@@ -494,9 +486,8 @@ const PermissionPage = () => {
 
           {isFallbackMode ? (
             <Alert severity="info">
-              Backend local chưa trả dữ liệu phân trang ổn định cho `GET
-              /admin/permissions`, trang đang fallback về
-              `/admin/permissions/all` rồi lọc và phân trang phía client.
+              Backend local chưa trả dữ liệu phân trang ổn định cho `GET /admin/permissions`, trang
+              đang fallback về `/admin/permissions/all` rồi lọc và phân trang phía client.
             </Alert>
           ) : null}
 
@@ -544,7 +535,7 @@ const PermissionPage = () => {
                   name="title"
                   value={draftFilters.title}
                   onChange={handleFilterFieldChange}
-                  placeholder=": Xem danh sách quyền hạn"
+                  placeholder="Ví dụ: Xem danh sách quyền hạn"
                 />
 
                 <TextField
@@ -553,7 +544,7 @@ const PermissionPage = () => {
                   name="url"
                   value={draftFilters.url}
                   onChange={handleFilterFieldChange}
-                  placeholder=": /admin/permissions"
+                  placeholder="Ví dụ: /admin/permissions"
                 />
 
                 <TextField

@@ -1,4 +1,4 @@
-﻿import { findAllSnacks } from '@apis/snackService';
+import { findAllSnacks } from '@apis/snackService';
 import { getAllSnackType } from '@apis/snackType';
 import DataGridTable from '@component/DataGridTable';
 import ImageComponent from '@component/ImageComponent';
@@ -7,7 +7,7 @@ import { setSnack } from '@redux/slices/snackSlice';
 import { useEffect, useMemo, useState } from 'react';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 
 const DEFAULT_PAGINATION_MODEL = {
   page: 0,
@@ -299,7 +299,7 @@ const ComboComponent = () => {
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 pb-4">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50">
-            <img src="ic-combo.webp" alt="" className="h-7 w-7 object-contain" />
+            <img src="ic-combo.png" alt="" className="h-7 w-7 object-contain" />
           </div>
           <div>
             <h2 className="text-[20px] font-bold uppercase text-slate-800">

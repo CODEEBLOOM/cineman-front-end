@@ -1,4 +1,4 @@
-﻿import { findByMovieTheaterId } from '@apis/cinemaTheaterService';
+import { findByMovieTheaterId } from '@apis/cinemaTheaterService';
 import { findAllMovieTheater } from '@apis/movieTheaterService';
 import {
   deleteShowTime,
@@ -16,7 +16,7 @@ import TheaterComedyRounded from '@mui/icons-material/TheaterComedyRounded';
 import { Button, MenuItem, TextField } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 import PopupShowTime from './PopupShowTime';
 import {
   buildTimelineSlots,

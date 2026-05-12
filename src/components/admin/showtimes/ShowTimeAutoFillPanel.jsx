@@ -1,4 +1,4 @@
-﻿import { findAllMovieTheater } from '@apis/movieTheaterService';
+import { findAllMovieTheater } from '@apis/movieTheaterService';
 import {
   extractMovieTheaterMappingList,
   findAllMovieTheaterMappingsByMovieTheaterId,
@@ -24,7 +24,7 @@ import { Button } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 import * as yup from 'yup';
 import { extractCollection, getTodayValue } from './showTimeUtils';
 

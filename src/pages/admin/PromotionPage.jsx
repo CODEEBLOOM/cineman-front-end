@@ -1,4 +1,4 @@
-﻿import {
+import {
   applyPromotion,
   deletePromotion,
   extractPromotionList,
@@ -18,7 +18,7 @@ import {
   MdOutlineDeleteSweep,
   MdOutlineDiscount,
 } from 'react-icons/md';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 
 const STATUS_META = {
   ALL: {

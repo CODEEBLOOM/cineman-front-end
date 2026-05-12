@@ -1,1 +1,0 @@
-import{j as r}from"./index-fawYB1tI.js";import{B as e}from"./Box-CZp0gG0s.js";const i=({children:t,value:o,index:a,...s})=>r.jsx("div",{role:"tabpanel",hidden:o!==a,id:`simple-tabpanel-${a}`,"aria-labelledby":`simple-tab-${a}`,...s,children:o===a&&r.jsx(e,{sx:{py:3,maxWidth:"100%",overflow:"auto"},children:t})});export{i as T};

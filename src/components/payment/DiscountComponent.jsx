@@ -1,9 +1,9 @@
-﻿import { Button, TextField } from '@mui/material';
+import { Button, TextField } from '@mui/material';
 import CustomButton from '@component/CustomButton.jsx';
 import Accordion from '@component/Accordion.jsx';
 import { useRef } from 'react';
 import { applyVoucher } from '@apis/promotionService';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { setVoucher, updateInvoice } from '@redux/slices/invoiceSlice';
 import { currencyFormatter } from '@libs/Utils';
@@ -81,7 +81,7 @@ const DiscountComponent = ({ showTime }) => {
   return (
     <>
       <div className={'my-5 flex h-[35px] items-center gap-3 leading-[35px]'}>
-        <img src="ic-payment.webp" alt="" className={'h-[100%]'} />
+        <img src="ic-payment.png" alt="" className={'h-[100%]'} />
         <h2 className={'text-[20px] font-bold uppercase'}>Giảm giá</h2>
       </div>
       <Accordion

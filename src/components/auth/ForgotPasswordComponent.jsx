@@ -14,7 +14,7 @@ import { alpha } from '@mui/material/styles';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
 import { Link as RouterLink } from 'react-router-dom';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 import * as yup from 'yup';
 
 const authFieldSx = {
@@ -54,9 +54,9 @@ const formSchema = yup.object({
     .string()
     .matches(
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      'Email chưa �úng ��9nh dạng!'
+      'Email chưa đúng định dạng!'
     )
-    .required('Email không �ược �Ồ tr�ng!'),
+    .required('Email không được để trống!'),
 });
 
 const ForgotPasswordComponent = () => {
@@ -80,13 +80,13 @@ const ForgotPasswordComponent = () => {
 
       toast.success(
         response?.message ||
-          'Nếu email hợp l�!, h�! th�ng �ã gửi liên kết �ặt lại mật khẩu.'
+          'Nếu email hợp lệ, hệ thống đã gửi liên kết đặt lại mật khẩu.'
       );
       reset();
     } catch (error) {
       toast.error(
         error?.response?.data?.message ||
-          'Không thỒ gửi yêu cầu quên mật khẩu lúc này.'
+          'Không thể gửi yêu cầu quên mật khẩu lúc này.'
       );
     }
   };
@@ -153,7 +153,7 @@ const ForgotPasswordComponent = () => {
           ) : (
             <MarkEmailReadRounded sx={{ mr: 1.2 }} />
           )}
-          Gửi liên kết �ặt lại mật khẩu
+          Gửi liên kết đặt lại mật khẩu
         </Button>
 
         <Button
@@ -169,7 +169,7 @@ const ForgotPasswordComponent = () => {
             justifyContent: 'flex-start',
           }}
         >
-          Quay lại �Ēng nhập
+          Quay lại đăng nhập
         </Button>
 
         {isSubmitSuccessful ? (
@@ -180,7 +180,7 @@ const ForgotPasswordComponent = () => {
               color: 'rgba(214, 228, 245, 0.72)',
             }}
           >
-            Nếu không thấy email, bạn hãy kiỒm tra thư mục spam hoặc thử gửi lại
+            Nếu không thấy email, bạn hãy kiểm tra thư mục spam hoặc thử gửi lại
             sau ít phút.
           </Typography>
         ) : null}

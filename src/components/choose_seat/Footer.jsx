@@ -30,7 +30,7 @@ const Footer = ({ isPayment = false, totalMoneyTicket }) => {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
               Tổng tiền
             </p>
-            <p className="text-lg font-extrabold text-[#23486c]">
+            <p className="text-lg font-extrabold text-[#083d7c]">
               {currencyFormatter.format(totalMoneyTicket || 0)} đ
             </p>
           </div>
@@ -51,7 +51,7 @@ const Footer = ({ isPayment = false, totalMoneyTicket }) => {
         </p>
         <Timer
           deadlineTime={10}
-          className="text-[1.35rem] font-extrabold text-[#23486c]"
+          className="text-[1.35rem] font-extrabold text-[#083d7c]"
         />
       </div>
     </div>

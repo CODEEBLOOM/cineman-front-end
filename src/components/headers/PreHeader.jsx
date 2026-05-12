@@ -1,10 +1,10 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { Avatar, IconButton, Menu, MenuItem } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { clearInfoUser, fetchInfoUser } from '@redux/slices/userSlice.js';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearInfoAuth, fetchLogout } from '@redux/slices/authSlice.js';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { clearInvoice } from '@redux/slices/invoiceSlice';
 import { clearSnack } from '@redux/slices/snackSlice';
 import { clearSelectedSeats } from '@redux/slices/ticketSlice';
@@ -104,7 +104,7 @@ const PreHeader = () => {
   );
 
   return (
-    <div className="bg-black">
+    <div className="bg-primary">
       <div className="container flex items-center justify-end text-center text-white">
         {isAuthentication && user?.userId ? (
           <>
@@ -137,14 +137,14 @@ const PreHeader = () => {
             </li>
           </ul>
         )}
-        <div className="h-6 w-6">
-          <a href="#">
-            <img
-              src={`https://toppng.com/uploads/preview/vietnam-large-flag-11547887920ptaqfn7euo.png`}
-              alt=""
-              className="w-full object-cover"
-            />
-          </a>
+        <div
+          className="ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-sm"
+          aria-label="Tiếng Việt"
+          title="Tiếng Việt"
+        >
+          <span role="img" aria-hidden="true">
+            🇻🇳
+          </span>
         </div>
       </div>
     </div>

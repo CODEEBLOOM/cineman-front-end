@@ -1,4 +1,4 @@
-import { findByMovieTheaterId } from '@apis/cinemaTheaterService';
+﻿import { findByMovieTheaterId } from '@apis/cinemaTheaterService';
 import {
   extractMovieTheaterMappingList,
   findAllMovieTheaterMappingsByMovieTheaterId,
@@ -24,7 +24,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import * as yup from 'yup';
 import {
   extractCollection,

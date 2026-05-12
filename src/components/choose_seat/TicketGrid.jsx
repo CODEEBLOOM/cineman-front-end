@@ -1,40 +1,45 @@
-import { getAllTicketByShowTime } from '@apis/ticketService';
+﻿import { getAllTicketByShowTime } from '@apis/ticketService';
 import { Client } from '@stomp/stompjs';
 import { setSelectedSeats } from '@redux/slices/ticketSlice';
 import { resolveRealtimeBrokerUrl } from '@utils/promotionRealtime';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import SeatMapRenderer from './SeatMapRenderer';
 
 const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
   const dispatch = useDispatch();
   const { selectedSeats } = useSelector((state) => state.ticket);
+  const { accessToken } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.user);
 
+  const clientRef = useRef(null);
   const selectedSeatsRef = useRef([]);
+  const hasRealtimeFailureRef = useRef(false);
+  const hasSeatInteractionNoticeRef = useRef(false);
+  const [ticketMap, setTicketMap] = useState(new Map());
+  const [isRealtimeAvailable, setIsRealtimeAvailable] = useState(true);
 
   useEffect(() => {
     selectedSeatsRef.current = selectedSeats;
   }, [selectedSeats]);
 
-  const { accessToken } = useSelector((state) => state.auth);
-  const { user } = useSelector((state) => state.user);
-  const [ticketMap, setTicketMap] = useState(new Map());
-
   const message = {
     type: 'TICKET_CREATE',
     content: {
-      showTimeId: showTime.id,
+      showTimeId: showTime?.id,
       ticketType: 'ADULT',
       seatId: null,
-      invoiceId: invoiceId,
+      invoiceId,
     },
     ticketId: null,
-    userId: user.userId,
+    userId: user?.userId,
   };
 
   useEffect(() => {
-    if (!showTime.id) return;
+    if (!showTime?.id || !user?.userId) {
+      return;
+    }
 
     getAllTicketByShowTime({ userId: user.userId, showTimeId: showTime.id })
       .then((res) => {
@@ -57,29 +62,41 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
         setTicketMap(newMap);
         dispatch(setSelectedSeats(seatSelected));
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((error) => {
+        console.error('Không thể tải sơ đồ ghế từ API:', error);
       });
-  }, [showTime.id, user.userId, dispatch]);
+  }, [dispatch, showTime?.id, user?.userId]);
 
-  const clientRef = useRef();
   useEffect(() => {
-    if (!showTime.id) return;
+    if (!showTime?.id || !user?.userId || !accessToken) {
+      setIsRealtimeAvailable(false);
+
+      if (clientRef.current) {
+        clientRef.current.deactivate();
+        clientRef.current = null;
+      }
+
+      return undefined;
+    }
+
+    hasRealtimeFailureRef.current = false;
+    hasSeatInteractionNoticeRef.current = false;
+    setIsRealtimeAvailable(true);
 
     const client = new Client({
       brokerURL: resolveRealtimeBrokerUrl(),
-      connectHeaders: accessToken
-        ? {
-            Authorization: `Bearer ${accessToken}`,
-          }
-        : undefined,
+      connectHeaders: {
+        Authorization: `Bearer ${accessToken}`,
+      },
       reconnectDelay: 0,
+      debug: () => {},
+      onConnect: () => {
+        hasRealtimeFailureRef.current = false;
+        hasSeatInteractionNoticeRef.current = false;
+        setIsRealtimeAvailable(true);
 
-      onConnect: (frame) => {
-        console.log('Connected:', frame);
-
-        client.subscribe('/user/queue/errors', (message) => {
-          const error = JSON.parse(message.body);
+        client.subscribe('/user/queue/errors', (messageFrame) => {
+          const error = JSON.parse(messageFrame.body);
           toast.error(error.message, { position: 'bottom-left' });
         });
 
@@ -99,9 +116,9 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
                 if (updatedTicket) {
                   updatedTicket.status = 'EMPTY';
                   updatedTicket.id = null;
+                  newMap.set(seatKey, updatedTicket);
                 }
 
-                newMap.set(seatKey, updatedTicket);
                 return newMap;
               });
 
@@ -146,14 +163,34 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
           }
         );
       },
-
       onStompError: (error) => {
-        alert('STOMP Error');
-        console.error('STOMP error:', error);
+        if (hasRealtimeFailureRef.current) {
+          return;
+        }
+
+        hasRealtimeFailureRef.current = true;
+        setIsRealtimeAvailable(false);
+        console.error('TicketGrid STOMP error:', error);
+        toast.warning(
+          'Realtime chọn ghế đang tạm gián đoạn. Vui lòng tải lại trang hoặc kiểm tra backend WebSocket.'
+        );
+        client.deactivate();
       },
       onWebSocketError: (error) => {
-        alert('WebSocket Error');
-        console.error('WebSocket error:', error);
+        if (hasRealtimeFailureRef.current) {
+          return;
+        }
+
+        hasRealtimeFailureRef.current = true;
+        setIsRealtimeAvailable(false);
+        console.warn(
+          'TicketGrid realtime connection is unavailable. Seat actions were disabled.',
+          error
+        );
+        toast.warning(
+          'Không kết nối được WebSocket chọn ghế. Tính năng giữ ghế tạm thời bị tắt.'
+        );
+        client.deactivate();
         clientRef.current = null;
       },
     });
@@ -162,13 +199,22 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
     client.activate();
 
     return () => {
-      if (client.connected) {
-        clientRef.current.deactivate();
-      }
+      client.deactivate();
+      clientRef.current = null;
     };
-  }, [accessToken, showTime.id]);
+  }, [accessToken, dispatch, setTotalMoneyTicket, showTime?.id, user?.userId]);
 
   const sendMessageChooseSeat = (data) => {
+    if (!clientRef.current?.connected || !isRealtimeAvailable) {
+      if (!hasSeatInteractionNoticeRef.current) {
+        hasSeatInteractionNoticeRef.current = true;
+        toast.info(
+          'Realtime chọn ghế chưa sẵn sàng. Hãy kiểm tra kết nối WebSocket của backend rồi thử lại.'
+        );
+      }
+      return;
+    }
+
     if (selectedSeats.length > 0) {
       const seatFound = selectedSeats.find(
         (ticketSelected) => ticketSelected.ticketId === data.ticketId
@@ -176,24 +222,33 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
 
       if (seatFound) {
         clientRef.current.publish({
-          destination: `/cineman/app/seat/cancel-seat`,
+          destination: '/cineman/app/seat/cancel-seat',
           body: JSON.stringify(data),
         });
         return;
       }
     }
 
-    if (!clientRef.current?.connected) return;
-    if (selectedSeats.length + 1 > 8) return alert('bạn chỉ có thể đặt 8 ghế');
+    if (selectedSeats.length + 1 > 8) {
+      toast.info('Bạn chỉ có thể đặt tối đa 8 ghế trong một lần.');
+      return;
+    }
 
     clientRef.current.publish({
-      destination: `/cineman/app/seat/choose-seat`,
+      destination: '/cineman/app/seat/choose-seat',
       body: JSON.stringify(data),
     });
   };
 
   return (
     <div className="mx-auto w-full overflow-x-auto">
+      {!isRealtimeAvailable ? (
+        <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Không kết nối được realtime chọn ghế. Hệ thống vẫn hiển thị sơ đồ ghế, nhưng thao tác giữ
+          ghế sẽ tạm dừng cho đến khi WebSocket backend hoạt động lại.
+        </div>
+      ) : null}
+
       <div
         className="mx-auto grid min-w-max items-center gap-[10px] px-1 pb-1"
         style={{
@@ -201,14 +256,14 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
           width: 'fit-content',
         }}
       >
-        {showTime.id && (
+        {showTime?.id ? (
           <SeatMapRenderer
             ticketMap={ticketMap}
             showTime={showTime}
             message={message}
             sendMessageChooseSeat={sendMessageChooseSeat}
           />
-        )}
+        ) : null}
       </div>
     </div>
   );

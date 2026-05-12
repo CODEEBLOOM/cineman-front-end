@@ -8,7 +8,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import * as yup from 'yup';
 
 const formSchema = yup.object({
@@ -23,7 +23,11 @@ const formSchema = yup.object({
     .max(250, 'Mô tả phải nhỏ hơn hoặc bằng 250 ký tự!'),
 });
 
-const MovieGenreFormModal = ({ genre, onSuccess, placement = 'top-center' }) => {
+const MovieGenreFormModal = ({
+  genre,
+  onSuccess,
+  placement = 'top-center',
+}) => {
   const { closeTopModal } = useModelContext();
   const genreId = genre?.genresId ?? genre?.id;
   const isEditing = Boolean(genreId);
@@ -99,13 +103,28 @@ const MovieGenreFormModal = ({ genre, onSuccess, placement = 'top-center' }) => 
       placement={placement}
       actions={
         <>
-          <Button type="button" variant="outlined" color="info" onClick={handleReset}>
+          <Button
+            type="button"
+            variant="outlined"
+            color="info"
+            onClick={handleReset}
+          >
             Làm mới
           </Button>
-          <Button type="button" variant="outlined" color="warning" onClick={closeTopModal}>
+          <Button
+            type="button"
+            variant="outlined"
+            color="warning"
+            onClick={closeTopModal}
+          >
             Hủy bỏ
           </Button>
-          <Button type="submit" form={formId} variant="contained" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            form={formId}
+            variant="contained"
+            disabled={isSubmitting}
+          >
             {isEditing ? 'Cập nhật' : 'Tạo mới'}
           </Button>
         </>
@@ -118,7 +137,7 @@ const MovieGenreFormModal = ({ genre, onSuccess, placement = 'top-center' }) => 
           label="Tên thể loại"
           control={control}
           Component={TextInput}
-          placeHolder="Ví dụ: Hành động, Kinh dị, Hoạt hình"
+          placeHolder=": Hành động, Kinh dị, Hoạt hình"
           error={errors.name}
         />
 

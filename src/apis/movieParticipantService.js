@@ -1,10 +1,7 @@
-import axios from '@apis/axiosClient';
+ï»¿import axios from '@apis/axiosClient';
 
 const unwrapData = (response) => response?.data ?? response ?? null;
-
-const API_ROOT = import.meta.env.VITE_HOST.replace(/\/api\/v01\/?$/, '');
-
-const buildMovieParticipantUrl = (path) => `${API_ROOT}${path}`;
+const MOVIE_PARTICIPANT_BASE = '/admin/movie-participant';
 
 export const extractMovieParticipantList = (response) => {
   const payload = unwrapData(response);
@@ -92,41 +89,36 @@ export const normalizeMovieParticipant = (movieParticipant) => {
       movieParticipant?.movieTitle ??
       movie?.title ??
       movie?.movieTitle ??
-      (movieId ? `Phim #${movieId}` : 'Chua có phim'),
+      (movieId ? `Phim #${movieId}` : 'Chua co phim'),
     participantName:
       movieParticipant?.participantName ??
       participant?.nickname ??
       participant?.birthName ??
       participant?.fullName ??
       participant?.name ??
-      (participantId ? `Participant #${participantId}` : 'Chua có ngu?i tham gia'),
+      (participantId ? `Participant #${participantId}` : 'Chua co nguoi tham gia'),
     movieRoleName:
       movieParticipant?.movieRoleName ??
       movieRole?.name ??
       movieParticipant?.roleName ??
-      (movieRoleId ? `Vai trò #${movieRoleId}` : 'Chua có vai trò'),
+      (movieRoleId ? `Vai tro #${movieRoleId}` : 'Chua co vai tro'),
   };
 };
 
 export const findAllMovieParticipants = async () => {
-  return await axios.get(buildMovieParticipantUrl('/admin/movie-participant/all'));
+  return await axios.get(`${MOVIE_PARTICIPANT_BASE}/all`);
 };
 
 export const createMovieParticipant = async (data) => {
-  return await axios.post(buildMovieParticipantUrl('/admin/movie-participant/add'), data);
+  return await axios.post(`${MOVIE_PARTICIPANT_BASE}/add`, data);
 };
 
 export const updateMovieParticipant = async (id, data) => {
-  return await axios.put(
-    buildMovieParticipantUrl(`/admin/movie-participant/api/v01/${id}/update`),
-    data
-  );
+  return await axios.put(`${MOVIE_PARTICIPANT_BASE}/${id}/update`, data);
 };
 
 export const deleteMovieParticipant = async (movieId, participantId) => {
   return await axios.delete(
-    buildMovieParticipantUrl(
-      `/admin/movie-participant/delete/${movieId}/${participantId}`
-    )
+    `${MOVIE_PARTICIPANT_BASE}/delete/${movieId}/${participantId}`
   );
 };

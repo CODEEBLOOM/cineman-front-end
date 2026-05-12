@@ -1,8 +1,11 @@
-import {
+﻿import {
   createMovieTheater,
   updateMovieTheater,
 } from '@apis/movieTheaterService';
-import { extractProvinceList, findAll as findAllProvince } from '@apis/provinceService';
+import {
+  extractProvinceList,
+  findAll as findAllProvince,
+} from '@apis/provinceService';
 import AdminModal from '@component/admin/common/AdminModal';
 import FormField from '@component/FormField';
 import CustomSelect from '@component/form_field/CustomSelect';
@@ -13,14 +16,22 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import * as yup from 'yup';
 
 const formSchema = yup.object({
   name: yup.string().trim().required('Tên rạp không được để trống!').max(200),
-  address: yup.string().trim().required('Địa chỉ không được để trống!').max(200),
+  address: yup
+    .string()
+    .trim()
+    .required('Địa chỉ không được để trống!')
+    .max(200),
   hotline: yup.string().trim().required('Hotline không được để trống!').max(20),
-  iframeCode: yup.string().trim().required('Mã iframe không được để trống!').max(300),
+  iframeCode: yup
+    .string()
+    .trim()
+    .required('Mã iframe không được để trống!')
+    .max(300),
   provinceId: yup
     .number()
     .transform((value, originalValue) =>
@@ -31,7 +42,11 @@ const formSchema = yup.object({
     .min(1, 'Chi nhánh không hợp lệ!'),
 });
 
-const MovieTheaterFormModal = ({ movieTheater, onSuccess, placement = 'top-center' }) => {
+const MovieTheaterFormModal = ({
+  movieTheater,
+  onSuccess,
+  placement = 'top-center',
+}) => {
   const { closeTopModal } = useModelContext();
   const [provinceOptions, setProvinceOptions] = useState([]);
   const isEditing = Boolean(movieTheater?.movieTheaterId ?? movieTheater?.id);
@@ -133,13 +148,28 @@ const MovieTheaterFormModal = ({ movieTheater, onSuccess, placement = 'top-cente
       placement={placement}
       actions={
         <>
-          <Button type="button" variant="outlined" color="info" onClick={handleReset}>
+          <Button
+            type="button"
+            variant="outlined"
+            color="info"
+            onClick={handleReset}
+          >
             Làm mới
           </Button>
-          <Button type="button" variant="outlined" color="warning" onClick={closeTopModal}>
+          <Button
+            type="button"
+            variant="outlined"
+            color="warning"
+            onClick={closeTopModal}
+          >
             Hủy bỏ
           </Button>
-          <Button type="submit" form={formId} variant="contained" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            form={formId}
+            variant="contained"
+            disabled={isSubmitting}
+          >
             {isEditing ? 'Cập nhật' : 'Tạo mới'}
           </Button>
         </>
@@ -152,7 +182,7 @@ const MovieTheaterFormModal = ({ movieTheater, onSuccess, placement = 'top-cente
           label="Tên rạp"
           control={control}
           Component={TextInput}
-          placeHolder="Ví dụ: Poly Đà Nẵng"
+          placeHolder=": Poly Đà Nẵng"
           error={errors.name}
         />
 
@@ -185,7 +215,7 @@ const MovieTheaterFormModal = ({ movieTheater, onSuccess, placement = 'top-cente
             label="Hotline"
             control={control}
             Component={TextInput}
-            placeHolder="Ví dụ: 0909123456"
+            placeHolder=": 0909123456"
             error={errors.hotline}
           />
           <FormField

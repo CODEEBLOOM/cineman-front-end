@@ -1,9 +1,8 @@
 ﻿import { StrictMode } from 'react';
 import { Suspense, lazy } from 'react';
 
-/* Cấu hình react-toastify */
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+/* Cấu hình sonner toaster */
+import { Toaster } from 'sonner';
 import { createRoot } from 'react-dom/client';
 
 /* Import main css */
@@ -24,8 +23,6 @@ const RootLayout = lazy(() => import('./RootLayout'));
 const HomePage = lazy(() => import('@pages/HomePage'));
 const AuthLayout = lazy(() => import('@pages/auth/AuthLayout'));
 const LoginPage = lazy(() => import('@pages/auth/LoginPage'));
-const ForgotPasswordPage = lazy(() => import('@pages/auth/ForgotPasswordPage'));
-const ResetPasswordPage = lazy(() => import('@pages/auth/ResetPasswordPage'));
 const DetailMoviePage = lazy(() => import('@pages/DetailMoviePage'));
 const MoviePage = lazy(() => import('@pages/MoviePage'));
 const ProtectedRoute = lazy(
@@ -87,6 +84,7 @@ const PromotionTypePage = lazy(
 );
 const RolePage = lazy(() => import('@pages/admin/RolePage.jsx'));
 const UserPage = lazy(() => import('@pages/admin/UserPage.jsx'));
+const PermissionPage = lazy(() => import('@pages/admin/PermissionPage.jsx'));
 
 const routerFallback = <Loading minHeight="55vh" />;
 
@@ -147,12 +145,8 @@ const router = createBrowserRouter([
             element: <LoginPage />,
           },
           {
-            path: 'forgot-password',
-            element: <ForgotPasswordPage />,
-          },
-          {
             path: 'reset-password',
-            element: <ResetPasswordPage />,
+            element: <LoginPage />,
           },
           {
             path: 'google/callback',
@@ -275,7 +269,7 @@ const router = createBrowserRouter([
           },
           {
             path: 'quyen-han',
-            element: <p>Quản lý quyền hạn</p>,
+            element: <PermissionPage />,
           },
         ],
       },
@@ -292,7 +286,7 @@ createRoot(document.getElementById('root')).render(
         <Suspense fallback={routerFallback}>
           <RouterProvider router={router} />
         </Suspense>
-        <ToastContainer theme="colored" autoClose={3000} position="top-right" />
+        <Toaster richColors closeButton position="bottom-left" duration={3000} />
       </ThemeProvider>
     </PersistGate>
   </Provider>

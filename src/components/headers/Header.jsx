@@ -47,7 +47,7 @@ const Header = () => {
           <li key={item.id}>
             <a
               href={item.link}
-              className="text-[16px] font-bold uppercase hover:text-[#337ab7]"
+              className="text-[16px] font-bold uppercase hover:text-[#0a4d9c]"
             >
               {item.name}
             </a>
@@ -70,7 +70,7 @@ const Header = () => {
               className="block w-[80px] py-2 sm:w-[80px] lg:w-[100px]"
             >
               <img
-                src="/logo-new-v01.png"
+                src="/logo-new-v01.webp"
                 alt=""
                 className="aspect-[3/2] h-auto w-full object-contain"
               />

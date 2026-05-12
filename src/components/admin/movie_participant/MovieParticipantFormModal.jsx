@@ -17,7 +17,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import * as yup from 'yup';
 
 const formSchema = yup.object({

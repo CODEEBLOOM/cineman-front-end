@@ -16,7 +16,7 @@ const infoChipSx = {
   fontWeight: 700,
   border: '1px solid rgba(203,213,225,0.9)',
   '.MuiChip-icon': {
-    color: '#2d5f8d',
+    color: '#0a4d9c',
   },
 };
 
@@ -70,8 +70,8 @@ const ChooseSeatPage = ({
                 >
                   Màn hình chiếu
                 </Typography>
-                <div className="mt-3 h-4 w-full max-w-4xl rounded-t-[999px] bg-[linear-gradient(90deg,#d7e4f0_0%,#2d5f8d_50%,#d7e4f0_100%)] shadow-[0_10px_28px_rgba(45,95,141,0.18)]" />
-                <div className="mt-2 h-4 w-[88%] rounded-b-full bg-[radial-gradient(circle_at_top,rgba(45,95,141,0.2),transparent_72%)]" />
+                <div className="mt-3 h-4 w-full max-w-4xl rounded-t-[999px] bg-[linear-gradient(90deg,#d7e4f0_0%,#0a4d9c_50%,#d7e4f0_100%)] shadow-[0_10px_28px_rgba(10,77,156,0.18)]" />
+                <div className="mt-2 h-4 w-[88%] rounded-b-full bg-[radial-gradient(circle_at_top,rgba(10,77,156,0.2),transparent_72%)]" />
               </div>
 
               {invoice ? (

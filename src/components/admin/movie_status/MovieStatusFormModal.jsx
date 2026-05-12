@@ -1,4 +1,4 @@
-import { createMovieStatus, updateMovieStatus } from '@apis/movieStatusService';
+﻿import { createMovieStatus, updateMovieStatus } from '@apis/movieStatusService';
 import AdminModal from '@component/admin/common/AdminModal';
 import FormField from '@component/FormField';
 import TextAreaInput from '@component/form_field/TextAreaInput';
@@ -8,7 +8,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import * as yup from 'yup';
 
 const formSchema = yup.object({
@@ -32,7 +32,11 @@ const formSchema = yup.object({
     .max(250, 'Mô tả phải nhỏ hơn hoặc bằng 250 ký tự!'),
 });
 
-const MovieStatusFormModal = ({ movieStatus, onSuccess, placement = 'top-center' }) => {
+const MovieStatusFormModal = ({
+  movieStatus,
+  onSuccess,
+  placement = 'top-center',
+}) => {
   const { closeTopModal } = useModelContext();
   const movieStatusId = movieStatus?.statusId ?? movieStatus?.id;
   const isEditing = Boolean(movieStatusId);
@@ -112,13 +116,28 @@ const MovieStatusFormModal = ({ movieStatus, onSuccess, placement = 'top-center'
       placement={placement}
       actions={
         <>
-          <Button type="button" variant="outlined" color="info" onClick={handleReset}>
+          <Button
+            type="button"
+            variant="outlined"
+            color="info"
+            onClick={handleReset}
+          >
             Làm mới
           </Button>
-          <Button type="button" variant="outlined" color="warning" onClick={closeTopModal}>
+          <Button
+            type="button"
+            variant="outlined"
+            color="warning"
+            onClick={closeTopModal}
+          >
             Hủy bỏ
           </Button>
-          <Button type="submit" form={formId} variant="contained" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            form={formId}
+            variant="contained"
+            disabled={isSubmitting}
+          >
             {isEditing ? 'Cập nhật' : 'Tạo mới'}
           </Button>
         </>
@@ -131,7 +150,7 @@ const MovieStatusFormModal = ({ movieStatus, onSuccess, placement = 'top-center'
           label="Mã trạng thái"
           control={control}
           Component={TextInput}
-          placeHolder="Ví dụ: SC, DC, DB"
+          placeHolder=": SC, DC, DB"
           error={errors.id}
           disabled={isEditing}
         />
@@ -142,7 +161,7 @@ const MovieStatusFormModal = ({ movieStatus, onSuccess, placement = 'top-center'
           label="Tên trạng thái"
           control={control}
           Component={TextInput}
-          placeHolder="Ví dụ: Sắp chiếu, Đang chiếu"
+          placeHolder=": Sắp chiếu, Đang chiếu"
           error={errors.name}
         />
 

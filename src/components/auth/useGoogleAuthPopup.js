@@ -1,7 +1,7 @@
-import { loginWithGoogle } from '@apis/authService';
+﻿import { loginWithGoogle } from '@apis/authService';
 import { loginGoogle } from '@redux/slices/authSlice';
 import { useCallback, useEffect, useRef } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { clearAuthRedirect, resolveAuthRedirect } from '@utils/authRedirect';
 
 export const GOOGLE_AUTH_POPUP_MESSAGE = 'poly-cinemas:google-auth';

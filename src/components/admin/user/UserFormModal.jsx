@@ -1,4 +1,4 @@
-import { createUserAdmin, updateUserAdmin } from '@apis/userService';
+﻿import { createUserAdmin, updateUserAdmin } from '@apis/userService';
 import { uploadPhoto } from '@apis/uploadFileService';
 import AdminModal from '@component/admin/common/AdminModal';
 import FormField from '@component/FormField';
@@ -11,7 +11,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import * as yup from 'yup';
 
 const genderOptions = [
@@ -134,7 +134,9 @@ const UserFormModal = ({
     () =>
       roles.map((role) => ({
         value: String(role?.roleId),
-        label: role?.name ? `${role.name} (${role.roleId})` : String(role?.roleId),
+        label: role?.name
+          ? `${role.name} (${role.roleId})`
+          : String(role?.roleId),
       })),
     [roles]
   );
@@ -272,9 +274,7 @@ const UserFormModal = ({
       }
 
       toast.error(
-        isEditing
-          ? 'Cập nhật người dùng thất bại!'
-          : 'Tạo người dùng thất bại!'
+        isEditing ? 'Cập nhật người dùng thất bại!' : 'Tạo người dùng thất bại!'
       );
     }
   };
@@ -288,10 +288,20 @@ const UserFormModal = ({
       placement={placement}
       actions={
         <>
-          <Button type="button" variant="outlined" color="info" onClick={handleReset}>
+          <Button
+            type="button"
+            variant="outlined"
+            color="info"
+            onClick={handleReset}
+          >
             Làm mới
           </Button>
-          <Button type="button" variant="outlined" color="warning" onClick={closeTopModal}>
+          <Button
+            type="button"
+            variant="outlined"
+            color="warning"
+            onClick={closeTopModal}
+          >
             Hủy bỏ
           </Button>
           <Button
@@ -306,7 +316,8 @@ const UserFormModal = ({
       }
     >
       <div className="mb-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-800">
-        Vai trò được chọn sẽ quyết định quyền truy cập của tài khoản trong hệ thống quản trị.
+        Vai trò được chọn sẽ quyết định quyền truy cập của tài khoản trong hệ
+        thống quản trị.
       </div>
 
       <form id={formId} onSubmit={handleSubmit(onSubmit)}>
@@ -376,7 +387,7 @@ const UserFormModal = ({
             label="Số điện thoại"
             control={control}
             Component={TextInput}
-            placeHolder="Ví dụ: 0912345678"
+            placeHolder=": 0912345678"
             error={errors.phoneNumber}
           />
 
@@ -393,7 +404,8 @@ const UserFormModal = ({
             />
           ) : (
             <div className="flex items-end rounded-xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
-              Email là định danh đăng nhập hiện tại nên được khóa khi cập nhật người dùng.
+              Email là định danh đăng nhập hiện tại nên được khóa khi cập nhật
+              người dùng.
             </div>
           )}
         </div>

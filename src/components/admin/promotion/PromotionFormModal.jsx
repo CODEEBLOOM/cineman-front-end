@@ -1,4 +1,4 @@
-import {
+﻿import {
   createPromotion,
   extractPromotionDetail,
   findPromotionById,
@@ -27,7 +27,7 @@ import { Button } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import * as yup from 'yup';
 
 const transformNumber = (originalValue) => {
@@ -378,9 +378,7 @@ const PromotionFormModal = ({
       }
 
       toast.error(
-        isEditing
-          ? 'Cập nhật khuyến mãi thất bại!'
-          : 'Tạo khuyến mãi thất bại!'
+        isEditing ? 'Cập nhật khuyến mãi thất bại!' : 'Tạo khuyến mãi thất bại!'
       );
     }
   };
@@ -423,8 +421,7 @@ const PromotionFormModal = ({
     >
       <div className="mb-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-800">
         Nhập mức giảm dưới dạng số thập phân.
-        <br />
-        Ví dụ: <strong>0.1</strong> tương ứng <strong>10%</strong>,{' '}
+        <br />: <strong>0.1</strong> tương ứng <strong>10%</strong>,{' '}
         <strong>0.25</strong> tương ứng <strong>25%</strong>.
       </div>
 
@@ -451,7 +448,7 @@ const PromotionFormModal = ({
             label="Tên khuyến mãi"
             control={control}
             Component={TextInput}
-            placeHolder="Ví dụ: Giảm 20% cuối tuần"
+            placeHolder=": Giảm 20% cuối tuần"
             error={errors.name}
           />
 
@@ -512,7 +509,7 @@ const PromotionFormModal = ({
             control={control}
             Component={TextInput}
             type="number"
-            placeHolder="Ví dụ: 0.15"
+            placeHolder=": 0.15"
             error={errors.discount}
           />
 
@@ -523,7 +520,7 @@ const PromotionFormModal = ({
             control={control}
             Component={TextInput}
             type="number"
-            placeHolder="Ví dụ: 200"
+            placeHolder=": 200"
             error={errors.quantity}
           />
         </div>
@@ -536,7 +533,7 @@ const PromotionFormModal = ({
             control={control}
             Component={TextInput}
             type="number"
-            placeHolder="Ví dụ: 120000"
+            placeHolder=": 120000"
             error={errors.limitAmount}
           />
 

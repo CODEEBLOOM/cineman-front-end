@@ -23,7 +23,7 @@ import {
   useNavigate,
   useSearchParams,
 } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import * as yup from 'yup';
 
 const authFieldSx = {
@@ -59,11 +59,11 @@ const authFieldSx = {
 };
 
 const formSchema = yup.object({
-  password: yup.string().required('Mật khẩu mới không được để trống!'),
+  password: yup.string().required('Mật khẩu m�:i không �ược �Ồ tr�ng!'),
   confirmPassword: yup
     .string()
-    .oneOf([yup.ref('password')], 'Xác nhận mật khẩu chưa khớp!')
-    .required('Xác nhận mật khẩu không được để trống!'),
+    .oneOf([yup.ref('password')], 'Xác nhận mật khẩu chưa kh�:p!')
+    .required('Xác nhận mật khẩu không �ược �Ồ tr�ng!'),
 });
 
 const ResetPasswordComponent = () => {
@@ -155,7 +155,7 @@ const ResetPasswordComponent = () => {
   const handleResetPassword = async (data) => {
     if (!token) {
       toast.error(
-        'Liên kết đặt lại mật khẩu không hợp lệ hoặc đang thiếu token.'
+        'Liên kết �ặt lại mật khẩu không hợp l�! hoặc �ang thiếu token.'
       );
       return;
     }
@@ -171,7 +171,7 @@ const ResetPasswordComponent = () => {
       navigate('/auth/login?auth=login', { replace: true });
     } catch (error) {
       toast.error(
-        error?.response?.data?.message || 'Không thể đặt lại mật khẩu lúc này.'
+        error?.response?.data?.message || 'Không thỒ �ặt lại mật khẩu lúc này.'
       );
     }
   };
@@ -192,8 +192,8 @@ const ResetPasswordComponent = () => {
           <Stack direction="row" spacing={1.2} alignItems="flex-start">
             <WarningAmberRounded sx={{ mt: 0.2 }} />
             <Typography sx={{ fontSize: 14.5, lineHeight: 1.7 }}>
-              Liên kết hiện tại không có token hợp lệ. Bạn hãy quay lại màn hình
-              quên mật khẩu để gửi một yêu cầu mới.
+              Liên kết hi�!n tại không có token hợp l�!. Bạn hãy quay lại màn hình
+              quên mật khẩu �Ồ gửi m�"t yêu cầu m�:i.
             </Typography>
           </Stack>
         </Box>
@@ -222,11 +222,11 @@ const ResetPasswordComponent = () => {
   return (
     <Box component="form" onSubmit={handleSubmit(handleResetPassword)}>
       <Stack spacing={2.4}>
-        {renderPasswordField('password', 'Mật khẩu mới', 'Nhập mật khẩu mới')}
+        {renderPasswordField('password', 'Mật khẩu m�:i', 'Nhập mật khẩu m�:i')}
         {renderPasswordField(
           'confirmPassword',
-          'Xác nhận mật khẩu mới',
-          'Nhập lại mật khẩu mới'
+          'Xác nhận mật khẩu m�:i',
+          'Nhập lại mật khẩu m�:i'
         )}
 
         <Button
@@ -249,7 +249,7 @@ const ResetPasswordComponent = () => {
           ) : (
             <LockResetRounded sx={{ mr: 1.2 }} />
           )}
-          Cập nhật mật khẩu mới
+          Cập nhật mật khẩu m�:i
         </Button>
       </Stack>
     </Box>

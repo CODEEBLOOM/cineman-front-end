@@ -1,4 +1,4 @@
-import { createPermission, updatePermission } from '@apis/permissionService';
+﻿import { createPermission, updatePermission } from '@apis/permissionService';
 import AdminModal from '@component/admin/common/AdminModal';
 import FormField from '@component/FormField';
 import CustomSelect from '@component/form_field/CustomSelect';
@@ -9,13 +9,15 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import * as yup from 'yup';
 
-const methodOptions = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].map((method) => ({
-  value: method,
-  label: method,
-}));
+const methodOptions = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].map(
+  (method) => ({
+    value: method,
+    label: method,
+  })
+);
 
 const formSchema = yup.object({
   title: yup
@@ -26,7 +28,10 @@ const formSchema = yup.object({
   method: yup
     .string()
     .trim()
-    .oneOf(methodOptions.map((option) => option.value), 'Method không hợp lệ!')
+    .oneOf(
+      methodOptions.map((option) => option.value),
+      'Method không hợp lệ!'
+    )
     .required('Method không được để trống!'),
   url: yup
     .string()
@@ -116,9 +121,7 @@ const PermissionFormModal = ({
       }
 
       toast.error(
-        isEditing
-          ? 'Cập nhật quyền hạn thất bại!'
-          : 'Tạo quyền hạn thất bại!'
+        isEditing ? 'Cập nhật quyền hạn thất bại!' : 'Tạo quyền hạn thất bại!'
       );
     }
   };
@@ -126,26 +129,41 @@ const PermissionFormModal = ({
   return (
     <AdminModal
       title={isEditing ? 'Cập nhật quyền hạn' : 'Tạo quyền hạn'}
-      description="Thiết lập tên quyền, HTTP method và endpoint để phục vụ cấu hình phân quyền trong trang quản trị."
       onClose={closeTopModal}
-      size="sm"
+      size="md"
       placement={placement}
       actions={
         <>
-          <Button type="button" variant="outlined" color="info" onClick={handleReset}>
+          <Button
+            type="button"
+            variant="outlined"
+            color="info"
+            onClick={handleReset}
+          >
             Làm mới
           </Button>
-          <Button type="button" variant="outlined" color="warning" onClick={closeTopModal}>
+          <Button
+            type="button"
+            variant="outlined"
+            color="warning"
+            onClick={closeTopModal}
+          >
             Hủy bỏ
           </Button>
-          <Button type="submit" form={formId} variant="contained" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            form={formId}
+            variant="contained"
+            disabled={isSubmitting}
+          >
             {isEditing ? 'Cập nhật' : 'Tạo mới'}
           </Button>
         </>
       }
     >
       <div className="mb-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-800">
-        Mỗi permission tương ứng với một API cụ thể, vì vậy method và URL cần khớp với endpoint thực tế của backend.
+        Mỗi permission tương ứng với một API cụ thể, vì vậy method và URL cần
+        khớp với endpoint thực tế của backend.
       </div>
 
       <form id={formId} onSubmit={handleSubmit(onSubmit)}>
@@ -155,7 +173,7 @@ const PermissionFormModal = ({
           label="Tên quyền hạn"
           control={control}
           Component={TextInput}
-          placeHolder="Ví dụ: Xem danh sách quyền hạn"
+          placeHolder="Xem danh sách quyền hạn"
           error={errors.title}
         />
 
@@ -177,7 +195,7 @@ const PermissionFormModal = ({
             label="API URL"
             control={control}
             Component={TextInput}
-            placeHolder="Ví dụ: /admin/permissions/all"
+            placeHolder="/admin/permissions/all"
             error={errors.url}
           />
         </div>

@@ -1,4 +1,4 @@
-import {
+﻿import {
   createPromotionType,
   extractPromotionTypeDetail,
   findPromotionTypeById,
@@ -14,7 +14,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import * as yup from 'yup';
 
 const formSchema = yup.object({
@@ -157,9 +157,7 @@ const PromotionTypeFormModal = ({
 
   return (
     <AdminModal
-      title={
-        isEditing ? 'Cập nhật loại khuyến mãi' : 'Tạo loại khuyến mãi'
-      }
+      title={isEditing ? 'Cập nhật loại khuyến mãi' : 'Tạo loại khuyến mãi'}
       description="Loại khuyến mãi giúp nhóm các chương trình ưu đãi theo chiến dịch, mục tiêu hoặc cách áp dụng trong hệ thống."
       onClose={closeTopModal}
       size="sm"
@@ -201,7 +199,7 @@ const PromotionTypeFormModal = ({
           label="Mã loại khuyến mãi"
           control={control}
           Component={TextInput}
-          placeHolder="Ví dụ: FLASH, MEMBER, FESTIVAL"
+          placeHolder=": FLASH, MEMBER, FESTIVAL"
           error={errors.code}
           disabled={isLoadingDetail}
         />
@@ -212,7 +210,7 @@ const PromotionTypeFormModal = ({
           label="Tên loại khuyến mãi"
           control={control}
           Component={TextInput}
-          placeHolder="Ví dụ: Giảm giá chớp nhoáng"
+          placeHolder=": Giảm giá chớp nhoáng"
           error={errors.name}
           disabled={isLoadingDetail}
         />

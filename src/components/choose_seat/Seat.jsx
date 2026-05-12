@@ -1,7 +1,7 @@
 import React from 'react';
 
 const Seat = ({ seat = {}, setChooseSeat }) => {
-  const seatBgImg = `/seat-${seat.status}-${seat.type}.png`;
+  const seatBgImg = `/seat-${seat.status}-${seat.type}.webp`;
 
   return (
     <>

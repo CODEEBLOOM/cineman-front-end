@@ -182,7 +182,7 @@ const PromotionActivatedPopup = ({
                     width: 8,
                     height: 8,
                     borderRadius: '999px',
-                    bgcolor: alpha('#23486c', 0.16),
+                    bgcolor: alpha('#083d7c', 0.16),
                   }}
                 />
 
@@ -207,7 +207,7 @@ const PromotionActivatedPopup = ({
                   id="promotion-activated-title"
                   sx={{
                     mt: 2.25,
-                    color: '#17324d',
+                    color: '#062d5c',
                     fontSize: { xs: 30, sm: 38 },
                     fontWeight: 900,
                     lineHeight: 1.05,
@@ -288,8 +288,8 @@ const PromotionActivatedPopup = ({
                         label={promotion.promotionTypeName}
                         sx={{
                           alignSelf: 'flex-start',
-                          bgcolor: alpha('#23486c', 0.08),
-                          color: '#23486c',
+                          bgcolor: alpha('#083d7c', 0.08),
+                          color: '#083d7c',
                           fontWeight: 700,
                         }}
                       />
@@ -311,7 +311,7 @@ const PromotionActivatedPopup = ({
                     <Typography
                       sx={{
                         mt: 0.45,
-                        color: '#17324d',
+                        color: '#062d5c',
                         fontSize: { xs: 24, sm: 28 },
                         fontWeight: 900,
                         letterSpacing: '0.04em',
@@ -336,8 +336,8 @@ const PromotionActivatedPopup = ({
                     icon: <AccessTimeRounded sx={{ fontSize: 20 }} />,
                     label: 'Hạn dùng',
                     value: formatDateLabel(promotion?.endDate),
-                    color: '#23486c',
-                    bg: alpha('#23486c', 0.08),
+                    color: '#083d7c',
+                    bg: alpha('#083d7c', 0.08),
                   },
                   {
                     icon: <LocalOfferRounded sx={{ fontSize: 20 }} />,
@@ -383,7 +383,7 @@ const PromotionActivatedPopup = ({
                     <Typography
                       sx={{
                         mt: 0.4,
-                        color: '#17324d',
+                        color: '#062d5c',
                         fontSize: 14.5,
                         fontWeight: 800,
                         lineHeight: 1.45,

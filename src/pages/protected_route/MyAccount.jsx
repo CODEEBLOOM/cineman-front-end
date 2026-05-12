@@ -1,7 +1,6 @@
 import FormInfoUser from '@component/account-customer/FormInfoUser';
 import MembershipCard from '@component/account-customer/MembershipCard';
 import TransactionHistory from '@component/account-customer/TransactionHistory';
-import UploadAvatar from '@component/account-customer/UploadAvatar';
 import VoucherCustomer from '@component/account-customer/VoucherCustomer';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
@@ -64,13 +63,8 @@ const MyAccount = () => {
       case 'profile':
       default:
         return (
-          <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start xl:grid-cols-[260px_minmax(0,1fr)]">
-            <div className="rounded-[16px] border border-slate-200/80 bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.08)]">
-              <UploadAvatar setAvatar={setAvatar} avatar={avatar} />
-            </div>
-            <div className="rounded-[16px] border border-slate-200/80 bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.08)]">
-              <FormInfoUser avatar={avatar} />
-            </div>
+          <div className="rounded-[12px] border border-slate-200/80 bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.06)] md:p-7">
+            <FormInfoUser avatar={avatar} onAvatarChange={setAvatar} />
           </div>
         );
     }
@@ -98,13 +92,13 @@ const MyAccount = () => {
                     onClick={() => handleChangeTab(tab.key)}
                     className={`relative pb-4 text-left text-[14px] font-semibold uppercase tracking-[0.02em] transition md:text-[15px] ${
                       isActive
-                        ? 'text-[#23486c]'
-                        : 'text-slate-700 hover:text-[#23486c]'
+                        ? 'text-[#083d7c]'
+                        : 'text-slate-700 hover:text-[#083d7c]'
                     }`}
                   >
                     {tab.label}
                     <span
-                      className={`absolute bottom-0 left-0 h-[3px] rounded-full bg-[#2d5f8d] transition-all duration-300 ${
+                      className={`absolute bottom-0 left-0 h-[3px] rounded-full bg-[#0a4d9c] transition-all duration-300 ${
                         isActive ? 'w-full opacity-100' : 'w-10 opacity-0'
                       }`}
                     />

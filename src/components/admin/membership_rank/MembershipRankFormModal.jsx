@@ -1,4 +1,4 @@
-import {
+﻿import {
   createMembershipRank,
   updateMembershipRank,
 } from '@apis/membershipRankService';
@@ -10,7 +10,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@mui/material';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import * as yup from 'yup';
 
 const transformNumber = (originalValue) => {
@@ -136,9 +136,7 @@ const MembershipRankFormModal = ({
       }
 
       toast.error(
-        isEditing
-          ? 'Cập nhật hạng thẻ thất bại!'
-          : 'Tạo hạng thẻ thất bại!'
+        isEditing ? 'Cập nhật hạng thẻ thất bại!' : 'Tạo hạng thẻ thất bại!'
       );
     }
   };
@@ -152,7 +150,12 @@ const MembershipRankFormModal = ({
       placement={placement}
       actions={
         <>
-          <Button type="button" variant="outlined" color="info" onClick={handleReset}>
+          <Button
+            type="button"
+            variant="outlined"
+            color="info"
+            onClick={handleReset}
+          >
             Làm mới
           </Button>
           <Button
@@ -163,7 +166,12 @@ const MembershipRankFormModal = ({
           >
             Hủy bỏ
           </Button>
-          <Button type="submit" form={formId} variant="contained" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            form={formId}
+            variant="contained"
+            disabled={isSubmitting}
+          >
             {isEditing ? 'Cập nhật' : 'Tạo mới'}
           </Button>
         </>
@@ -171,8 +179,7 @@ const MembershipRankFormModal = ({
     >
       <div className="mb-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-800">
         Nhập tỷ lệ hoàn điểm dưới dạng số thập phân.
-        <br />
-        Ví dụ: <strong>0.05</strong> tương ứng <strong>5%</strong>,{' '}
+        <br />: <strong>0.05</strong> tương ứng <strong>5%</strong>,{' '}
         <strong>0.1</strong> tương ứng <strong>10%</strong>.
       </div>
 
@@ -184,7 +191,7 @@ const MembershipRankFormModal = ({
             label="Tên hạng thẻ"
             control={control}
             Component={TextInput}
-            placeHolder="Ví dụ: Silver, Gold, Platinum"
+            placeHolder=": Silver, Gold, Platinum"
             error={errors.name}
           />
 
@@ -195,7 +202,7 @@ const MembershipRankFormModal = ({
             control={control}
             Component={TextInput}
             type="number"
-            placeHolder="Ví dụ: 1"
+            placeHolder=": 1"
             error={errors.priorityLevel}
           />
         </div>
@@ -208,12 +215,13 @@ const MembershipRankFormModal = ({
             control={control}
             Component={TextInput}
             type="number"
-            placeHolder="Ví dụ: 10000"
+            placeHolder=": 10000"
             error={errors.requiredPoint}
           />
 
           <div className="flex items-end rounded-xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
-            Điểm yêu cầu là mốc tối thiểu để khách hàng được xét lên hạng thẻ này.
+            Điểm yêu cầu là mốc tối thiểu để khách hàng được xét lên hạng thẻ
+            này.
           </div>
         </div>
 
@@ -225,7 +233,7 @@ const MembershipRankFormModal = ({
             control={control}
             Component={TextInput}
             type="number"
-            placeHolder="Ví dụ: 0.05"
+            placeHolder=": 0.05"
             error={errors.returnPointsTicket}
           />
 
@@ -236,7 +244,7 @@ const MembershipRankFormModal = ({
             control={control}
             Component={TextInput}
             type="number"
-            placeHolder="Ví dụ: 0.03"
+            placeHolder=": 0.03"
             error={errors.returnPointsSnack}
           />
         </div>

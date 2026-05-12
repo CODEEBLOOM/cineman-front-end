@@ -1,8 +1,8 @@
-import { Client } from '@stomp/stompjs';
+﻿import { Client } from '@stomp/stompjs';
 import PromotionActivatedPopup from '@component/realtime/PromotionActivatedPopup.jsx';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import {
   emitPromotionActivatedEvent,

@@ -198,7 +198,7 @@ const LoginComponent = ({ dispatch, onSelectRegister }) => {
           sx={{
             mt: 1,
             minHeight: 48,
-            borderRadius: '999px',
+            borderRadius: '6px',
             color: '#fff',
             fontSize: 15,
             fontWeight: 700,
@@ -221,7 +221,7 @@ const LoginComponent = ({ dispatch, onSelectRegister }) => {
           disabled={isLoading}
           sx={{
             minHeight: 48,
-            borderRadius: '999px',
+            borderRadius: '6px',
             color: '#fff',
             fontSize: 15,
             fontWeight: 700,

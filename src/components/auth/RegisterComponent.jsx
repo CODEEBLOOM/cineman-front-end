@@ -381,7 +381,7 @@ const RegisterComponent = ({ dispatch, navigate, setValue }) => {
           sx={{
             width: { xs: '100%', sm: 240 },
             minHeight: 46,
-            borderRadius: '999px',
+            borderRadius: '6px',
             color: '#fff',
             fontSize: 15,
             fontWeight: 700,
@@ -407,7 +407,7 @@ const RegisterComponent = ({ dispatch, navigate, setValue }) => {
           sx={{
             width: { xs: '100%', sm: 280 },
             minHeight: 46,
-            borderRadius: '999px',
+            borderRadius: '6px',
             color: '#fff',
             fontSize: 15,
             fontWeight: 700,

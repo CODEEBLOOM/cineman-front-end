@@ -50,7 +50,7 @@ const MovieInfoDetailComponent = ({ movie = {} }) => {
         </div>
 
         <div className="flex-1">
-          <h1 className="mb-2 text-[25px] font-bold md:text-4xl">
+          <h1 className="mb-2 text-[25px] font-bold text-primary md:text-4xl">
             {displayTitle}
           </h1>
 
@@ -73,7 +73,9 @@ const MovieInfoDetailComponent = ({ movie = {} }) => {
             </div>
           </div>
 
-          <p className="py-3 leading-relaxed">{movie?.detailDescription}</p>
+          <p className="py-3 text-justify leading-relaxed">
+            {movie?.detailDescription}
+          </p>
 
           <div className="space-y-1.5">
             <div className="flex">

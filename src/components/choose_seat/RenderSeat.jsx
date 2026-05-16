@@ -1,19 +1,16 @@
-import CloseRounded from '@mui/icons-material/CloseRounded';
-import {
-  seatStatusAppearance,
-  seatTypeAppearance,
-} from './seatVisualConfig';
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import { getSeatStyle } from './seatVisualConfig';
+
+const padCol = (col) => String(col).padStart(2, '0');
 
 const RenderSeat = ({ ticket, message, sendMessageChooseSeat }) => {
-  const seatType =
+  const seatTypeId =
     typeof ticket?.seat?.seatType === 'string'
       ? ticket.seat.seatType
       : ticket?.seat?.seatType?.id;
-  const appearance = seatTypeAppearance[seatType] ?? seatTypeAppearance.REGULAR;
-  const stateStyle =
-    seatStatusAppearance[ticket.status] ?? seatStatusAppearance.EMPTY;
-  const SeatIcon = appearance.icon;
-  const isDoubleSeat = seatType === 'DOUBLE';
+
+  const isDoubleSeat = seatTypeId === 'DOUBLE';
   const isInactive = ticket.seat.status === 'INACTIVE';
   const isDisabled =
     isInactive ||
@@ -21,77 +18,56 @@ const RenderSeat = ({ ticket, message, sendMessageChooseSeat }) => {
     ticket.status === 'SOLD' ||
     ticket.status === 'BOOKED';
 
+  const style = getSeatStyle(ticket.status, seatTypeId);
+
   const handleChooseSeat = () => {
     if (isDisabled) return;
-
-    const newMessage = {
+    sendMessageChooseSeat({
       ...message,
-      content: {
-        ...message.content,
-        seatId: ticket.seat.id,
-      },
+      content: { ...message.content, seatId: ticket.seat.id },
       ticketId: ticket.id,
-    };
-
-    sendMessageChooseSeat(newMessage);
+    });
   };
 
   return (
     <div
       className={`${isDoubleSeat ? 'col-span-2' : 'col-span-1'} flex items-center justify-center`}
     >
-      <div
+      <button
+        type="button"
+        disabled={isDisabled && ticket.status !== 'SELECTED'}
         onClick={handleChooseSeat}
-        className={`relative flex min-h-[64px] min-w-[58px] items-center justify-center rounded-[18px] border px-3 py-2 transition ${
-          isDoubleSeat ? 'w-full' : ''
+        className={`relative flex h-10 items-center justify-center gap-1 rounded-md border text-[13px] font-semibold transition ${
+          isDoubleSeat ? 'w-full px-2' : 'min-w-[42px] px-2 md:min-w-[48px]'
         } ${
           isDisabled && ticket.status !== 'SELECTED'
             ? 'cursor-not-allowed'
-            : 'cursor-pointer'
-        } ${
-          !isDisabled || ticket.status === 'SELECTED'
-            ? 'hover:-translate-y-[1px] hover:shadow-[0_10px_24px_rgba(15,23,42,0.08)]'
-            : ''
-        }`}
+            : 'cursor-pointer hover:-translate-y-[1px] hover:shadow-sm'
+        } ${isInactive ? 'opacity-40' : ''}`}
         style={{
-          borderColor: isInactive
-            ? appearance.border
-            : stateStyle.borderColor || appearance.border,
-          backgroundColor: isInactive
-            ? appearance.surface
-            : stateStyle.backgroundColor || appearance.surface,
-          paddingInline: isDoubleSeat ? '0.9rem' : '0.75rem',
+          backgroundColor: style.background,
+          borderColor: style.border,
+          color: style.text,
         }}
       >
-        <SeatIcon
-          size={isDoubleSeat ? '48px' : '42px'}
-          color={stateStyle.iconColor || appearance.baseColor}
-        />
-
-        <div
-          className="pointer-events-none absolute inset-0 flex items-center justify-center select-none"
-          style={{
-            color: isInactive ? '#475569' : stateStyle.textColor,
-          }}
-        >
-          <span className="translate-y-[1px] text-[11px] font-semibold tracking-[0.02em]">
-            {ticket.seat.label}
-          </span>
-        </div>
+        {style.showCheck && !isInactive && (
+          <CheckRoundedIcon sx={{ fontSize: 14, color: style.text }} />
+        )}
+        <span>{padCol(ticket.seat.columnIndex)}</span>
 
         {isInactive && (
-          <CloseRounded
+          <CloseRoundedIcon
             sx={{
               position: 'absolute',
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              fontSize: 28,
+              fontSize: 22,
               color: '#dc2626',
             }}
           />
         )}
-      </div>
+      </button>
     </div>
   );
 };

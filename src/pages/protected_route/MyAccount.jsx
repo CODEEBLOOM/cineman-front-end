@@ -62,60 +62,48 @@ const MyAccount = () => {
         return <VoucherCustomer />;
       case 'profile':
       default:
-        return (
-          <div className="rounded-[12px] border border-slate-200/80 bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.06)] md:p-7">
-            <FormInfoUser avatar={avatar} onAvatarChange={setAvatar} />
-          </div>
-        );
+        return <FormInfoUser avatar={avatar} onAvatarChange={setAvatar} />;
     }
   }, [activeTab, avatar]);
 
   return (
-    <div className="relative overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_55%,#e8edf5_100%)] py-5 md:py-8">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),transparent_62%)]" />
-      <div className="pointer-events-none absolute left-[-120px] top-28 h-72 w-72 rounded-full bg-[rgba(148,163,184,0.12)] blur-3xl" />
-      <div className="pointer-events-none absolute bottom-10 right-[-100px] h-64 w-64 rounded-full bg-[rgba(148,163,184,0.14)] blur-3xl" />
+    <div className="container py-5 md:py-8">
+      <div className="border-b border-slate-200">
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          {ACCOUNT_TABS.map((tab) => {
+            const isActive = activeTab === tab.key;
 
-      <div className="container relative">
-        <div className="overflow-hidden rounded-[16px] border border-white/60 bg-white/95 shadow-[0_20px_60px_rgba(15,23,42,0.14)] backdrop-blur">
-          <div className="border-b border-slate-200/90 px-5 pt-4 md:px-8 md:pt-5">
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
-              {ACCOUNT_TABS.map((tab) => {
-                const isActive = activeTab === tab.key;
-
-                return (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    onClick={() => handleChangeTab(tab.key)}
-                    className={`relative pb-4 text-left text-[14px] font-semibold uppercase tracking-[0.02em] transition md:text-[15px] ${
-                      isActive
-                        ? 'text-[#083d7c]'
-                        : 'text-slate-700 hover:text-[#083d7c]'
-                    }`}
-                  >
-                    {tab.label}
-                    <span
-                      className={`absolute bottom-0 left-0 h-[3px] rounded-full bg-[#0a4d9c] transition-all duration-300 ${
-                        isActive ? 'w-full opacity-100' : 'w-10 opacity-0'
-                      }`}
-                    />
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="px-5 pb-5 pt-5 md:px-8 md:pb-7 md:pt-6">
-            <AnimatePresence mode="wait">
-              <motion.div key={activeTab} {...panelAnimation}>
-                {activeContent}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => handleChangeTab(tab.key)}
+                className={`relative pb-3 text-left text-[14px] font-semibold uppercase tracking-[0.02em] transition md:text-[15px] ${
+                  isActive
+                    ? 'text-[#083d7c]'
+                    : 'text-slate-600 hover:text-[#083d7c]'
+                }`}
+              >
+                {tab.label}
+                <span
+                  className={`absolute -bottom-px left-0 h-[3px] rounded-full bg-[#0a4d9c] transition-all duration-300 ${
+                    isActive ? 'w-full opacity-100' : 'w-10 opacity-0'
+                  }`}
+                />
+              </button>
+            );
+          })}
         </div>
+      </div>
+
+      <div className="pt-5 md:pt-6">
+        <AnimatePresence mode="wait">
+          <motion.div key={activeTab} {...panelAnimation}>
+            {activeContent}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

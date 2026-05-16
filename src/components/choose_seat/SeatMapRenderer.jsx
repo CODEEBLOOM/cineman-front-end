@@ -20,10 +20,10 @@ const SeatMapRenderer = React.memo(
 
       allSeats.push(
         <div
-          className="flex min-h-[64px] items-center justify-center"
+          className="flex min-h-[44px] items-center justify-center"
           key={getSeatRowLabel(row)}
         >
-          <span className="text-sm font-bold tracking-[0.08em] text-slate-500">
+          <span className="text-sm font-semibold tracking-[0.08em] text-slate-500">
             {getSeatRowLabel(row)}
           </span>
         </div>
@@ -36,7 +36,7 @@ const SeatMapRenderer = React.memo(
         if (!ticket) {
           allSeats.push(
             <div
-              className={`min-h-[64px] min-w-[58px] ${isDoubleRow ? 'col-span-2' : 'col-span-1'}`}
+              className={`min-h-[44px] min-w-[42px] ${isDoubleRow ? 'col-span-2' : 'col-span-1'}`}
               key={seatKey}
             />
           );

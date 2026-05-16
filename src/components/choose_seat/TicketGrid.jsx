@@ -7,7 +7,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import SeatMapRenderer from './SeatMapRenderer';
 
-const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
+const TicketGrid = ({
+  showTime,
+  invoiceId,
+  setTotalMoneyTicket,
+  onSeatPricesReady,
+}) => {
   const dispatch = useDispatch();
   const { selectedSeats } = useSelector((state) => state.ticket);
   const { accessToken } = useSelector((state) => state.auth);
@@ -46,9 +51,18 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
         const newMap = new Map();
         const seatSelected = [];
 
+        const prices = {};
         res.data.forEach((ticket) => {
           const key = `${ticket.seat.rowIndex}-${ticket.seat.columnIndex}`;
           newMap.set(key, ticket);
+
+          const typeId =
+            typeof ticket.seat?.seatType === 'string'
+              ? ticket.seat.seatType
+              : ticket.seat?.seatType?.id;
+          if (typeId && prices[typeId] == null && ticket.price != null) {
+            prices[typeId] = ticket.price;
+          }
 
           if (ticket.status === 'SELECTED') {
             seatSelected.push({
@@ -61,11 +75,14 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
 
         setTicketMap(newMap);
         dispatch(setSelectedSeats(seatSelected));
+        if (onSeatPricesReady) {
+          onSeatPricesReady(prices);
+        }
       })
       .catch((error) => {
         console.error('Không thể tải sơ đồ ghế từ API:', error);
       });
-  }, [dispatch, showTime?.id, user?.userId]);
+  }, [dispatch, onSeatPricesReady, showTime?.id, user?.userId]);
 
   useEffect(() => {
     if (!showTime?.id || !user?.userId || !accessToken) {
@@ -250,9 +267,9 @@ const TicketGrid = ({ showTime, invoiceId, setTotalMoneyTicket }) => {
       ) : null}
 
       <div
-        className="mx-auto grid min-w-max items-center gap-[10px] px-1 pb-1"
+        className="mx-auto grid min-w-max items-center gap-x-2 gap-y-2 px-1 pb-1"
         style={{
-          gridTemplateColumns: `44px repeat(${showTime?.cinemaTheater?.numberOfColumns ?? 0}, minmax(58px, 1fr))`,
+          gridTemplateColumns: `32px repeat(${showTime?.cinemaTheater?.numberOfColumns ?? 0}, minmax(46px, 1fr))`,
           width: 'fit-content',
         }}
       >

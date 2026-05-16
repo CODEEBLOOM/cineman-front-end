@@ -1,34 +1,30 @@
-import RegularSeat from '@component/seat/RegularSeat';
-import { seatLegendItems, seatStatusAppearance } from './seatVisualConfig';
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
+import { seatLegendItems } from './seatVisualConfig';
 
 const NoteInfo = () => {
   return (
-    <div className="flex flex-wrap gap-3">
-      {seatLegendItems.map((item) => {
-        const visual = seatStatusAppearance[item.key];
-
-        return (
-          <div
-            key={item.key}
-            className="flex items-center gap-3 rounded-[16px] border border-slate-200 bg-slate-50 px-3 py-2"
+    <ul className="flex flex-wrap gap-x-6 gap-y-3">
+      {seatLegendItems.map((item) => (
+        <li key={item.key} className="flex items-center gap-2">
+          <span
+            className="flex h-[18px] w-[18px] items-center justify-center rounded-md border"
+            style={{
+              backgroundColor: item.swatch,
+              borderColor: item.swatchBorder,
+            }}
           >
-            <div
-              className="relative flex h-[46px] w-[52px] items-center justify-center rounded-[14px] border"
-              style={{
-                backgroundColor: visual.backgroundColor || '#f7f4ec',
-                borderColor: visual.borderColor || '#e7dbc2',
-              }}
-            >
-              <RegularSeat
-                size="30px"
-                color={visual.iconColor || '#b8c1cc'}
+            {item.checked && (
+              <CheckRoundedIcon
+                sx={{ fontSize: 14, color: item.checkColor || '#ffffff' }}
               />
-            </div>
-            <p className="text-sm font-semibold text-slate-700">{item.label}</p>
-          </div>
-        );
-      })}
-    </div>
+            )}
+          </span>
+          <span className="text-sm font-medium text-slate-700">
+            {item.label}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 };
 

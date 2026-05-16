@@ -1,24 +1,13 @@
-﻿import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
-import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
-import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
-import PaymentsRoundedIcon from '@mui/icons-material/PaymentsRounded';
-import PlaceRoundedIcon from '@mui/icons-material/PlaceRounded';
-import TheaterComedyRoundedIcon from '@mui/icons-material/TheaterComedyRounded';
-import WeekendRoundedIcon from '@mui/icons-material/WeekendRounded';
-import {
-  Button,
-  Chip,
-  CircularProgress,
-  Divider,
-  Stack,
-  Typography,
-} from '@mui/material';
+import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { Button, CircularProgress } from '@mui/material';
 import { createMultiple } from '@apis/detailBookingSnack';
 import { update, updateIxnRef } from '@apis/invoiceService';
 import { getURLPayment } from '@apis/paymentService';
 import { createUserHistoryPoint } from '@apis/userPointHistoryService';
 import CustomButton from '@component/CustomButton';
-import ImageComponent from '@component/ImageComponent';
+import Timer from '@component/Timer';
 import { useModelContext } from '@context/ModalContext';
 import { clearInvoice, updateInvoice } from '@redux/slices/invoiceSlice';
 import { clearSnack } from '@redux/slices/snackSlice';
@@ -32,11 +21,14 @@ import { IoClose } from 'react-icons/io5';
 const currencyFormatter = new Intl.NumberFormat('vi-VN');
 
 const primaryButtonSx = {
-  minHeight: 50,
-  borderRadius: '16px',
+  height: 52,
+  borderRadius: '6px',
   backgroundColor: '#0a4d9c',
   fontWeight: 800,
+  fontSize: '1rem',
+  letterSpacing: '0.04em',
   boxShadow: 'none',
+  textTransform: 'none',
   '&:hover': {
     backgroundColor: '#083d7c',
     boxShadow: 'none',
@@ -44,16 +36,27 @@ const primaryButtonSx = {
 };
 
 const secondaryButtonSx = {
-  minHeight: 50,
-  borderRadius: '16px',
+  height: 52,
+  borderRadius: '6px',
   borderColor: 'rgba(10,77,156,0.24)',
   color: '#083d7c',
   fontWeight: 800,
+  textTransform: 'none',
   '&:hover': {
     borderColor: 'rgba(10,77,156,0.4)',
     backgroundColor: 'rgba(10,77,156,0.04)',
   },
 };
+
+const FieldRow = ({ label, value, suffix }) => (
+  <div>
+    <p className="text-[12px] font-medium text-slate-500">{label}</p>
+    <div className="mt-0.5 flex flex-wrap items-center gap-2">
+      <p className="text-sm font-semibold text-slate-900">{value}</p>
+      {suffix}
+    </div>
+  </div>
+);
 
 const InfoBookingTicket = ({ showTime }) => {
   const movieTheater = useSelector(
@@ -71,6 +74,8 @@ const InfoBookingTicket = ({ showTime }) => {
   const inputRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const isPaymentPage = pathname.includes('payment');
+
   const handleBeforePayment = () => {
     if (selectedSeats.length <= 0) {
       toast.info('Vui lòng chọn ghế trước khi thanh toán');
@@ -78,7 +83,9 @@ const InfoBookingTicket = ({ showTime }) => {
     }
 
     setIsLoading(true);
-    const existingInvoice = invoices.find((item) => item.showTimeId === showTime.id);
+    const existingInvoice = invoices.find(
+      (item) => item.showTimeId === showTime.id
+    );
 
     if (!existingInvoice) {
       setIsLoading(false);
@@ -86,8 +93,13 @@ const InfoBookingTicket = ({ showTime }) => {
       return;
     }
 
-    const totalMoneyTicket = selectedSeats.reduce(
+    const ticketMoney = selectedSeats.reduce(
       (total, item) => total + item.price,
+      0
+    );
+    const snackMoney = snackItems.reduce(
+      (total, item) =>
+        total + (Number(item.unitPrice) || 0) * (Number(item.quantity) || 0),
       0
     );
 
@@ -96,8 +108,8 @@ const InfoBookingTicket = ({ showTime }) => {
       email: existingInvoice.invoice.email,
       phoneNumber: existingInvoice.invoice.phoneNumber,
       paymentMethod: existingInvoice.invoice.paymentMethod,
-      totalAmount: totalMoneyTicket,
-      totalMoneyTicket: totalMoneyTicket,
+      totalAmount: ticketMoney + snackMoney,
+      totalMoneyTicket: ticketMoney,
       totalTicket: selectedSeats.length,
       customerId: existingInvoice.invoice.customerId,
       staffId: existingInvoice.invoice.staffId || null,
@@ -108,9 +120,7 @@ const InfoBookingTicket = ({ showTime }) => {
         dispatch(
           updateInvoice({
             showTimeId: showTime.id,
-            invoice: {
-              ...res.data,
-            },
+            invoice: { ...res.data },
           })
         );
         navigate(`/payment?st=${showTime.id}`);
@@ -204,7 +214,7 @@ const InfoBookingTicket = ({ showTime }) => {
   };
 
   const renderTermOfPayment = () => (
-    <div className="relative w-[min(92vw,720px)] rounded-[28px] bg-white p-6 leading-8 shadow-2xl">
+    <div className="relative w-[min(92vw,720px)] rounded-md bg-white p-6 leading-8 shadow-2xl">
       <span
         className="absolute right-4 top-4 cursor-pointer text-slate-500 transition hover:text-slate-900"
         onClick={closeTopModal}
@@ -231,7 +241,10 @@ const InfoBookingTicket = ({ showTime }) => {
           </span>
         </label>
 
-        <div className="mx-auto mt-4 max-w-[220px]" onClick={handleNavigatePayment}>
+        <div
+          className="mx-auto mt-4 max-w-[220px]"
+          onClick={handleNavigatePayment}
+        >
           <CustomButton title="Thanh toán" isLoading={isLoading} />
         </div>
       </div>
@@ -242,230 +255,187 @@ const InfoBookingTicket = ({ showTime }) => {
     openPopup(renderTermOfPayment());
   };
 
-  const detailItems = [
-    {
-      label: 'Thể loại',
-      value:
-        showTime?.movie?.genres?.map((item) => item.name).join(', ') ||
-        'Đang cập nhật',
-      icon: <LocalOfferRoundedIcon fontSize="small" />,
-    },
-    {
-      label: 'Thời lượng',
-      value: `${showTime?.movie?.duration || 0} phút`,
-      icon: <AccessTimeRoundedIcon fontSize="small" />,
-    },
-    {
-      label: 'Rạp chiếu',
-      value: movieTheater?.title || 'Đang cập nhật',
-      icon: <PlaceRoundedIcon fontSize="small" />,
-    },
-    {
-      label: 'Ngày chiếu',
-      value: showTime?.showDate || 'Đang cập nhật',
-      icon: <CalendarMonthRoundedIcon fontSize="small" />,
-    },
-    {
-      label: 'Giờ chiếu',
-      value: showTime?.startTime || '--:--',
-      icon: <AccessTimeRoundedIcon fontSize="small" />,
-    },
-    {
-      label: 'Phòng chiếu',
-      value: showTime?.cinemaTheater?.name || 'Đang cập nhật',
-      icon: <TheaterComedyRoundedIcon fontSize="small" />,
-    },
-  ];
+  const handleChangeSeat = () => {
+    const target = document.getElementById('section-choose-seat');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   const selectedSeatLabels = selectedSeats.map((item) => item.seat.label);
   const totalMoneyTicket = selectedSeats.reduce(
     (total, item) => total + item.price,
     0
   );
+  const totalSnackQuantity = snackItems.reduce(
+    (total, item) => total + (Number(item.quantity) || 0),
+    0
+  );
+  const totalSnackMoney = snackItems.reduce(
+    (total, item) =>
+      total + (Number(item.unitPrice) || 0) * (Number(item.quantity) || 0),
+    0
+  );
+  const totalAmount = totalMoneyTicket + totalSnackMoney;
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-white/60 bg-white/95 shadow-[0_20px_60px_rgba(15,23,42,0.14)] backdrop-blur">
-      <div className="border-b border-slate-200/90 px-5 py-5">
-        <div className="flex items-start gap-4">
-          <div className="w-[118px] flex-none overflow-hidden rounded-[20px] border border-slate-200 bg-slate-100">
-            <ImageComponent
-              src={showTime?.movie?.posterImage}
-              width={118}
-              height={176}
-              className="h-[176px] w-full object-cover"
-            />
-          </div>
+    <aside className="rounded-md border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-3 flex items-center gap-1.5 self-start rounded-full bg-amber-50 px-3 py-1 text-amber-700">
+        <AccessTimeRoundedIcon sx={{ fontSize: 14 }} />
+        <span className="text-[12px] font-semibold">Giữ ghế</span>
+        <Timer
+          deadlineTime={10}
+          className="text-[12px] font-bold text-amber-700"
+        />
+      </div>
 
-          <div className="min-w-0 flex-1 space-y-3">
-            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-              <Chip
-                label={`T${showTime?.movie?.age || '--'}`}
-                sx={{
-                  borderRadius: '999px',
-                  bgcolor: '#f8fafc',
-                  color: '#334155',
-                  fontWeight: 800,
-                  border: '1px solid rgba(203,213,225,0.9)',
-                }}
-              />
-              <Chip
-                label={showTime?.startTime || '--:--'}
-                sx={{
-                  borderRadius: '999px',
-                  bgcolor: 'rgba(10,77,156,0.08)',
-                  color: '#083d7c',
-                  fontWeight: 800,
-                }}
-              />
-            </Stack>
+      <h3 className="text-[14px] font-extrabold uppercase tracking-[0.08em] text-slate-900">
+        Thông tin đặt vé
+      </h3>
 
-            <div>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 900,
-                  color: '#0f172a',
-                  lineHeight: 1.15,
-                  wordBreak: 'break-word',
-                }}
+      <div className="mt-4 space-y-4">
+        <FieldRow
+          label="Phim"
+          value={showTime?.movie?.title || 'Đang cập nhật'}
+          suffix={
+            <span className="inline-flex h-5 items-center rounded bg-rose-50 px-1.5 text-[11px] font-bold text-rose-700">
+              T{showTime?.movie?.age || '--'}
+            </span>
+          }
+        />
+        <FieldRow
+          label="Rạp"
+          value={movieTheater?.title || 'Đang cập nhật'}
+        />
+        <FieldRow
+          label="Phòng chiếu"
+          value={showTime?.cinemaTheater?.name || 'Đang cập nhật'}
+        />
+        <FieldRow
+          label="Ngày chiếu"
+          value={showTime?.showDate || 'Đang cập nhật'}
+        />
+        <FieldRow label="Giờ chiếu" value={showTime?.startTime || '--:--'} />
+
+        <div>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[12px] font-medium text-slate-500">
+              Ghế đã chọn
+            </p>
+            {selectedSeatLabels.length > 0 && !isPaymentPage && (
+              <button
+                type="button"
+                onClick={handleChangeSeat}
+                className="rounded-md border border-slate-200 px-2 py-0.5 text-[11px] font-semibold text-primary hover:bg-slate-50"
               >
-                {showTime?.movie?.title || 'Đang cập nhật phim'}
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                sx={{ mt: 1, fontWeight: 700, color: '#083d7c' }}
-              >
-                {showTime?.cinemaTheater?.name || 'Đang cập nhật phòng chiếu'}
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#64748b', mt: 0.5 }}>
-                {movieTheater?.title || 'Đang cập nhật rạp'}
-              </Typography>
-            </div>
+                Đổi ghế
+              </button>
+            )}
           </div>
+          <p className="mt-0.5 text-sm font-semibold text-slate-900">
+            {selectedSeatLabels.length > 0
+              ? selectedSeatLabels.join(', ')
+              : 'Chưa chọn ghế'}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-[12px] font-medium text-slate-500">Đồ ăn kèm</p>
+          <p className="mt-0.5 text-sm font-semibold text-slate-900">
+            {totalSnackQuantity > 0
+              ? `${totalSnackQuantity} món · ${currencyFormatter.format(totalSnackMoney)}đ`
+              : 'Chưa chọn'}
+          </p>
         </div>
       </div>
 
-      <div className="px-5 py-5">
-        <div className="space-y-3">
-          {detailItems.map((item) => (
-            <div
-              key={item.label}
-              className="flex items-start gap-3 rounded-[18px] border border-slate-200 bg-slate-50 px-3 py-3"
+      <div className="my-5 border-t border-slate-200" />
+
+      <div className="space-y-1 text-sm">
+        <div className="flex items-center justify-between text-slate-600">
+          <span>
+            Vé phim
+            <span className="ml-1 text-slate-400">({selectedSeats.length} ghế)</span>
+          </span>
+          <span className="font-semibold text-slate-800">
+            {currencyFormatter.format(totalMoneyTicket)}đ
+          </span>
+        </div>
+        {totalSnackQuantity > 0 && (
+          <div className="flex items-center justify-between text-slate-600">
+            <span>
+              Đồ ăn kèm
+              <span className="ml-1 text-slate-400">({totalSnackQuantity} món)</span>
+            </span>
+            <span className="font-semibold text-slate-800">
+              {currencyFormatter.format(totalSnackMoney)}đ
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-3 flex items-end justify-between">
+        <p className="text-[12px] font-extrabold uppercase tracking-[0.1em] text-slate-500">
+          Tạm tính
+        </p>
+        <p className="text-[26px] font-extrabold leading-none text-primary">
+          {currencyFormatter.format(totalAmount)}đ
+        </p>
+      </div>
+
+      <div className="mt-5">
+        {isPaymentPage ? (
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={() => navigate(-1)}
+              sx={secondaryButtonSx}
             >
-              <div className="rounded-2xl bg-[rgba(10,77,156,0.08)] p-2 text-[#0a4d9c]">
-                {item.icon}
-              </div>
-              <div className="min-w-0 flex-1">
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: '#64748b',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.14em',
-                  }}
-                >
-                  {item.label}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{ mt: 0.4, fontWeight: 700, color: '#0f172a' }}
-                >
-                  {item.value}
-                </Typography>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <Divider sx={{ my: 3, borderColor: 'rgba(226,232,240,0.9)' }} />
-
-        <div className="rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <Typography
-                variant="overline"
-                sx={{
-                  color: '#083d7c',
-                  fontWeight: 800,
-                  letterSpacing: '0.16em',
-                }}
-              >
-                Ghế chọn
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{ fontWeight: 700, color: '#334155', wordBreak: 'break-word' }}
-              >
-                {selectedSeatLabels.length > 0
-                  ? selectedSeatLabels.join(', ')
-                  : 'Bạn chưa chọn ghế nào.'}
-              </Typography>
-            </div>
-
-            <div className="rounded-full bg-white px-3 py-1 text-sm font-bold text-[#083d7c] border border-slate-200">
-              {selectedSeats.length} ghế
-            </div>
-          </div>
-
-          <div className="mt-4 flex items-center gap-3 rounded-[16px] border border-slate-200 bg-white px-3 py-3">
-            <PaymentsRoundedIcon sx={{ color: '#0a4d9c' }} fontSize="small" />
-            <div>
-              <Typography variant="caption" sx={{ color: '#64748b' }}>
-                Tạm tính
-              </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 900, color: '#083d7c' }}>
-                {currencyFormatter.format(totalMoneyTicket)} đ
-              </Typography>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-5">
-          {pathname.includes('payment') ? (
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => navigate(-1)}
-                sx={secondaryButtonSx}
-              >
-                Quay lại
-              </Button>
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={handlePayment}
-                disabled={isLoading}
-                sx={primaryButtonSx}
-              >
-                {isLoading ? (
-                  <CircularProgress size={22} sx={{ color: '#fff' }} />
-                ) : (
-                  'Tiếp tục thanh toán'
-                )}
-              </Button>
-            </Stack>
-          ) : (
+              Quay lại
+            </Button>
             <Button
               fullWidth
               variant="contained"
-              onClick={handleBeforePayment}
+              onClick={handlePayment}
               disabled={isLoading}
-              startIcon={
-                isLoading ? (
-                  <CircularProgress size={18} sx={{ color: '#fff' }} />
+              sx={primaryButtonSx}
+              endIcon={
+                !isLoading ? (
+                  <ArrowForwardRoundedIcon />
                 ) : (
-                  <WeekendRoundedIcon />
+                  <CircularProgress size={18} sx={{ color: '#fff' }} />
                 )
               }
-              sx={primaryButtonSx}
             >
-              {isLoading ? 'Đang xử lý' : 'Tiếp tục'}
+              {isLoading ? 'Đang xử lý' : 'Tiếp tục thanh toán'}
             </Button>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={handleBeforePayment}
+            disabled={isLoading}
+            sx={primaryButtonSx}
+            endIcon={
+              !isLoading ? (
+                <ArrowForwardRoundedIcon />
+              ) : (
+                <CircularProgress size={18} sx={{ color: '#fff' }} />
+              )
+            }
+          >
+            {isLoading ? 'Đang xử lý' : 'Tiếp tục'}
+          </Button>
+        )}
       </div>
-    </div>
+
+      <div className="mt-3 flex items-center justify-center gap-1.5 text-slate-500">
+        <LockOutlinedIcon sx={{ fontSize: 14 }} />
+        <span className="text-[12px]">Thông tin của bạn được bảo mật</span>
+      </div>
+    </aside>
   );
 };
 

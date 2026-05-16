@@ -37,7 +37,7 @@ const LoginPage = () => {
     <Box
       sx={{
         py: { xs: 4, md: 6 },
-        backgroundColor: '#f5f6f8',
+        backgroundColor: '#ffffff',
         minHeight: 'calc(100vh - 184px)',
       }}
     >
@@ -48,9 +48,9 @@ const LoginPage = () => {
             mx: 'auto',
             width: '100%',
             maxWidth: value === 1 ? 760 : 520,
-            borderRadius: '6px',
+            borderRadius: 0,
             backgroundColor: '#ffffff',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+            boxShadow: 'none',
             overflow: 'hidden',
           }}
         >

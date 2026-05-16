@@ -1,5 +1,4 @@
 import { currencyFormatter } from '@libs/Utils';
-import ComboComponent from './payment/ComboComponent';
 import DiscountComponent from './payment/DiscountComponent';
 import InfoUserComponent from './payment/InfoUserOrderComponent';
 import TicketSelectComponent from './payment/TicketSelectComponent';
@@ -88,8 +87,31 @@ const Payment = ({
           unitPrice={doubleSeatsSelected[0].price}
         />
       )}
-      {/*  Combo ưu đãi*/}
-      <ComboComponent invoice={invoice} voucher={voucher} />
+      {snackItems.length > 0 && (
+        <div className="mt-5 rounded-md border border-slate-200 bg-white p-4 shadow-sm">
+          <h3 className="text-[16px] font-bold uppercase text-slate-900">
+            Đồ ăn kèm đã chọn
+          </h3>
+          <ul className="mt-3 divide-y divide-slate-100">
+            {snackItems.map((item) => (
+              <li
+                key={item.id}
+                className="flex items-center justify-between gap-3 py-2 text-sm"
+              >
+                <span className="font-semibold text-slate-800">
+                  {item.snackName}{' '}
+                  <span className="text-slate-500">x{item.quantity}</span>
+                </span>
+                <span className="font-bold text-slate-900">
+                  {currencyFormatter(
+                    (Number(item.unitPrice) || 0) * (Number(item.quantity) || 0)
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <DiscountComponent showTime={showTime} invoice={invoice} />
       <div>
         <div className="flex justify-between gap-3 text-[20px] font-medium">

@@ -10,19 +10,22 @@ import UploadAvatar from '@component/account-customer/UploadAvatar';
 import { useModelContext } from '@context/ModalContext.jsx';
 import { updateUser } from '@redux/slices/userSlice';
 import DateFormatter from '@utils/DateFormatter';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import {
   FiCalendar,
-  FiCreditCard,
   FiMail,
+  FiMap,
+  FiMapPin,
   FiPhone,
   FiUser,
   FiUsers,
 } from 'react-icons/fi';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import * as yup from 'yup';
+
+const PROVINCES_API = 'https://provinces.open-api.vn/api/v2';
 
 const resolveDateValue = (dateOfBirth) => {
   if (!dateOfBirth) {
@@ -46,9 +49,8 @@ const formSchema = yup.object({
     .required('Số điện thoại không được để trống!'),
   dateOfBirth: yup.string().required('Ngày sinh không được để trống!'),
   gender: yup.string().nullable(),
-  idCard: yup.string().trim().nullable(),
   province: yup.string().nullable(),
-  district: yup.string().nullable(),
+  ward: yup.string().nullable(),
   address: yup.string().trim().nullable(),
 });
 
@@ -172,6 +174,10 @@ const FormInfoUser = ({ avatar, onAvatarChange }) => {
   const { openPopup } = useModelContext();
   const { user } = useSelector((state) => state.user);
 
+  const [provinces, setProvinces] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [loadingWards, setLoadingWards] = useState(false);
+
   const {
     control,
     handleSubmit,
@@ -186,17 +192,73 @@ const FormInfoUser = ({ avatar, onAvatarChange }) => {
       phoneNumber: user?.phoneNumber || '',
       gender: user?.gender || '',
       address: user?.address || '',
-      idCard: user?.idCard || '',
       province: user?.province || '',
-      district: user?.district || '',
+      ward: user?.ward || '',
       dateOfBirth: resolveDateValue(user?.dateOfBirth),
       avatar: avatar || '',
     },
   });
 
+  const selectedProvinceName = useWatch({ control, name: 'province' });
+
   useEffect(() => {
     setValue('avatar', avatar || '');
   }, [avatar, setValue]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchProvinces = async () => {
+      try {
+        const res = await fetch(`${PROVINCES_API}/p/`);
+        const data = await res.json();
+        if (!cancelled && Array.isArray(data)) {
+          setProvinces(data);
+        }
+      } catch {
+        if (!cancelled) setProvinces([]);
+      }
+    };
+
+    fetchProvinces();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!selectedProvinceName || provinces.length === 0) {
+      setWards([]);
+      return undefined;
+    }
+
+    const matched = provinces.find((p) => p.name === selectedProvinceName);
+    if (!matched) {
+      setWards([]);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setLoadingWards(true);
+
+    fetch(`${PROVINCES_API}/p/${matched.code}?depth=2`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) {
+          setWards(Array.isArray(data?.wards) ? data.wards : []);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setWards([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingWards(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedProvinceName, provinces]);
 
   const handleSubmitForm = async (data) => {
     try {
@@ -253,15 +315,6 @@ const FormInfoUser = ({ avatar, onAvatarChange }) => {
 
           <TextFieldControl
             control={control}
-            name="idCard"
-            label="CMND/Hộ chiếu"
-            placeholder="CMND/Hộ chiếu"
-            icon={<FiCreditCard />}
-            error={errors.idCard}
-          />
-
-          <TextFieldControl
-            control={control}
             name="dateOfBirth"
             label="Ngày sinh"
             type="date"
@@ -284,23 +337,94 @@ const FormInfoUser = ({ avatar, onAvatarChange }) => {
             error={errors.gender}
           />
 
-          <SelectFieldControl
-            control={control}
-            name="province"
-            label="Tỉnh/Thành phố"
-            placeholder="Tỉnh/Thành phố"
-            options={[]}
-            error={errors.province}
-          />
+          <div>
+            <RequiredLabel>Tỉnh/Thành phố</RequiredLabel>
+            <Controller
+              name="province"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  select
+                  fullWidth
+                  size="small"
+                  error={!!errors.province}
+                  helperText={errors.province?.message || ''}
+                  sx={accountFieldFlatSx}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    setValue('ward', '');
+                  }}
+                  slotProps={{
+                    input: { startAdornment: adornment(<FiMap />) },
+                    select: {
+                      displayEmpty: true,
+                      renderValue: (value) =>
+                        value || (
+                          <span className="text-[14px] text-slate-400">
+                            Tỉnh/Thành phố
+                          </span>
+                        ),
+                    },
+                  }}
+                >
+                  <MenuItem value="">
+                    <span className="text-slate-400">Tỉnh/Thành phố</span>
+                  </MenuItem>
+                  {provinces.map((province) => (
+                    <MenuItem key={province.code} value={province.name}>
+                      {province.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+          </div>
 
-          <SelectFieldControl
-            control={control}
-            name="district"
-            label="Quận/Huyện"
-            placeholder=""
-            options={[]}
-            error={errors.district}
-          />
+          <div>
+            <RequiredLabel>Xã/Phường</RequiredLabel>
+            <Controller
+              name="ward"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  select
+                  fullWidth
+                  size="small"
+                  disabled={!selectedProvinceName || loadingWards}
+                  error={!!errors.ward}
+                  helperText={errors.ward?.message || ''}
+                  sx={accountFieldFlatSx}
+                  slotProps={{
+                    input: { startAdornment: adornment(<FiMapPin />) },
+                    select: {
+                      displayEmpty: true,
+                      renderValue: (value) =>
+                        value || (
+                          <span className="text-[14px] text-slate-400">
+                            {loadingWards
+                              ? 'Đang tải...'
+                              : selectedProvinceName
+                                ? 'Xã/Phường'
+                                : 'Chọn Tỉnh/Thành phố trước'}
+                          </span>
+                        ),
+                    },
+                  }}
+                >
+                  <MenuItem value="">
+                    <span className="text-slate-400">Xã/Phường</span>
+                  </MenuItem>
+                  {wards.map((ward) => (
+                    <MenuItem key={ward.code} value={ward.name}>
+                      {ward.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+          </div>
 
           <div className="md:col-span-2">
             <TextFieldControl
